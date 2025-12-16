@@ -20,10 +20,10 @@ public class AuctionSaleController(IAuctionSaleService auctionSaleService) : Con
     /// </summary>
     /// <returns>A list of all auction sales.</returns>
     [HttpGet]
-    [ProducesResponseType(typeof(List<AuctionSales>), StatusCodes.Status200OK)]
-    public async Task<ActionResult<List<AuctionSales>>> GetAuctionSales()
+    [ProducesResponseType(typeof(List<AuctionSale>), StatusCodes.Status200OK)]
+    public async Task<ActionResult<List<AuctionSale>>> GetAuctionSales()
     {
-        List<AuctionSales> sales = await auctionSaleService.GetAuctionSales();
+        List<AuctionSale> sales = await auctionSaleService.GetAuctionSales();
         return Ok(sales);
     }
 
@@ -33,13 +33,13 @@ public class AuctionSaleController(IAuctionSaleService auctionSaleService) : Con
     /// <param name="id">The auction sale ID.</param>
     /// <returns>The requested auction sale.</returns>
     [HttpGet("{id:int}")]
-    [ProducesResponseType(typeof(AuctionSales), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(AuctionSale), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<ActionResult<AuctionSales>> GetAuctionSaleById(int id)
+    public async Task<ActionResult<AuctionSale>> GetAuctionSaleById(int id)
     {
         try
         {
-            AuctionSales sale = await auctionSaleService.GetAuctionSaleById(id);
+            AuctionSale sale = await auctionSaleService.GetAuctionSaleById(id);
             return Ok(sale);
         }
         catch (NotFoundException e)
@@ -55,11 +55,11 @@ public class AuctionSaleController(IAuctionSaleService auctionSaleService) : Con
     /// <returns>The created auction sale.</returns>
     [HttpPost]
     [Authorize(Roles = "Provider")]
-    [ProducesResponseType(typeof(AuctionSales), StatusCodes.Status201Created)]
-    public async Task<ActionResult<AuctionSales>> CreateAuctionSale(
+    [ProducesResponseType(typeof(AuctionSale), StatusCodes.Status201Created)]
+    public async Task<ActionResult<AuctionSale>> CreateAuctionSale(
         [FromBody] CreateAuctionSaleDto auctionSaleData)
     {
-        AuctionSales created = await auctionSaleService.CreateAuctionSale(auctionSaleData);
+        AuctionSale created = await auctionSaleService.CreateAuctionSale(auctionSaleData);
 
         return CreatedAtAction(
             actionName: nameof(GetAuctionSaleById),

@@ -6,7 +6,7 @@ namespace LeafBidAPI.Models;
 /// <summary>
 /// Represents the association between auction sales and products.
 /// </summary>
-public class AuctionSalesProducts
+public class AuctionSaleProduct
 {
     /// <summary>
     /// Unique identifier for the auction sales product entry.
@@ -19,7 +19,7 @@ public class AuctionSalesProducts
     public required int AuctionSaleId { get; set; }
     
     [JsonIgnore]
-    public AuctionSales? AuctionSale { get; set; }
+    public AuctionSale? AuctionSale { get; set; }
     
     /// <summary>
     /// Identifier of the product associated with the auction sale product

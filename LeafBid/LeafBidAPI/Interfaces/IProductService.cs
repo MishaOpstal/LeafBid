@@ -1,7 +1,7 @@
 using LeafBidAPI.DTOs.Product;
+using LeafBidAPI.DTOs.RegisteredProduct;
 using LeafBidAPI.Exceptions;
 using LeafBidAPI.Models;
-using Microsoft.AspNetCore.Mvc;
 
 namespace LeafBidAPI.Interfaces;
 
@@ -30,6 +30,16 @@ public interface IProductService
     Task<Product> GetProductById(int id);
 
     /// <summary>
+    /// Get a registered product by its ID.
+    /// </summary>
+    /// <param name="id">The registered product ID.</param>
+    /// <returns>The registered product with the specified product and user Ids.</returns>
+    /// <exception cref="NotFoundException">
+    /// Thrown when no registered product is found with the specified IDs.
+    /// </exception>
+    Task<RegisteredProduct> GetRegisteredProductById(int id);
+
+    /// <summary>
     /// Create a new product.
     /// </summary>
     /// <param name="productData">The product creation data, including an optional base64 image.</param>
@@ -38,6 +48,18 @@ public interface IProductService
     /// Thrown when the provided image cannot be processed or saved.
     /// </exception>
     Task<Product> CreateProduct(CreateProductDto productData);
+
+
+    /// <summary>
+    /// Add a user created product (this includes data that can differ per user)
+    ///</summary>
+    /// <param name="productId">A valid product id.</param>
+    /// <param name="registeredProductData">The unique product information.</param>
+    /// <returns>The created registered product.</returns>
+    /// <exception cref="Exception">
+    /// Thrown when user invalid or something idk.
+    /// </exception>
+    Task<RegisteredProduct> AddProduct(int productId, CreateRegisteredProductDto registeredProductData);
 
     /// <summary>
     /// Update an existing product by ID.
@@ -65,4 +87,11 @@ public interface IProductService
     /// <param name="product">The product to map.</param>
     /// <returns>A <see cref="ProductResponse"/> populated from the product.</returns>
     ProductResponse CreateProductResponse(Product product);
+
+    /// <summary>
+    /// Create a DTO representation of a registered product.
+    /// </summary>
+    /// <param name="registeredProduct"></param>
+    /// <returns>A <see cref="RegisteredProductResponse"/> populated from the registered product.</returns>
+    RegisteredProductResponse CreateRegisteredProductResponse(RegisteredProduct registeredProduct);
 }

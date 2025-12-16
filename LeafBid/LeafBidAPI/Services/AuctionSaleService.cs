@@ -9,14 +9,14 @@ namespace LeafBidAPI.Services;
 
 public class AuctionSaleService(ApplicationDbContext context) : IAuctionSaleService
 {
-    public async Task<List<AuctionSales>> GetAuctionSales()
+    public async Task<List<AuctionSale>> GetAuctionSales()
     {
         return await context.AuctionSales.ToListAsync();
     }
     
-    public async Task<AuctionSales> GetAuctionSaleById(int id)
+    public async Task<AuctionSale> GetAuctionSaleById(int id)
     {
-        AuctionSales? auctionSale =
+        AuctionSale? auctionSale =
             await context.AuctionSales.FirstOrDefaultAsync(sale => sale.Id == id);
 
         if (auctionSale == null)
@@ -27,9 +27,9 @@ public class AuctionSaleService(ApplicationDbContext context) : IAuctionSaleServ
         return auctionSale;
     }
     
-    public async Task<AuctionSales> CreateAuctionSale(CreateAuctionSaleDto auctionSaleData)
+    public async Task<AuctionSale> CreateAuctionSale(CreateAuctionSaleDto auctionSaleData)
     {
-        AuctionSales auctionSale = new()
+        AuctionSale auctionSale = new()
         {
             AuctionId = auctionSaleData.AuctionId,
             UserId = auctionSaleData.UserId,

@@ -10,7 +10,7 @@ public interface IAuctionSaleProductService
     /// Get all auction sale products.
     /// </summary>
     /// <returns>A list of auction sale products.</returns>
-    Task<List<AuctionSalesProducts>> GetAuctionSaleProducts();
+    Task<List<AuctionSaleProduct>> GetAuctionSaleProducts();
     
     /// <summary>
     /// Get a single auction sale product by ID.
@@ -20,14 +20,14 @@ public interface IAuctionSaleProductService
     /// <exception cref="NotFoundException">
     /// Thrown when no auction sale product is found with the specified ID.
     /// </exception>
-    Task<AuctionSalesProducts> GetAuctionSaleProductById(int id);
+    Task<AuctionSaleProduct> GetAuctionSaleProductById(int id);
 
     /// <summary>
     /// Create a new auction sale product.
     /// </summary>
     /// <param name="auctionSaleProductData">The data used to create the auction sale product.</param>
     /// <returns>The created auction sale product.</returns>
-    Task<AuctionSalesProducts> CreateAuctionSaleProduct(CreateAuctionSaleProductDto auctionSaleProductData);
+    Task<AuctionSaleProduct> CreateAuctionSaleProduct(CreateAuctionSaleProductDto auctionSaleProductData);
 
     /// <summary>
     /// Update an existing auction sale product.
@@ -38,5 +38,5 @@ public interface IAuctionSaleProductService
     /// <exception cref="NotFoundException">
     /// Thrown when no auction sale product is found with the specified ID.
     /// </exception>
-    Task<AuctionSalesProducts> UpdateAuctionSaleProduct(int id, UpdateAuctionSaleProductDto auctionSaleProductData);
+    Task<AuctionSaleProduct> UpdateAuctionSaleProduct(int id, UpdateAuctionSaleProductDto auctionSaleProductData);
 }

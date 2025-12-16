@@ -1,4 +1,4 @@
-﻿using LeafBidAPI.Enums;
+﻿using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Identity;
 
 namespace LeafBidAPI.Models;
@@ -12,4 +12,11 @@ public class User : IdentityUser
     /// Last Login
     /// </summary>
     public DateTime? LastLogin { get; set; }
+
+    /// <summary>
+    /// Company Id
+    /// </summary>
+    public int? CompanyId { get; set; }
+
+    [JsonIgnore] public Company? Company { get; set; }
 }

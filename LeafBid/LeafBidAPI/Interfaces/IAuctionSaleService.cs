@@ -10,7 +10,7 @@ public interface IAuctionSaleService
     /// Get all auction sales.
     /// </summary>
     /// <returns>A list of all auction sales.</returns>
-    Task<List<AuctionSales>> GetAuctionSales();
+    Task<List<AuctionSale>> GetAuctionSales();
 
     /// <summary>
     /// Get a single auction sale by ID.
@@ -20,12 +20,12 @@ public interface IAuctionSaleService
     /// <exception cref="NotFoundException">
     /// Thrown when no auction sale is found with the specified ID.
     /// </exception>
-    Task<AuctionSales> GetAuctionSaleById(int id);
+    Task<AuctionSale> GetAuctionSaleById(int id);
 
     /// <summary>
     /// Create a new auction sale.
     /// </summary>
     /// <param name="auctionSaleData">The data used to create the auction sale.</param>
     /// <returns>The created auction sale.</returns>
-    Task<AuctionSales> CreateAuctionSale(CreateAuctionSaleDto auctionSaleData);
+    Task<AuctionSale> CreateAuctionSale(CreateAuctionSaleDto auctionSaleData);
 }

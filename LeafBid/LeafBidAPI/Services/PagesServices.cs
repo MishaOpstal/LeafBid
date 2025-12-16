@@ -1,6 +1,6 @@
 using LeafBidAPI.Data;
 using LeafBidAPI.DTOs.Page;
-using LeafBidAPI.DTOs.Product;
+using LeafBidAPI.DTOs.RegisteredProduct;
 using LeafBidAPI.Enums;
 using LeafBidAPI.Exceptions;
 using LeafBidAPI.Interfaces;
@@ -23,28 +23,28 @@ public class PagesServices(ApplicationDbContext context) : IPagesServices
             throw new NotFoundException("Auction not found.");
         }
 
-        List<Product?> products = await context.AuctionProducts
+        List<RegisteredProduct?> registeredProducts = await context.AuctionProducts
             .Where(ap => ap.AuctionId == auction.Id)
             .OrderBy(ap => ap.ServeOrder)
-            .Select(ap => ap.Product)
+            .Select(ap => ap.RegisteredProduct)
             .Where(p => p != null)
             .ToListAsync();
 
-        if (products.Count == 0)
+        if (registeredProducts.Count == 0)
         {
-            throw new NotFoundException("No products found for this auction.");
+            throw new NotFoundException("No registered products found for this auction.");
         }
 
         ProductService productService = new(context);
-        List<ProductResponse> productResponse = products
-            .OfType<Product>()
-            .Select(product => productService.CreateProductResponse(product))
+        List<RegisteredProductResponse> registeredProductResponses = registeredProducts
+            .OfType<RegisteredProduct>()
+            .Select(registeredProduct => productService.CreateRegisteredProductResponse(registeredProduct))
             .ToList();
 
         GetAuctionWithProductsDto result = new()
         {
             Auction = auction,
-            Products = productResponse
+            RegisteredProducts = registeredProductResponses
         };
 
         return result;
@@ -61,28 +61,28 @@ public class PagesServices(ApplicationDbContext context) : IPagesServices
             throw new NotFoundException("Auction not found.");
         }
 
-        List<Product?> products = await context.AuctionProducts
+        List<RegisteredProduct?> registeredProducts = await context.AuctionProducts
             .Where(ap => ap.AuctionId == auction.Id)
             .OrderBy(ap => ap.ServeOrder)
-            .Select(ap => ap.Product)
+            .Select(ap => ap.RegisteredProduct)
             .Where(p => p != null)
             .ToListAsync();
 
-        if (products.Count == 0)
+        if (registeredProducts.Count == 0)
         {
-            throw new NotFoundException("No products found for this auction.");
+            throw new NotFoundException("No registered products found for this auction.");
         }
 
         ProductService productService = new(context);
-        List<ProductResponse> productResponse = products
-            .OfType<Product>()
-            .Select(product => productService.CreateProductResponse(product))
+        List<RegisteredProductResponse> registeredProductResponses = registeredProducts
+            .OfType<RegisteredProduct>()
+            .Select(registeredProduct => productService.CreateRegisteredProductResponse(registeredProduct))
             .ToList();
 
         GetAuctionWithProductsDto result = new()
         {
             Auction = auction,
-            Products = productResponse
+            RegisteredProducts = registeredProductResponses
         };
 
         return result;

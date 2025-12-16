@@ -6,7 +6,7 @@ namespace LeafBidAPI.Models;
 /// <summary>
 /// Represents the products associated with an auction
 /// </summary>
-public class AuctionProducts
+public class AuctionProduct
 {
     /// <summary>
     /// Associated auction id.
@@ -16,11 +16,11 @@ public class AuctionProducts
     [JsonIgnore] public Auction? Auction { get; set; }
 
     /// <summary>
-    /// Associated product id.
+    /// Associated registered product id.
     /// </summary>
-    public required int ProductId { get; set; }
+    public required int RegisteredProductId { get; set; }
 
-    [JsonIgnore] public Product? Product { get; set; }
+    [JsonIgnore] public RegisteredProduct? RegisteredProduct { get; set; }
 
     /// <summary>
     /// Order in auction. (A lower number will be served first)

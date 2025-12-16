@@ -1,7 +1,6 @@
 using System.Security.Claims;
 using LeafBidAPI.Data;
 using LeafBidAPI.DTOs.Auction;
-using LeafBidAPI.DTOs.Product;
 using LeafBidAPI.Exceptions;
 using LeafBidAPI.Interfaces;
 using LeafBidAPI.Models;
@@ -44,13 +43,13 @@ public class AuctionService(
             throw new UnauthorizedAccessException("User does not have the required role to create an auction");
         }
 
-        foreach (Product product in auctionData.Products)
+        foreach (RegisteredProduct registeredProduct in auctionData.RegisteredProducts)
         {
-            AuctionProducts? auctionProducts =
-                await context.AuctionProducts.FirstOrDefaultAsync(a => a.ProductId == product.Id);
+            AuctionProduct? auctionProducts =
+                await context.AuctionProducts.FirstOrDefaultAsync(a => a.RegisteredProductId == registeredProduct.Id);
             if (auctionProducts != null)
             {
-                throw new ProductAlreadyAssignedException("Product already assigned");
+                throw new ProductAlreadyAssignedException("Registered product already assigned");
             }
         }
 
@@ -65,20 +64,20 @@ public class AuctionService(
         await context.SaveChangesAsync();
 
         int counter = 1;
-        foreach (Product product in auctionData.Products)
+        foreach (RegisteredProduct registeredProduct in auctionData.RegisteredProducts)
         {
-            AuctionProducts auctionProduct = new()
+            AuctionProduct auctionProduct = new()
             {
                 AuctionId = auction.Id,
-                ProductId = product.Id,
+                RegisteredProductId = registeredProduct.Id,
                 ServeOrder = counter++,
-                AuctionStock = product.Stock
+                AuctionStock = registeredProduct.Stock
             };
 
             context.AuctionProducts.Add(auctionProduct);
         }
 
-        context.Products.UpdateRange(auctionData.Products);
+        context.RegisteredProducts.UpdateRange(auctionData.RegisteredProducts);
         await context.SaveChangesAsync();
 
         return auction;
@@ -100,19 +99,19 @@ public class AuctionService(
         return auction;
     }
     
-    public async Task<List<Product>> GetProductsByAuctionId(int auctionId)
+    public async Task<List<RegisteredProduct>> GetRegisteredProductsByAuctionId(int auctionId)
     {
-        List<Product?> products = await context.AuctionProducts
+        List<RegisteredProduct?> registeredProducts = await context.AuctionProducts
             .Where(ap => ap.AuctionId == auctionId)
             .OrderBy(ap => ap.ServeOrder)
-            .Select(ap => ap.Product)
+            .Select(ap => ap.RegisteredProduct)
             .ToListAsync();
 
-        if (products == null || products.Count == 0)
+        if (registeredProducts == null || registeredProducts.Count == 0)
         {
             throw new NotFoundException("Product not found");
         }
 
-        return products!;
+        return registeredProducts!;
     }
 }

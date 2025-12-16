@@ -1,7 +1,4 @@
-﻿using System.Text.Json.Serialization;
-using Toolbelt.ComponentModel.DataAnnotations.Schema.V5;
-
-namespace LeafBidAPI.Models;
+﻿namespace LeafBidAPI.Models;
 
 /// <summary>
 /// Represents a product in the system.
@@ -24,23 +21,6 @@ public class Product
     public string Description { get; set; }
 
     /// <summary>
-    /// Minimum Price of the product per unit.
-    /// </summary>
-    [Decimal(10,2)]
-    public required decimal MinPrice { get; set; }
-
-    /// <summary>
-    /// Max Price of the product per unit.
-    /// </summary>
-    [Decimal(10,2)]
-    public decimal? MaxPrice { get; set; }
-
-    /// <summary>
-    /// Weight of the product in kilograms.
-    /// </summary>
-    public required double Weight { get; set; }
-
-    /// <summary>
     /// Picture URL of the product.
     /// </summary>
     public string? Picture { get; set; }
@@ -49,37 +29,4 @@ public class Product
     /// Species of the product.
     /// </summary>
     public required string Species { get; set; }
-
-    /// <summary>
-    /// Region of the product.
-    /// </summary>
-    public required string Region { get; set; }
-
-    /// <summary>
-    /// Pot size of the product.
-    /// </summary>
-    public double? PotSize { get; set; }
-
-    /// <summary>
-    /// Stem length of the product.
-    /// </summary>
-    public double? StemLength { get; set; }
-
-    /// <summary>
-    /// Stock quantity of the product.
-    /// </summary>
-    public required int Stock { get; set; }
-
-    /// <summary>
-    /// Harvested date and time of the product.
-    /// </summary>
-    public required DateTime HarvestedAt { get; set; }
-
-    /// <summary>
-    /// User id associated with the product.
-    /// </summary>
-    public required string UserId { get; set; }
-
-    [JsonIgnore]
-    public User? User { get; set; }
 }

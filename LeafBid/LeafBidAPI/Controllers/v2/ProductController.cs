@@ -1,4 +1,5 @@
 ﻿using LeafBidAPI.DTOs.Product;
+using LeafBidAPI.DTOs.RegisteredProduct;
 using LeafBidAPI.Exceptions;
 using LeafBidAPI.Interfaces;
 using LeafBidAPI.Models;
@@ -60,22 +61,64 @@ public class ProductController(IProductService productService) : ControllerBase
     }
 
     /// <summary>
+    /// Get a registered product by the product id and user id keys.
+    /// </summary>
+    /// <param name="id">The registered product ID.</param>
+    /// <returns>The requested registered product.</returns>
+    [HttpGet("/registered/{id:int}")]
+    [ProducesResponseType(typeof(RegisteredProductResponse), StatusCodes.Status200OK)]
+    public async Task<ActionResult<RegisteredProductResponse>> GetRegisteredProductById(int id)
+    {
+        RegisteredProduct registeredProduct =
+            await productService.GetRegisteredProductById(id);
+        RegisteredProductResponse registeredProductResponse =
+            productService.CreateRegisteredProductResponse(registeredProduct);
+        return Ok(registeredProductResponse);
+    }
+
+    /// <summary>
     /// Create a new product.
     /// </summary>
     /// <param name="productData">The product data.</param>
     /// <returns>The created product.</returns>
     [HttpPost]
-    [Authorize(Roles = "Provider")]
+    [Authorize(Roles = "Auctioneer")]
     [ProducesResponseType(typeof(ProductResponse), StatusCodes.Status201Created)]
     public async Task<ActionResult<ProductResponse>> CreateProduct([FromBody] CreateProductDto productData)
     {
         Product product = await productService.CreateProduct(productData);
-        ProductResponse created = productService.CreateProductResponse(product);
+        ProductResponse productResponse = productService.CreateProductResponse(product);
 
         return CreatedAtAction(
             actionName: nameof(GetProductById),
-            routeValues: new { id = created.Id, version = "2.0" },
-            value: created
+            routeValues: new
+            {
+                id = productResponse.Id,
+                version = "2.0"
+            },
+            value: productResponse
+        );
+    }
+
+    [HttpPost]
+    [Authorize(Roles = "Provider")]
+    [ProducesResponseType(typeof(RegisteredProductResponse), StatusCodes.Status201Created)]
+    public async Task<ActionResult<RegisteredProductResponse>> AddProduct(
+        [FromRoute] int productId,
+        [FromBody] CreateRegisteredProductDto registeredProductData)
+    {
+        RegisteredProduct registeredProduct = await productService.AddProduct(productId, registeredProductData);
+        RegisteredProductResponse registeredProductResponse =
+            productService.CreateRegisteredProductResponse(registeredProduct);
+
+        return CreatedAtAction(
+            actionName: nameof(GetRegisteredProductById),
+            routeValues: new
+            {
+                id = registeredProductResponse.Id,
+                version = "2.0"
+            },
+            value: registeredProductResponse
         );
     }
 

@@ -9,55 +9,56 @@ namespace LeafBidAPI.Data;
 public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : IdentityDbContext<User>(options)
 {
     public DbSet<Auction> Auctions { get; set; }
-    public DbSet<AuctionProducts> AuctionProducts { get; set; }
-    public DbSet<AuctionSales> AuctionSales { get; set; }
-    public DbSet<AuctionSalesProducts> AuctionSalesProducts { get; set; }
+    public DbSet<AuctionProduct> AuctionProducts { get; set; }
+    public DbSet<AuctionSale> AuctionSales { get; set; }
+    public DbSet<AuctionSaleProduct> AuctionSaleProducts { get; set; }
     public DbSet<Product> Products { get; set; }
+    public DbSet<RegisteredProduct> RegisteredProducts { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
         modelBuilder.BuildDecimalColumnTypeFromAnnotations();
 
-        // AuctionProducts (join table with payload)
-        modelBuilder.Entity<AuctionProducts>()
-            .HasKey(ap => new { ap.AuctionId, ap.ProductId });
+        // AuctionProduct (join table with payload)
+        modelBuilder.Entity<AuctionProduct>()
+            .HasKey(ap => new { ap.AuctionId, ap.RegisteredProductId });
 
-        modelBuilder.Entity<AuctionProducts>()
+        modelBuilder.Entity<AuctionProduct>()
             .HasOne(ap => ap.Auction)
-            .WithMany() // or .WithMany(a => a.AuctionProducts) if you add the collection
+            .WithMany() // or .WithMany(a => a.AuctionProduct) if you add the collection
             .HasForeignKey(ap => ap.AuctionId)
             .OnDelete(DeleteBehavior.Restrict);
 
-        modelBuilder.Entity<AuctionProducts>()
-            .HasOne(ap => ap.Product)
-            .WithMany() // or .WithMany(p => p.AuctionProducts)
-            .HasForeignKey(ap => ap.ProductId)
+        modelBuilder.Entity<AuctionProduct>()
+            .HasOne(ap => ap.RegisteredProduct)
+            .WithMany() // or .WithMany(p => p.AuctionProduct)
+            .HasForeignKey(ap => ap.RegisteredProductId)
             .OnDelete(DeleteBehavior.Restrict);
 
-        // AuctionSales -> Auction
-        modelBuilder.Entity<AuctionSales>()
+        // AuctionSale -> Auction
+        modelBuilder.Entity<AuctionSale>()
             .HasOne(s => s.Auction)
             .WithMany()
             .HasForeignKey(s => s.AuctionId)
             .OnDelete(DeleteBehavior.Restrict);
 
-        // AuctionSales -> User
-        modelBuilder.Entity<AuctionSales>()
+        // AuctionSale -> User
+        modelBuilder.Entity<AuctionSale>()
             .HasOne(s => s.User)
             .WithMany()
             .HasForeignKey(s => s.UserId)
             .OnDelete(DeleteBehavior.Restrict);
 
-        // AuctionSalesProducts -> AuctionSale
-        modelBuilder.Entity<AuctionSalesProducts>()
+        // AuctionSaleProduct -> AuctionSale
+        modelBuilder.Entity<AuctionSaleProduct>()
             .HasOne(sp => sp.AuctionSale)
             .WithMany()
             .HasForeignKey(sp => sp.AuctionSaleId)
             .OnDelete(DeleteBehavior.Restrict);
 
-        // AuctionSalesProducts -> Product
-        modelBuilder.Entity<AuctionSalesProducts>()
+        // AuctionSaleProduct -> Product
+        modelBuilder.Entity<AuctionSaleProduct>()
             .HasOne(sp => sp.Product)
             .WithMany()
             .HasForeignKey(sp => sp.ProductId)
@@ -69,5 +70,20 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
             .WithMany()
             .HasForeignKey(a => a.UserId)
             .OnDelete(DeleteBehavior.Restrict);
+        
+        // Registered Products -> User (provider)
+        modelBuilder.Entity<RegisteredProduct>()
+            .HasOne(rp => rp.User)
+            .WithMany()
+            .HasForeignKey(rp => rp.UserId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        // Registered Products -> Product
+        modelBuilder.Entity<RegisteredProduct>()
+            .HasOne(rp => rp.Product)
+            .WithMany()
+            .HasForeignKey(rp => rp.ProductId)
+            .OnDelete(DeleteBehavior.Restrict);
+
     }
 }

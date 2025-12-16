@@ -1,5 +1,6 @@
 using LeafBidAPI.Data;
 using LeafBidAPI.DTOs.Product;
+using LeafBidAPI.DTOs.RegisteredProduct;
 using LeafBidAPI.Exceptions;
 using LeafBidAPI.Interfaces;
 using LeafBidAPI.Models;
@@ -21,7 +22,7 @@ public class ProductService(ApplicationDbContext context) : IProductService
     public async Task<List<Product>> GetAvailableProducts()
     {
         List<Product> products = await context.Products
-            .Where(p => !context.AuctionProducts.Any(ap => ap.ProductId == p.Id))
+            .Where(p => !context.AuctionProducts.Any(ap => ap.RegisteredProduct != null && ap.RegisteredProduct.ProductId == p.Id))
             .ToListAsync();
 
         return products;
@@ -30,10 +31,19 @@ public class ProductService(ApplicationDbContext context) : IProductService
     public async Task<Product> GetProductById(int id)
     {
         Product? product = await context.Products
-            .Include(p => p.User)
             .FirstOrDefaultAsync(p => p.Id == id);
 
         return product ?? throw new NotFoundException("Product not found");
+    }
+    
+    public async Task<RegisteredProduct> GetRegisteredProductById(int id)
+    {
+        RegisteredProduct? registeredProduct = await context.RegisteredProducts
+            .FirstOrDefaultAsync(
+                p => p.Id == id
+            );
+
+        return registeredProduct ?? throw new NotFoundException("Registered product not found");
     }
     
     public async Task<Product> CreateProduct(CreateProductDto productData)
@@ -45,7 +55,7 @@ public class ProductService(ApplicationDbContext context) : IProductService
                 string uploadsDir = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads");
                 Directory.CreateDirectory(uploadsDir);
 
-                string? base64Data = productData.Picture.Contains(',')
+                string base64Data = productData.Picture.Contains(',')
                     ? productData.Picture[(productData.Picture.IndexOf(',') + 1)..]
                     : productData.Picture;
 
@@ -89,16 +99,8 @@ public class ProductService(ApplicationDbContext context) : IProductService
         {
             Name = productData.Name,
             Description = productData.Description,
-            MinPrice = productData.MinPrice,
-            Weight = productData.Weight,
             Picture = productData.Picture,
             Species = productData.Species,
-            Region = productData.Region,
-            PotSize = productData.PotSize,
-            StemLength = productData.StemLength,
-            Stock = productData.Stock,
-            HarvestedAt = productData.HarvestedAt,
-            UserId = productData.UserId
         };
 
         context.Products.Add(product);
@@ -106,7 +108,28 @@ public class ProductService(ApplicationDbContext context) : IProductService
 
         return product;
     }
-    
+
+    public async Task<RegisteredProduct> AddProduct(int productId, CreateRegisteredProductDto registeredProductData)
+    {
+        RegisteredProduct registeredProduct = new()
+        {
+            ProductId = productId,
+            UserId = registeredProductData.UserId,
+            MinPrice = registeredProductData.MinPrice,
+            MaxPrice = registeredProductData.MaxPrice,
+            Stock = registeredProductData.Stock,
+            Region = registeredProductData.Region,
+            HarvestedAt = registeredProductData.HarvestedAt,
+            PotSize = registeredProductData.PotSize,
+            StemLength = registeredProductData.StemLength
+        };
+
+        context.RegisteredProducts.Add(registeredProduct);
+        await context.SaveChangesAsync();
+
+        return registeredProduct;
+    }
+
     public async Task<Product> UpdateProduct(int id, UpdateProductDto updatedProduct)
     {
         Product? product = await context.Products.FirstOrDefaultAsync(p => p.Id == id);
@@ -115,26 +138,10 @@ public class ProductService(ApplicationDbContext context) : IProductService
             throw new NotFoundException("Product not found");
         }
 
-        product.Name = updatedProduct.Name;
-        product.Description = updatedProduct.Description;
-        product.MinPrice = updatedProduct.MinPrice;
-        product.Weight = updatedProduct.Weight;
-        product.Picture = updatedProduct.Picture;
-        product.Species = updatedProduct.Species;
-        product.Region = updatedProduct.Region;
-        product.Stock = updatedProduct.Stock;
-        product.HarvestedAt = updatedProduct.HarvestedAt;
-
-        if (updatedProduct.PotSize.HasValue)
-        {
-            product.PotSize = updatedProduct.PotSize;
-            product.StemLength = null;
-        }
-        else if (updatedProduct.StemLength.HasValue)
-        {
-            product.StemLength = updatedProduct.StemLength;
-            product.PotSize = null;
-        }
+        product.Name = updatedProduct.Name ?? product.Name;
+        product.Description = updatedProduct.Description ?? product.Description;
+        product.Picture = updatedProduct.Picture ?? product.Picture;
+        product.Species = updatedProduct.Species ?? product.Species;
 
         await context.SaveChangesAsync();
         return product;
@@ -160,19 +167,35 @@ public class ProductService(ApplicationDbContext context) : IProductService
             Id = product.Id,
             Name = product.Name,
             Description = product.Description,
-            MinPrice = product.MinPrice,
-            MaxPrice = product.MaxPrice,
-            Weight = product.Weight,
             Picture = product.Picture,
-            Species = product.Species,
-            Region = product.Region,
-            PotSize = product.PotSize,
-            StemLength = product.StemLength,
-            Stock = product.Stock,
-            HarvestedAt = product.HarvestedAt,
-            ProviderUserName = product.User?.UserName ?? string.Empty
+            Species = product.Species
         };
 
         return productResponse;
+    }
+
+    public RegisteredProductResponse CreateRegisteredProductResponse(RegisteredProduct registeredProduct)
+    {
+        if (registeredProduct.Product == null)
+        {
+            throw new NotFoundException("Product not found");
+        }
+
+        ProductResponse productResponse = CreateProductResponse(registeredProduct.Product);
+        RegisteredProductResponse registeredProductResponse = new()
+        {
+            Id = registeredProduct.Id,
+            Product = productResponse,
+            MinPrice = registeredProduct.MinPrice,
+            MaxPrice = registeredProduct.MaxPrice,
+            Stock = registeredProduct.Stock,
+            Region = registeredProduct.Region,
+            HarvestedAt = registeredProduct.HarvestedAt,
+            PotSize = registeredProduct.PotSize ?? null,
+            StemLength = registeredProduct.StemLength ?? null,
+            ProviderUserName = registeredProduct.User?.UserName ?? "Unknown"
+        };
+
+        return registeredProductResponse;
     }
 }

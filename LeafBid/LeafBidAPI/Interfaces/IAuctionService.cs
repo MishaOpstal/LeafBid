@@ -1,6 +1,5 @@
 using System.Security.Claims;
 using LeafBidAPI.DTOs.Auction;
-using LeafBidAPI.DTOs.Product;
 using LeafBidAPI.Exceptions;
 using LeafBidAPI.Models;
 
@@ -50,15 +49,15 @@ public interface IAuctionService
     /// <exception cref="NotFoundException">
     /// Thrown when no auction is found with the specified ID.
     /// </exception>
-    Task<Auction> UpdateAuction(int id, UpdateAuctionDto auctionSaleData);
+    Task<Auction> UpdateAuction(int id, UpdateAuctionDto updatedAuction);
 
     /// <summary>
-    /// Get all products for a given auction ID, ordered by serve order.
+    /// Get all registered products for a given auction ID, ordered by serve order.
     /// </summary>
     /// <param name="auctionId">The auction ID.</param>
-    /// <returns>A list of products belonging to the auction.</returns>
+    /// <returns>A list of registered products belonging to the auction.</returns>
     /// <exception cref="NotFoundException">
-    /// Thrown when no products are found for the specified auction.
+    /// Thrown when no registered products are found for the specified auction.
     /// </exception>
-    Task<List<Product>> GetProductsByAuctionId(int auctionId);
+    Task<List<RegisteredProduct>> GetRegisteredProductsByAuctionId(int auctionId);
 }

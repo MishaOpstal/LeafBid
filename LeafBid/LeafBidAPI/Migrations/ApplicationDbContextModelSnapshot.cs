@@ -50,12 +50,12 @@ namespace LeafBidAPI.Migrations
                     b.ToTable("Auctions");
                 });
 
-            modelBuilder.Entity("LeafBidAPI.Models.AuctionProducts", b =>
+            modelBuilder.Entity("LeafBidAPI.Models.AuctionProduct", b =>
                 {
                     b.Property<int>("AuctionId")
                         .HasColumnType("int");
 
-                    b.Property<int>("ProductId")
+                    b.Property<int>("RegisteredProductId")
                         .HasColumnType("int");
 
                     b.Property<int>("AuctionStock")
@@ -64,14 +64,14 @@ namespace LeafBidAPI.Migrations
                     b.Property<int>("ServeOrder")
                         .HasColumnType("int");
 
-                    b.HasKey("AuctionId", "ProductId");
+                    b.HasKey("AuctionId", "RegisteredProductId");
 
-                    b.HasIndex("ProductId");
+                    b.HasIndex("RegisteredProductId");
 
                     b.ToTable("AuctionProducts");
                 });
 
-            modelBuilder.Entity("LeafBidAPI.Models.AuctionSales", b =>
+            modelBuilder.Entity("LeafBidAPI.Models.AuctionSale", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -102,7 +102,7 @@ namespace LeafBidAPI.Migrations
                     b.ToTable("AuctionSales");
                 });
 
-            modelBuilder.Entity("LeafBidAPI.Models.AuctionSalesProducts", b =>
+            modelBuilder.Entity("LeafBidAPI.Models.AuctionSaleProduct", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -128,7 +128,48 @@ namespace LeafBidAPI.Migrations
 
                     b.HasIndex("ProductId");
 
-                    b.ToTable("AuctionSalesProducts");
+                    b.ToTable("AuctionSaleProducts");
+                });
+
+            modelBuilder.Entity("LeafBidAPI.Models.Company", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("City")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("CountryCode")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("HouseNumber")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("HouseNumberSuffix")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("PostalCode")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Street")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Company");
                 });
 
             modelBuilder.Entity("LeafBidAPI.Models.Product", b =>
@@ -143,6 +184,30 @@ namespace LeafBidAPI.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Picture")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Species")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Products");
+                });
+
+            modelBuilder.Entity("LeafBidAPI.Models.RegisteredProduct", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
                     b.Property<DateTime>("HarvestedAt")
                         .HasColumnType("datetime2");
 
@@ -152,21 +217,13 @@ namespace LeafBidAPI.Migrations
                     b.Property<decimal>("MinPrice")
                         .HasColumnType("decimal(10, 2)");
 
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Picture")
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<double?>("PotSize")
                         .HasColumnType("float");
 
-                    b.Property<string>("Region")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<int>("ProductId")
+                        .HasColumnType("int");
 
-                    b.Property<string>("Species")
+                    b.Property<string>("Region")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
@@ -180,14 +237,13 @@ namespace LeafBidAPI.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
-                    b.Property<double>("Weight")
-                        .HasColumnType("float");
-
                     b.HasKey("Id");
+
+                    b.HasIndex("ProductId");
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("Products");
+                    b.ToTable("RegisteredProducts");
                 });
 
             modelBuilder.Entity("LeafBidAPI.Models.User", b =>
@@ -196,6 +252,9 @@ namespace LeafBidAPI.Migrations
                         .HasColumnType("nvarchar(450)");
 
                     b.Property<int>("AccessFailedCount")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("CompanyId")
                         .HasColumnType("int");
 
                     b.Property<string>("ConcurrencyStamp")
@@ -246,6 +305,8 @@ namespace LeafBidAPI.Migrations
                         .HasColumnType("nvarchar(256)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("CompanyId");
 
                     b.HasIndex("NormalizedEmail")
                         .HasDatabaseName("EmailIndex");
@@ -402,7 +463,7 @@ namespace LeafBidAPI.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("LeafBidAPI.Models.AuctionProducts", b =>
+            modelBuilder.Entity("LeafBidAPI.Models.AuctionProduct", b =>
                 {
                     b.HasOne("LeafBidAPI.Models.Auction", "Auction")
                         .WithMany()
@@ -410,18 +471,18 @@ namespace LeafBidAPI.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.HasOne("LeafBidAPI.Models.Product", "Product")
+                    b.HasOne("LeafBidAPI.Models.RegisteredProduct", "RegisteredProduct")
                         .WithMany()
-                        .HasForeignKey("ProductId")
+                        .HasForeignKey("RegisteredProductId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("Auction");
 
-                    b.Navigation("Product");
+                    b.Navigation("RegisteredProduct");
                 });
 
-            modelBuilder.Entity("LeafBidAPI.Models.AuctionSales", b =>
+            modelBuilder.Entity("LeafBidAPI.Models.AuctionSale", b =>
                 {
                     b.HasOne("LeafBidAPI.Models.Auction", "Auction")
                         .WithMany()
@@ -440,9 +501,9 @@ namespace LeafBidAPI.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("LeafBidAPI.Models.AuctionSalesProducts", b =>
+            modelBuilder.Entity("LeafBidAPI.Models.AuctionSaleProduct", b =>
                 {
-                    b.HasOne("LeafBidAPI.Models.AuctionSales", "AuctionSale")
+                    b.HasOne("LeafBidAPI.Models.AuctionSale", "AuctionSale")
                         .WithMany()
                         .HasForeignKey("AuctionSaleId")
                         .OnDelete(DeleteBehavior.Restrict)
@@ -459,15 +520,32 @@ namespace LeafBidAPI.Migrations
                     b.Navigation("Product");
                 });
 
-            modelBuilder.Entity("LeafBidAPI.Models.Product", b =>
+            modelBuilder.Entity("LeafBidAPI.Models.RegisteredProduct", b =>
                 {
+                    b.HasOne("LeafBidAPI.Models.Product", "Product")
+                        .WithMany()
+                        .HasForeignKey("ProductId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
                     b.HasOne("LeafBidAPI.Models.User", "User")
                         .WithMany()
                         .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
+                    b.Navigation("Product");
+
                     b.Navigation("User");
+                });
+
+            modelBuilder.Entity("LeafBidAPI.Models.User", b =>
+                {
+                    b.HasOne("LeafBidAPI.Models.Company", "Company")
+                        .WithMany()
+                        .HasForeignKey("CompanyId");
+
+                    b.Navigation("Company");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>

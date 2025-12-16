@@ -1,5 +1,6 @@
 using LeafBidAPI.DTOs.Auction;
 using LeafBidAPI.DTOs.Product;
+using LeafBidAPI.DTOs.RegisteredProduct;
 using LeafBidAPI.Exceptions;
 using LeafBidAPI.Interfaces;
 using LeafBidAPI.Models;
@@ -94,23 +95,23 @@ public class AuctionController(IAuctionService auctionService, IProductService p
     }
 
     /// <summary>
-    /// Get products by auction ID.
+    /// Get registered products by auction ID.
     /// </summary>
     /// <param name="auctionId">The auction ID.</param>
-    /// <returns>A list of products belonging to the auction.</returns>
+    /// <returns>A list of registered products belonging to the auction.</returns>
     [HttpGet("products/{auctionId:int}")]
     [ProducesResponseType(typeof(List<ProductResponse>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<ActionResult<List<ProductResponse>>> GetProductsByAuctionId(int auctionId)
+    public async Task<ActionResult<List<ProductResponse>>> GetRegisteredProductsByAuctionId(int auctionId)
     {
         try
         {
-            List<Product> products = await auctionService.GetProductsByAuctionId(auctionId);
-            List<ProductResponse> productResponses = products
-                .Select(productService.CreateProductResponse)
+            List<RegisteredProduct> registeredProducts = await auctionService.GetRegisteredProductsByAuctionId(auctionId);
+            List<RegisteredProductResponse> registeredProductResponses = registeredProducts
+                .Select(productService.CreateRegisteredProductResponse)
                 .ToList();
 
-            return Ok(productResponses);
+            return Ok(registeredProductResponses);
         }
         catch (NotFoundException e)
         {

@@ -20,10 +20,10 @@ public class AuctionSaleProductController(IAuctionSaleProductService auctionSale
     /// </summary>
     /// <returns>A list of all auction sale products.</returns>
     [HttpGet]
-    [ProducesResponseType(typeof(List<AuctionSalesProducts>), StatusCodes.Status200OK)]
-    public async Task<ActionResult<List<AuctionSalesProducts>>> GetAuctionSaleProducts()
+    [ProducesResponseType(typeof(List<AuctionSaleProduct>), StatusCodes.Status200OK)]
+    public async Task<ActionResult<List<AuctionSaleProduct>>> GetAuctionSaleProducts()
     {
-        List<AuctionSalesProducts> items = await auctionSaleProductService.GetAuctionSaleProducts();
+        List<AuctionSaleProduct> items = await auctionSaleProductService.GetAuctionSaleProducts();
         return Ok(items);
     }
 
@@ -33,13 +33,13 @@ public class AuctionSaleProductController(IAuctionSaleProductService auctionSale
     /// <param name="id">The auction sale product ID.</param>
     /// <returns>The requested auction sale product.</returns>
     [HttpGet("{id:int}")]
-    [ProducesResponseType(typeof(AuctionSalesProducts), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(AuctionSaleProduct), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<ActionResult<AuctionSalesProducts>> GetAuctionSaleProduct(int id)
+    public async Task<ActionResult<AuctionSaleProduct>> GetAuctionSaleProduct(int id)
     {
         try
         {
-            AuctionSalesProducts item = await auctionSaleProductService.GetAuctionSaleProductById(id);
+            AuctionSaleProduct item = await auctionSaleProductService.GetAuctionSaleProductById(id);
             return Ok(item);
         }
         catch (NotFoundException e)
@@ -55,11 +55,11 @@ public class AuctionSaleProductController(IAuctionSaleProductService auctionSale
     /// <returns>The created auction sale product.</returns>
     [HttpPost]
     [Authorize(Roles = "Provider")]
-    [ProducesResponseType(typeof(AuctionSalesProducts), StatusCodes.Status201Created)]
-    public async Task<ActionResult<AuctionSalesProducts>> CreateAuctionSaleProducts(
+    [ProducesResponseType(typeof(AuctionSaleProduct), StatusCodes.Status201Created)]
+    public async Task<ActionResult<AuctionSaleProduct>> CreateAuctionSaleProducts(
         [FromBody] CreateAuctionSaleProductDto auctionSaleProductData)
     {
-        AuctionSalesProducts created = await auctionSaleProductService.CreateAuctionSaleProduct(auctionSaleProductData);
+        AuctionSaleProduct created = await auctionSaleProductService.CreateAuctionSaleProduct(auctionSaleProductData);
 
         return CreatedAtAction(
             actionName: nameof(GetAuctionSaleProduct),
@@ -76,12 +76,12 @@ public class AuctionSaleProductController(IAuctionSaleProductService auctionSale
     /// <returns>The updated auction sale product.</returns>
     [HttpPut("{id:int}")]
     [Authorize(Roles = "Provider")]
-    [ProducesResponseType(typeof(AuctionSalesProducts), StatusCodes.Status200OK)]
-    public async Task<ActionResult<AuctionSalesProducts>> UpdateAuctionSaleProducts(
+    [ProducesResponseType(typeof(AuctionSaleProduct), StatusCodes.Status200OK)]
+    public async Task<ActionResult<AuctionSaleProduct>> UpdateAuctionSaleProducts(
         int id,
         [FromBody] UpdateAuctionSaleProductDto updatedAuctionSaleProduct)
     {
-        AuctionSalesProducts updated =
+        AuctionSaleProduct updated =
             await auctionSaleProductService.UpdateAuctionSaleProduct(id, updatedAuctionSaleProduct);
 
         return Ok(updated);

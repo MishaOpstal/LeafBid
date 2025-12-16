@@ -9,15 +9,15 @@ namespace LeafBidAPI.Services;
 
 public class AuctionSaleProductService(ApplicationDbContext context) : IAuctionSaleProductService
 {
-    public async Task<List<AuctionSalesProducts>> GetAuctionSaleProducts()
+    public async Task<List<AuctionSaleProduct>> GetAuctionSaleProducts()
     {
-        return await context.AuctionSalesProducts.ToListAsync();
+        return await context.AuctionSaleProducts.ToListAsync();
     }
 
-    public async Task<AuctionSalesProducts> GetAuctionSaleProductById(int id)
+    public async Task<AuctionSaleProduct> GetAuctionSaleProductById(int id)
     {
-        AuctionSalesProducts? auctionSaleProduct =
-            await context.AuctionSalesProducts.FirstOrDefaultAsync(asp => asp.Id == id);
+        AuctionSaleProduct? auctionSaleProduct =
+            await context.AuctionSaleProducts.FirstOrDefaultAsync(asp => asp.Id == id);
 
         if (auctionSaleProduct == null)
         {
@@ -27,10 +27,10 @@ public class AuctionSaleProductService(ApplicationDbContext context) : IAuctionS
         return auctionSaleProduct;
     }
     
-    public async Task<AuctionSalesProducts> CreateAuctionSaleProduct(
+    public async Task<AuctionSaleProduct> CreateAuctionSaleProduct(
         CreateAuctionSaleProductDto auctionSaleProductData)
     {
-        AuctionSalesProducts auctionSaleProduct = new()
+        AuctionSaleProduct auctionSaleProduct = new()
         {
             AuctionSaleId = auctionSaleProductData.AuctionSaleId,
             ProductId = auctionSaleProductData.ProductId,
@@ -38,18 +38,18 @@ public class AuctionSaleProductService(ApplicationDbContext context) : IAuctionS
             Price = auctionSaleProductData.Price
         };
 
-        context.AuctionSalesProducts.Add(auctionSaleProduct);
+        context.AuctionSaleProducts.Add(auctionSaleProduct);
         await context.SaveChangesAsync();
 
         return auctionSaleProduct;
     }
     
-    public async Task<AuctionSalesProducts> UpdateAuctionSaleProduct(
+    public async Task<AuctionSaleProduct> UpdateAuctionSaleProduct(
         int id,
         UpdateAuctionSaleProductDto auctionSaleProductData)
     {
-        AuctionSalesProducts? auctionSaleProducts =
-            await context.AuctionSalesProducts.FirstOrDefaultAsync(asp => asp.Id == id);
+        AuctionSaleProduct? auctionSaleProducts =
+            await context.AuctionSaleProducts.FirstOrDefaultAsync(asp => asp.Id == id);
 
         if (auctionSaleProducts == null)
         {
