@@ -19,7 +19,7 @@ const TextAreaInput: React.FC<TextAreaInputProps> = ({
                                                          onChange,
                                                      }) => {
     return (
-        <Form.Label>
+        <Form.Label className="mb-3">
             {label}
             <Form.Control
                 as="textarea"

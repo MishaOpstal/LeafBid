@@ -11,3 +11,7 @@
     object-fit: cover;
     border-radius: 9px 0 0 9px;
 }
+
+.omschrijving{
+    color: var(--muted-text);
+}

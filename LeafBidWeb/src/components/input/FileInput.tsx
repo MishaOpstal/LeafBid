@@ -9,7 +9,7 @@ interface FileInputProps {
 
 const FileInput: React.FC<FileInputProps> = ({ label, name, onChange }) => {
     return (
-        <Form.Label>
+        <Form.Label className="mb-3">
             {label}
             <Form.Control
                 type="file"

@@ -37,13 +37,17 @@ body {
     flex-direction: column;
     height: 100dvh;
 }
-
 * {
     box-sizing: border-box;
     font-family: Helvetica, sans-serifn, serif;
     padding: 0;
     margin: 0;
     font-size: 20px;
+}
+@media (max-width: 768px) {
+    * {
+        font-size: 16px;
+    }
 }
 
 a {
@@ -96,7 +100,7 @@ header nav{
     flex: 1;
     display: flex;
     justify-content: space-between;
-    flex-direction: row-reverse;
+    /*flex-direction: row-reverse;*/
 }
 
 @media (prefers-color-scheme: dark) {
@@ -122,9 +126,17 @@ label{
 }
 .form-control[type="file"]::file-selector-button {
     background-color: var(--primary);
-    color: white;
+    color: var(--background);
 }
 .form-control[type="file"]:hover::file-selector-button {
     background-color: var(--primary-hover) !important;
-    color: white;
+    color: var(--text) !important;
+}
+
+.btn.active {
+    background-color: var(--primary-hover) !important;
+}
+
+.btn-check:checked + .btn, .btn.active, .btn.show, .btn:first-child:active, :not(.btn-check) + .btn:active {
+    background-color: var(--primary-hover) !important;
 }

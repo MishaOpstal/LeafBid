@@ -17,6 +17,7 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({ onDelete, onUpdate }) => 
     return (
         <div className="d-flex gap-2">
             <Button
+                aria-label="verwijder veiling"
                 className={styles.transparentButton}
                 variant="light"
                 size="sm"
@@ -25,6 +26,7 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({ onDelete, onUpdate }) => 
                 <Trash style={{ color: "var(--primary-background)" }} />
             </Button>
             <Button
+                aria-label="wijzig veiling"
                 className={styles.transparentButton}
                 variant="light"
                 size="sm"

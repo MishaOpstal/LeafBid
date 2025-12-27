@@ -1,11 +1,34 @@
 .card {
-    border-radius: 12px;
-    border: 1px solid var(--primary-background);
+    border-radius: 10px;
+    border: 1px solid var(--primary);
+    background-color: var(--background);
+    color: var(--text);
+}
+
+.image {
+    border-radius: 9px 0 0 9px;
+    object-fit: cover;
 }
 
 
+/* Mobile */
+@media (max-width: 768px) {
+    .image {
+        width: 100%;
+        height: 200px;
+        border-radius: 9px 9px 0 0;
+    }
+}
 
-
+/* Desktop */
+@media (min-width: 768px) {
+    .image {
+        width: 25%;
+        max-width: 250px; /* optional cap */
+        height: auto;
+        border-radius: 9px 0 0 9px;
+    }
+}
 
 
 /*.panel {*/

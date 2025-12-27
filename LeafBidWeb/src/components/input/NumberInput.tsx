@@ -1,5 +1,5 @@
 import React from "react";
-import { Form } from "react-bootstrap";
+import { Form, InputGroup } from "react-bootstrap";
 
 interface NumberInputProps {
     label: string;
@@ -8,21 +8,53 @@ interface NumberInputProps {
     value?: number | string;
     step?: number | "any";
     onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
+
+    // NEW:
+    prefix?: string;
+    postfix?: string;
 }
 
-const NumberInput: React.FC<NumberInputProps> = ({ label, name, placeholder, value, step = 1, onChange }) => {
+const NumberInput: React.FC<NumberInputProps> = ({
+                                                     label,
+                                                     name,
+                                                     placeholder,
+                                                     value,
+                                                     step = 1,
+                                                     onChange,
+                                                     prefix,
+                                                     postfix
+                                                 }) => {
+    const control = (
+        <Form.Control
+            type="number"
+            name={name}
+            placeholder={placeholder}
+            step={step}
+            value={value}
+            onChange={onChange}
+        />
+    );
+
     return (
-        <Form.Label>
-            {label}
-            <Form.Control
-                type="number"
-                name={name}
-                placeholder={placeholder}
-                step={step}
-                value={value}
-                onChange={onChange}
-            />
-        </Form.Label>
+        <Form.Group className="mb-3">
+            <Form.Label>{label}</Form.Label>
+
+            {prefix || postfix ? (
+                <InputGroup>
+                    {prefix && (
+                        <InputGroup.Text id={`${name}-prefix`}>{prefix}</InputGroup.Text>
+                    )}
+
+                    {control}
+
+                    {postfix && (
+                        <InputGroup.Text id={`${name}-postfix`}>{postfix}</InputGroup.Text>
+                    )}
+                </InputGroup>
+            ) : (
+                control
+            )}
+        </Form.Group>
     );
 };
 

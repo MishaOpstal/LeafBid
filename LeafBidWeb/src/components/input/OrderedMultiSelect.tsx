@@ -2,7 +2,7 @@ import React, { useMemo, useState, useEffect } from "react";
 import { ListGroup, Form, Badge, Button, Spinner } from "react-bootstrap";
 import SearchBar from "./SearchBar";
 import SelectedBadgeList from "./SelectedBadgeList";
-import { Product } from "@/types/Product";
+import { Product } from "@/types/Product/Product";
 import s from "./OrderedMultiSelect.module.css";
 
 interface OrderedMultiSelectProps {

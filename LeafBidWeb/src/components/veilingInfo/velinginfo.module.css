@@ -1,7 +1,7 @@
 ﻿.help{}
 
 .wrapper{
-    Background-color: background;
+    background-color: var(--background);
     border: 1px solid #5C983B;
     border-radius: 10px;
     gap: 10px;
@@ -21,6 +21,7 @@
 }
 
 .tekstContainer {
+    color: var(--muted-text);
     display: flex;
     flex-direction: column;
     gap: 6px;

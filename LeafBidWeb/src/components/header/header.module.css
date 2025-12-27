@@ -9,3 +9,17 @@
     width: auto;
     aspect-ratio: 1;
 }
+
+.clickables {
+    flex-direction: row;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 20px;
+    display: flex;
+    flex: 1;
+}
+
+.themeToggle {
+    color: var(--text);
+    font-size: 1.5rem;
+}

@@ -1,6 +1,6 @@
 import React from "react";
 import { Badge } from "react-bootstrap";
-import { Product } from "@/types/Product";
+import { Product } from "@/types/Product/Product";
 import s from "./SelectedBadgeList.module.css";
 
 interface SelectedBadgeListProps {

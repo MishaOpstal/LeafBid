@@ -3,26 +3,36 @@
 import React from 'react';
 import { Card, Row, Col, Image, Button } from 'react-bootstrap';
 import Placeholder from "react-bootstrap/Placeholder";
+import {parsePrice} from "@/types/Product/Product";
+import s from "./dashboardPanel.module.css";
 
 type DashboardPanelProps = {
     title?: string;
     kloklocatie?: string;
     imageSrc?: string;
     resterendeTijd?: string;
-    huidigePrijs?: string;
+    huidigePrijs?: number;
     aankomendProductNaam?: string;
-    aankomendProductStartprijs?: string;
+    aankomendProductStartprijs?: number;
     loading?: boolean;
     compact?: boolean;
     children?: React.ReactNode;
 };
+
+const enum Kloklocaties {
+    Naaldwijk,   // = 0
+    Aalsmeer,    // = 1
+    Rijnsburg,   // = 2
+    Eelde        // = 3
+}
+
 
 
 const DashboardPanel: React.FC<DashboardPanelProps> = ({title, kloklocatie, imageSrc, resterendeTijd, huidigePrijs, aankomendProductNaam, aankomendProductStartprijs, children, loading = false, compact = false,}) => {
 // compacte kaart
     if (compact) {
         return (
-            <Card className="d-flex flex-row"  style={{ borderColor: "var(--primary-background)" }}>
+            <Card className={`d-flex flex-row ${s.card}`}>
                 {/* Image on the left, small width */}
                 <Card.Img
                     alt={`Foto van ${title}`}
@@ -34,34 +44,51 @@ const DashboardPanel: React.FC<DashboardPanelProps> = ({title, kloklocatie, imag
                 <Card.Body className="d-flex justify-content-between align-items-center py-2">
                     {/* Left side: title + time inline */}
                     <div className="d-flex align-items-center gap-2">
-                        <Card.Title className="mb-0">{kloklocatie}</Card.Title>
-                        <small className="text-muted">{resterendeTijd}</small>
+                        {loading ? (
+                            <>
+                                {/*loading compact card*/}
+                                <Placeholder as={Card.Title} animation="glow">
+                                    <Placeholder xs={4} />
+                                </Placeholder>
+                                <Placeholder as="small" animation="glow">
+                                    <Placeholder xs={3} />
+                                </Placeholder>
+                            </>
+                        ) : (
+                            // standard compact card
+                            <>
+                                <Card.Title className="mb-0">{kloklocatie}</Card.Title>
+                                <small className="text-muted">{resterendeTijd}</small>
+                            </>
+                        )}
                     </div>
 
                     {/* Right side: children */}
                     <div className="d-flex gap-2">
-                        {children}
+                        {loading ? (
+                            <Placeholder.Button variant="secondary" xs={2} />
+                        ) : (
+                            children
+                        )}
                     </div>
                 </Card.Body>
-
-
             </Card>
         );
     }
 
 // Standaard kaart
     return (
-        <Card className="d-flex flex-row"  style={{ borderColor: "var(--primary-background)" }}>
+        <Card className={`d-flex flex-column flex-md-row ${s.card}`}>
             <Card.Img
                 alt={`Foto van ${title}`}
-                className="w-25 rounded"
+                className={`${s.image}`}
                 variant="left"
-                src={imageSrc || "/images/PIPIPOTATO.png"}
+                src={imageSrc || "/images/grey.png"}
             />
             <Card.Body className="w-100">
-                <div className="d-flex gap-3">
+                <div className="d-flex flex-column flex-md-row gap-3">
                     {/* First block */}
-                    <div className="flex-fill w-75">
+                    <div className="flex-fill w-100 w-md-75">
                         {loading ? (
                             <>
                                 <Placeholder as={Card.Title} animation="glow">
@@ -73,19 +100,19 @@ const DashboardPanel: React.FC<DashboardPanelProps> = ({title, kloklocatie, imag
                             </>
                         ) : (
                             <>
-                                <Card.Title>{kloklocatie}</Card.Title>
+                                <Card.Title>Kloklocatie: {kloklocatie}</Card.Title>
                                 <Card.Text>
                                     <span>Huidig product: {title}</span><br />
                                     <span>Resterende tijd: {resterendeTijd}</span><br />
-                                    <span>Huidige prijs: {huidigePrijs}</span>
+                                    <span>Huidige prijs: {parsePrice(huidigePrijs ?? 0)}</span>
                                 </Card.Text>
 
                             </>
                         )}
                     </div>
 
-                {/*laadt kaart*/}
-                    <div className="flex-fill w-25">
+                {/*loading card*/}
+                    <div className="flex-fill w-100 w-md-25">
                         {loading ? (
                             <>
                                 <Placeholder as={Card.Title} animation="glow">
@@ -100,7 +127,7 @@ const DashboardPanel: React.FC<DashboardPanelProps> = ({title, kloklocatie, imag
                                 <Card.Title>Aankomende producten</Card.Title>
                                 <Card.Text>
                                     <span className="mb-0 d-block">{aankomendProductNaam}</span>
-                                    <span className="mb-0 d-block" style={{ fontSize: "0.7rem" }}>Startprijs: {aankomendProductStartprijs}</span>
+                                    <span className="mb-0 d-block" style={{ fontSize: "0.7rem" }}>Startprijs: {parsePrice(aankomendProductStartprijs ?? 0)}</span>
                                 </Card.Text>
                             </>
                         )}
