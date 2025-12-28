@@ -7,14 +7,17 @@ public class SeedRegisteredProducts
 {
     public static async Task seedRegisteredProductsAsync(ApplicationDbContext context, CancellationToken cancellationToken)
     {
-        if (await context.RegisteredProducts.AnyAsync(cancellationToken))
-            return; 
-        
         context.RegisteredProducts.AddRange(
             new RegisteredProduct
             {
-                UserId = await context.Users.Where(u => u.UserName == "Provider").Select(u => u.Id).FirstAsync(cancellationToken: cancellationToken),
-                ProductId = await context.Products.Where(p => p.Name == "TestProduct1").Select(p => p.Id).FirstAsync(cancellationToken: cancellationToken),
+                UserId = await context.Users
+                    .Where(u => u.UserName == "Provider")
+                    .Select(u => u.Id)
+                    .FirstAsync(cancellationToken: cancellationToken),
+                ProductId = await context.Products
+                    .Where(p => p.Name == "TestProduct1")
+                    .Select(p => p.Id)
+                    .FirstAsync(cancellationToken: cancellationToken),
                 MinPrice = 2.50m,
                 MaxPrice = 3.50m,
                 Region = "Netherlands",
@@ -24,8 +27,14 @@ public class SeedRegisteredProducts
             },
             new RegisteredProduct
             {
-                UserId = await context.Users.Where(u => u.UserName == "Provider").Select(u => u.Id).FirstAsync(cancellationToken: cancellationToken),
-                ProductId = await context.Products.Where(p => p.Name == "TestProduct2").Select(p => p.Id).FirstAsync(cancellationToken: cancellationToken),
+                UserId = await context.Users
+                    .Where(u => u.UserName == "Provider")
+                    .Select(u => u.Id)
+                    .FirstAsync(cancellationToken: cancellationToken),
+                ProductId = await context.Products
+                    .Where(p => p.Name == "TestProduct2")
+                    .Select(p => p.Id)
+                    .FirstAsync(cancellationToken: cancellationToken),
                 MinPrice = 1.50m,
                 MaxPrice = 2.50m,
                 Region = "Netherlands",
@@ -35,8 +44,14 @@ public class SeedRegisteredProducts
             },
             new RegisteredProduct
             {
-                UserId = await context.Users.Where(u => u.UserName == "Provider").Select(u => u.Id).FirstAsync(cancellationToken: cancellationToken),
-                ProductId = await context.Products.Where(p => p.Name == "TestProduct3").Select(p => p.Id).FirstAsync(cancellationToken: cancellationToken),
+                UserId = await context.Users
+                    .Where(u => u.UserName == "Provider")
+                    .Select(u => u.Id)
+                    .FirstAsync(cancellationToken: cancellationToken),
+                ProductId = await context.Products
+                    .Where(p => p.Name == "TestProduct3")
+                    .Select(p => p.Id)
+                    .FirstAsync(cancellationToken: cancellationToken),
                 MinPrice = 10.00m,
                 MaxPrice = 12.00m,
                 Region = "Thailand",
@@ -46,8 +61,14 @@ public class SeedRegisteredProducts
             },
             new RegisteredProduct
             {
-                UserId = await context.Users.Where(u => u.UserName == "Provider").Select(u => u.Id).FirstAsync(cancellationToken: cancellationToken),
-                ProductId = await context.Products.Where(p => p.Name == "TestProduct4").Select(p => p.Id).FirstAsync(cancellationToken: cancellationToken),
+                UserId = await context.Users
+                    .Where(u => u.UserName == "Provider")
+                    .Select(u => u.Id)
+                    .FirstAsync(cancellationToken: cancellationToken),
+                ProductId = await context.Products
+                    .Where(p => p.Name == "TestProduct4")
+                    .Select(p => p.Id)
+                    .FirstAsync(cancellationToken: cancellationToken),
                 MinPrice = 2.50m,
                 MaxPrice = 3.00m,
                 Region = "Spain",
@@ -56,5 +77,7 @@ public class SeedRegisteredProducts
                 Stock = 80
             }
         );
+        if (await context.RegisteredProducts.AnyAsync(cancellationToken))
+            return;
     }
 }
