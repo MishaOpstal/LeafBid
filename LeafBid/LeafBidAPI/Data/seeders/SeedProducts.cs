@@ -13,16 +13,30 @@ public class SeedProducts
         context.Products.AddRange(
             new Product
             {
-                Name = "Rose",
+                Name = "TestProduct1",
                 Description = "Classic red rose",
                 Species = "Rosa chinensis",
                 Picture = null
             },
             new Product
             {
-                Name = "Tulip",
+                Name = "TestProduct2",
                 Description = "Yellow spring tulip",
                 Species = "Tulipa gesneriana",
+                Picture = null
+            },
+            new Product
+            {
+                Name = "TestProduct3",
+                Description = "Purple lily",
+                Species = "Lilium pratense",
+                Picture = null
+            },
+            new Product
+            {
+                Name = "TestProduct4",
+                Description = "White lily",
+                Species = "Lilium occidentale",
                 Picture = null
             }
         );

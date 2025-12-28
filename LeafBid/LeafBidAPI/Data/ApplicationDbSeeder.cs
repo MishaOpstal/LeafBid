@@ -24,5 +24,8 @@ public class ApplicationDbSeeder
         
         // seed products
         await SeedProducts.SeedProductsAsync(context, CancellationToken.None);
+        
+        //seed registered products
+        await SeedRegisteredProducts.seedRegisteredProductsAsync(context, CancellationToken.None);
     }
 }
