@@ -30,5 +30,11 @@ public class ApplicationDbSeeder
         
         // seed auctions
         await SeedAuctions.SeedAuctionsAsync(context, CancellationToken.None);
+        
+        // seed auction sales
+        await SeedAuctionSales.SeedAuctionSalesAsync(context, CancellationToken.None);
+        
+        // seed auction sale products
+        await SeedAuctionSaleProducts.SeedAuctionSaleProductsAsync(context, CancellationToken.None);
     }
 }
