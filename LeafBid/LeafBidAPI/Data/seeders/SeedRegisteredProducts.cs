@@ -7,6 +7,10 @@ public class SeedRegisteredProducts
 {
     public static async Task seedRegisteredProductsAsync(ApplicationDbContext context, CancellationToken cancellationToken)
     {
+        
+        if (await context.RegisteredProducts.AnyAsync(cancellationToken))
+            return;
+        
         context.RegisteredProducts.AddRange(
             new RegisteredProduct
             {
@@ -77,7 +81,5 @@ public class SeedRegisteredProducts
                 Stock = 80
             }
         );
-        if (await context.RegisteredProducts.AnyAsync(cancellationToken))
-            return;
     }
 }

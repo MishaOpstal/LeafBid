@@ -19,6 +19,9 @@ public class ApplicationDbSeeder
             .GetRequiredService<UserManager<User>>();
 
         
+        // seed copmpanies
+        await SeedCompanies.SeedCompaniesAsync(context, CancellationToken.None);
+        
         // seed users
         await SeedUsers.SeedUsersWithRolesAsync(userManager);
         

@@ -24,10 +24,43 @@ public class SeedUsers
 
         await SeedUserAsync(
             userManager,
-            email: "Buyer@Leafbid.com",
-            userName: "Buyer",
+            email: "Buyer1@Leafbid.com",
+            userName: "Buyer1",
             password: "Buyer123!?",
-            role: "Buyer");
+            role: "Buyer",
+            companyId: 1);
+        
+        await SeedUserAsync(
+            userManager,
+            email: "Buyer2@Leafbid.com",
+            userName: "Buyer2",
+            password: "Buyer123!?",
+            role: "Buyer",
+            companyId: 2);
+        
+        await SeedUserAsync(
+            userManager,
+            email: "Buyer3@Leafbid.com",
+            userName: "Buyer3",
+            password: "Buyer123!?",
+            role: "Buyer",
+            companyId: 3);
+        
+        await SeedUserAsync(
+            userManager,
+            email: "Buyer4@Leafbid.com",
+            userName: "Buyer4",
+            password: "Buyer123!?",
+            role: "Buyer",
+            companyId: 1);
+        
+        await SeedUserAsync(
+            userManager,
+            email: "Buyer5@Leafbid.com",
+            userName: "Buyer5",
+            password: "Buyer123!?",
+            role: "Buyer",
+            companyId: 1);
 
         await SeedUserAsync(
             userManager,
@@ -42,7 +75,8 @@ public class SeedUsers
         string email,
         string userName,
         string password,
-        string role)
+        string role,
+        int?  companyId = null)
     {
         if (await userManager.FindByEmailAsync(email) != null)
             return;
@@ -51,7 +85,8 @@ public class SeedUsers
         {
             UserName = userName,
             Email = email,
-            EmailConfirmed = true
+            EmailConfirmed = true,
+            CompanyId = companyId
         };
 
         var result = await userManager.CreateAsync(user, password);
