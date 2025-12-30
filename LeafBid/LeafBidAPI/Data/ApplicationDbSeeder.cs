@@ -4,9 +4,9 @@ using Microsoft.AspNetCore.Identity;
 
 namespace LeafBidAPI.Data;
 
-public class ApplicationDbSeeder
+public abstract class ApplicationDbSeeder
 {
-    public static Task SeedAsync(IServiceProvider services)
+    public static async Task SeedAsync(IServiceProvider services)
     {
         using var scope = services.CreateScope();
 
@@ -19,30 +19,28 @@ public class ApplicationDbSeeder
             .GetRequiredService<UserManager<User>>();
 
         
-        // seed copmpanies
-        SeedCompanies.SeedCompaniesAsync(context, CancellationToken.None);
+        // seed companies
+         await SeedCompanies.SeedCompaniesAsync(context, CancellationToken.None);
         
         // seed users
-        SeedUsers.SeedUsersWithRolesAsync(userManager);
+        await SeedUsers.SeedUsersWithRolesAsync(userManager);
         
         // seed products
-        SeedProducts.SeedProductsAsync(context, CancellationToken.None);
+        await SeedProducts.SeedProductsAsync(context, CancellationToken.None);
         
         //seed registered products
-        SeedRegisteredProducts.SeedRegisteredProductsAsync(context, CancellationToken.None);
+        await SeedRegisteredProducts.SeedRegisteredProductsAsync(context, CancellationToken.None);
         
         // seed auctions
-        SeedAuctions.SeedAuctionsAsync(context, CancellationToken.None);
+        await SeedAuctions.SeedAuctionsAsync(context, CancellationToken.None);
         
         // seed auction products
-        SeedAuctionProducts.SeedAuctionProductsAsync(context, CancellationToken.None);
+        await SeedAuctionProducts.SeedAuctionProductsAsync(context, CancellationToken.None);
         
         // seed auction sales
-        SeedAuctionSales.SeedAuctionSalesAsync(context, CancellationToken.None);
+        await SeedAuctionSales.SeedAuctionSalesAsync(context, CancellationToken.None);
         
         // seed auction sale products
-        SeedAuctionSaleProducts.SeedAuctionSaleProductsAsync(context, CancellationToken.None);
-        
-        return Task.CompletedTask;
+        await SeedAuctionSaleProducts.SeedAuctionSaleProductsAsync(context, CancellationToken.None);
     }
 }
