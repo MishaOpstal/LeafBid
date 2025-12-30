@@ -8,39 +8,43 @@ public class SeedAuctionSales
 {
     public static async Task SeedAuctionSalesAsync(ApplicationDbContext context, CancellationToken cancellationToken)
     {
-        if (await context.Products.AnyAsync(cancellationToken))
-            return;
-
         string auctioneerId = await context.Users
             .Where(u => u.UserName == "Auctioneer")
             .Select(u => u.Id)
             .FirstAsync(cancellationToken: cancellationToken);
-        
-        context.AuctionSales.AddRange(
-            new AuctionSale
-            {
-                AuctionId = await context.Auctions
-                    .Where(a => a.ClockLocationEnum == ClockLocationEnum.Aalsmeer && a.UserId == auctioneerId)
-                    .Select(a => a.Id)
-                    .FirstAsync(cancellationToken: cancellationToken),
-                UserId = await context.Users
-                    .Where(u => u.UserName == "Buyer")
-                    .Select(u => u.Id)
-                    .FirstAsync(cancellationToken: cancellationToken),
-                PaymentReference = "1234567890"
-            },
-            new AuctionSale
-            {
-                AuctionId = await context.Auctions
-                    .Where(a => a.ClockLocationEnum == ClockLocationEnum.Naaldwijk && a.UserId == auctioneerId)
-                    .Select(a => a.Id)
-                    .FirstAsync(cancellationToken: cancellationToken),
-                UserId = await context.Users
-                    .Where(u => u.UserName == "Buyer")
-                    .Select(u => u.Id)
-                    .FirstAsync(cancellationToken: cancellationToken),
-                PaymentReference = "0987654321"
-            }
-            );
+
+        string buyerId = await context.Users
+            .Where(u => u.UserName == "Buyer1")
+            .Select(u => u.Id)
+            .FirstAsync(cancellationToken: cancellationToken);
+
+        await SeedAuctionSaleAsync(context, auctioneerId, buyerId, ClockLocationEnum.Aalsmeer, "1234567890", cancellationToken);
+        await SeedAuctionSaleAsync(context, auctioneerId, buyerId, ClockLocationEnum.Naaldwijk, "0987654321", cancellationToken);
+    }
+
+    private static async Task SeedAuctionSaleAsync(
+        ApplicationDbContext context,
+        string auctioneerId,
+        string buyerId,
+        ClockLocationEnum clockLocation,
+        string paymentReference,
+        CancellationToken cancellationToken)
+    {
+        var auctionId = await context.Auctions
+            .Where(a => a.ClockLocationEnum == clockLocation && a.UserId == auctioneerId)
+            .Select(a => a.Id)
+            .FirstAsync(cancellationToken: cancellationToken);
+
+        if (await context.AuctionSales.AnyAsync(asale => asale.AuctionId == auctionId && asale.UserId == buyerId && asale.PaymentReference == paymentReference, cancellationToken))
+            return;
+
+        context.AuctionSales.Add(new AuctionSale
+        {
+            AuctionId = auctionId,
+            UserId = buyerId,
+            PaymentReference = paymentReference
+        });
+
+        await context.SaveChangesAsync(cancellationToken);
     }
 }

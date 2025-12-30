@@ -171,8 +171,9 @@ public class Program
                 }
             }
         }
-
-         //ApplicationDbSeeder.SeedAsync(app.Services).GetAwaiter().GetResult();
+        
+        //seed testing things
+        ApplicationDbSeeder.SeedAsync(app.Services).GetAwaiter().GetResult();
 
         // Configure HTTPS if not in development
         if (!app.Environment.IsDevelopment())

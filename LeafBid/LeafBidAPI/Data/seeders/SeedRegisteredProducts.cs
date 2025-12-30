@@ -5,81 +5,53 @@ namespace LeafBidAPI.Data.seeders;
 
 public class SeedRegisteredProducts
 {
-    public static async Task seedRegisteredProductsAsync(ApplicationDbContext context, CancellationToken cancellationToken)
+    public static async Task SeedRegisteredProductsAsync(ApplicationDbContext context, CancellationToken cancellationToken)
     {
-        
-        if (await context.RegisteredProducts.AnyAsync(cancellationToken))
+        var providerId = await context.Users
+            .Where(u => u.UserName == "Provider")
+            .Select(u => u.Id)
+            .FirstAsync(cancellationToken: cancellationToken);
+
+        await SeedRegisteredProductAsync(context, providerId, "TestProduct1", 2.50m, 3.50m, "Netherlands", DateTime.UtcNow.AddDays(-2), 19, null, 100, cancellationToken);
+        await SeedRegisteredProductAsync(context, providerId, "TestProduct2", 1.50m, 2.50m, "Netherlands", DateTime.UtcNow.AddDays(-1), null, 15, 50, cancellationToken);
+        await SeedRegisteredProductAsync(context, providerId, "TestProduct3", 10.00m, 12.00m, "Thailand", DateTime.UtcNow.AddDays(-5), null, 12, 30, cancellationToken);
+        await SeedRegisteredProductAsync(context, providerId, "TestProduct4", 2.50m, 3.00m, "Spain", DateTime.UtcNow.AddDays(-3), 22, null, 80, cancellationToken);
+    }
+
+    private static async Task SeedRegisteredProductAsync(
+        ApplicationDbContext context,
+        string userId,
+        string productName,
+        decimal minPrice,
+        decimal maxPrice,
+        string region,
+        DateTime harvestedAt,
+        int? stemLength,
+        int? potSize,
+        int stock,
+        CancellationToken cancellationToken)
+    {
+        var productId = await context.Products
+            .Where(p => p.Name == productName)
+            .Select(p => p.Id)
+            .FirstAsync(cancellationToken: cancellationToken);
+
+        if (await context.RegisteredProducts.AnyAsync(rp => rp.UserId == userId && rp.ProductId == productId, cancellationToken))
             return;
-        
-        context.RegisteredProducts.AddRange(
-            new RegisteredProduct
-            {
-                UserId = await context.Users
-                    .Where(u => u.UserName == "Provider")
-                    .Select(u => u.Id)
-                    .FirstAsync(cancellationToken: cancellationToken),
-                ProductId = await context.Products
-                    .Where(p => p.Name == "TestProduct1")
-                    .Select(p => p.Id)
-                    .FirstAsync(cancellationToken: cancellationToken),
-                MinPrice = 2.50m,
-                MaxPrice = 3.50m,
-                Region = "Netherlands",
-                HarvestedAt = DateTime.UtcNow.AddDays(-2),
-                StemLength = 19,
-                Stock = 100
-            },
-            new RegisteredProduct
-            {
-                UserId = await context.Users
-                    .Where(u => u.UserName == "Provider")
-                    .Select(u => u.Id)
-                    .FirstAsync(cancellationToken: cancellationToken),
-                ProductId = await context.Products
-                    .Where(p => p.Name == "TestProduct2")
-                    .Select(p => p.Id)
-                    .FirstAsync(cancellationToken: cancellationToken),
-                MinPrice = 1.50m,
-                MaxPrice = 2.50m,
-                Region = "Netherlands",
-                HarvestedAt = DateTime.UtcNow.AddDays(-1),
-                PotSize = 15,
-                Stock = 50
-            },
-            new RegisteredProduct
-            {
-                UserId = await context.Users
-                    .Where(u => u.UserName == "Provider")
-                    .Select(u => u.Id)
-                    .FirstAsync(cancellationToken: cancellationToken),
-                ProductId = await context.Products
-                    .Where(p => p.Name == "TestProduct3")
-                    .Select(p => p.Id)
-                    .FirstAsync(cancellationToken: cancellationToken),
-                MinPrice = 10.00m,
-                MaxPrice = 12.00m,
-                Region = "Thailand",
-                HarvestedAt = DateTime.UtcNow.AddDays(-5),
-                PotSize = 12,
-                Stock = 30
-            },
-            new RegisteredProduct
-            {
-                UserId = await context.Users
-                    .Where(u => u.UserName == "Provider")
-                    .Select(u => u.Id)
-                    .FirstAsync(cancellationToken: cancellationToken),
-                ProductId = await context.Products
-                    .Where(p => p.Name == "TestProduct4")
-                    .Select(p => p.Id)
-                    .FirstAsync(cancellationToken: cancellationToken),
-                MinPrice = 2.50m,
-                MaxPrice = 3.00m,
-                Region = "Spain",
-                HarvestedAt = DateTime.UtcNow.AddDays(-3),
-                StemLength = 22,
-                Stock = 80
-            }
-        );
+
+        context.RegisteredProducts.Add(new RegisteredProduct
+        {
+            UserId = userId,
+            ProductId = productId,
+            MinPrice = minPrice,
+            MaxPrice = maxPrice,
+            Region = region,
+            HarvestedAt = harvestedAt,
+            StemLength = stemLength,
+            PotSize = potSize,
+            Stock = stock
+        });
+
+        await context.SaveChangesAsync(cancellationToken);
     }
 }

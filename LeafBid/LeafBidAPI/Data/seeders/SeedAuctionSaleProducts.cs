@@ -6,58 +6,48 @@ namespace LeafBidAPI.Data.seeders;
 
 public class SeedAuctionSaleProducts
 {
-    public static async Task SeedAuctionSaleProductsAsync(ApplicationDbContext context,
-        CancellationToken cancellationToken)
+    public static async Task SeedAuctionSaleProductsAsync(ApplicationDbContext context, CancellationToken cancellationToken)
     {
-        if (await context.Products.AnyAsync(cancellationToken))
-            return;
-        
-        var AuctioneerID = await context.Users
+        var auctioneerId = await context.Users
             .Where(u => u.UserName == "Auctioneer")
             .Select(u => u.Id)
             .FirstAsync(cancellationToken: cancellationToken);
-        
-        context.AuctionSaleProducts.AddRange(
-            new AuctionSaleProduct
-            {
-                AuctionSaleId = await context.AuctionSales
-                    .Where(aus => aus.Auction.UserId == AuctioneerID && aus.Auction.ClockLocationEnum == ClockLocationEnum.Naaldwijk)
-                    .Select(aus => aus.Id)
-                    .FirstAsync(cancellationToken: cancellationToken),
-                ProductId = await context.Products
-                    .Where(p => p.Name == "TestProduct1")
-                    .Select(p => p.Id)
-                    .FirstAsync(cancellationToken: cancellationToken),
-                Quantity = 3,
-                Price = 2.50m
-            },
-            new AuctionSaleProduct
-            {
-                AuctionSaleId = await context.AuctionSales
-                    .Where(aus => aus.Auction.UserId == AuctioneerID && aus.Auction.ClockLocationEnum == ClockLocationEnum.Naaldwijk)
-                    .Select(aus => aus.Id)
-                    .FirstAsync(cancellationToken: cancellationToken),
-                ProductId = await context.Products
-                    .Where(p => p.Name == "TestProduct3")
-                    .Select(p => p.Id)
-                    .FirstAsync(cancellationToken: cancellationToken),
-                Quantity = 3,
-                Price = 2.50m
-            },
-            new AuctionSaleProduct
-            {
-                
-                AuctionSaleId = await context.AuctionSales
-                    .Where(aus => aus.Auction.UserId == AuctioneerID && aus.Auction.ClockLocationEnum == ClockLocationEnum.Aalsmeer)
-                    .Select(aus => aus.Id)
-                    .FirstAsync(cancellationToken: cancellationToken),
-                ProductId = await context.Products
-                    .Where(p => p.Name == "TestProduct2")
-                    .Select(p => p.Id)
-                    .FirstAsync(cancellationToken: cancellationToken),
-                Quantity = 5,
-                Price = 2.50m
-            }
-            );
+
+        await SeedAuctionSaleProductAsync(context, auctioneerId, ClockLocationEnum.Naaldwijk, "TestProduct1", 3, 2.50m, cancellationToken);
+        await SeedAuctionSaleProductAsync(context, auctioneerId, ClockLocationEnum.Naaldwijk, "TestProduct3", 3, 2.50m, cancellationToken);
+        await SeedAuctionSaleProductAsync(context, auctioneerId, ClockLocationEnum.Aalsmeer, "TestProduct2", 5, 2.50m, cancellationToken);
+    }
+
+    private static async Task SeedAuctionSaleProductAsync(
+        ApplicationDbContext context,
+        string auctioneerId,
+        ClockLocationEnum clockLocation,
+        string productName,
+        int quantity,
+        decimal price,
+        CancellationToken cancellationToken)
+    {
+        var auctionSaleId = await context.AuctionSales
+            .Where(aus => aus.Auction.UserId == auctioneerId && aus.Auction.ClockLocationEnum == clockLocation)
+            .Select(aus => aus.Id)
+            .FirstAsync(cancellationToken: cancellationToken);
+
+        var productId = await context.Products
+            .Where(p => p.Name == productName)
+            .Select(p => p.Id)
+            .FirstAsync(cancellationToken: cancellationToken);
+
+        if (await context.AuctionSaleProducts.AnyAsync(asp => asp.AuctionSaleId == auctionSaleId && asp.ProductId == productId, cancellationToken))
+            return;
+
+        context.AuctionSaleProducts.Add(new AuctionSaleProduct
+        {
+            AuctionSaleId = auctionSaleId,
+            ProductId = productId,
+            Quantity = quantity,
+            Price = price
+        });
+
+        await context.SaveChangesAsync(cancellationToken);
     }
 }

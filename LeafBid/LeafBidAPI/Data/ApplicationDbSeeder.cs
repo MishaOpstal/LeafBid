@@ -29,7 +29,7 @@ public class ApplicationDbSeeder
         await SeedProducts.SeedProductsAsync(context, CancellationToken.None);
         
         //seed registered products
-        await SeedRegisteredProducts.seedRegisteredProductsAsync(context, CancellationToken.None);
+        await SeedRegisteredProducts.SeedRegisteredProductsAsync(context, CancellationToken.None);
         
         // seed auctions
         await SeedAuctions.SeedAuctionsAsync(context, CancellationToken.None);
