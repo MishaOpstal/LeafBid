@@ -14,6 +14,7 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
     public DbSet<AuctionSaleProduct> AuctionSaleProducts { get; set; }
     public DbSet<Product> Products { get; set; }
     public DbSet<RegisteredProduct> RegisteredProducts { get; set; }
+    public DbSet<Company> Companies { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -84,6 +85,14 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
             .WithMany()
             .HasForeignKey(rp => rp.ProductId)
             .OnDelete(DeleteBehavior.Restrict);
+        
+        // Company -> User (buyer)
+        modelBuilder.Entity<Company>()
+            .HasMany(c => c.Users)
+            .WithOne(u => u.Company)
+            .HasForeignKey(u => u.CompanyId)
+            .OnDelete(DeleteBehavior.Restrict);
+            
 
     }
 }
