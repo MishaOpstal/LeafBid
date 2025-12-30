@@ -8,14 +8,19 @@ public class SeedAuctionSaleProducts
 {
     public static async Task SeedAuctionSaleProductsAsync(ApplicationDbContext context, CancellationToken cancellationToken)
     {
-        var auctioneerId = await context.Users
-            .Where(u => u.UserName == "Auctioneer")
+        var auctioneerId1 = await context.Users
+            .Where(u => u.UserName == "Auctioneer1")
+            .Select(u => u.Id)
+            .FirstAsync(cancellationToken: cancellationToken);
+        
+        string auctioneerId2 = await context.Users
+            .Where(u => u.UserName == "Auctioneer2")
             .Select(u => u.Id)
             .FirstAsync(cancellationToken: cancellationToken);
 
-        await SeedAuctionSaleProductAsync(context, auctioneerId, ClockLocationEnum.Naaldwijk, "TestProduct1", 3, 2.50m, cancellationToken);
-        await SeedAuctionSaleProductAsync(context, auctioneerId, ClockLocationEnum.Naaldwijk, "TestProduct3", 3, 2.50m, cancellationToken);
-        await SeedAuctionSaleProductAsync(context, auctioneerId, ClockLocationEnum.Aalsmeer, "TestProduct2", 5, 2.50m, cancellationToken);
+        await SeedAuctionSaleProductAsync(context, auctioneerId2, ClockLocationEnum.Naaldwijk, "TestProduct1", 3, 2.50m, cancellationToken);
+        await SeedAuctionSaleProductAsync(context, auctioneerId2, ClockLocationEnum.Naaldwijk, "TestProduct3", 3, 2.50m, cancellationToken);
+        await SeedAuctionSaleProductAsync(context, auctioneerId1, ClockLocationEnum.Aalsmeer, "TestProduct2", 5, 2.50m, cancellationToken);
     }
 
     private static async Task SeedAuctionSaleProductAsync(
