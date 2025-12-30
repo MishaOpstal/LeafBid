@@ -6,7 +6,7 @@ namespace LeafBidAPI.Data;
 
 public class ApplicationDbSeeder
 {
-    public static async Task SeedAsync(IServiceProvider services)
+    public static Task SeedAsync(IServiceProvider services)
     {
         using var scope = services.CreateScope();
 
@@ -20,27 +20,29 @@ public class ApplicationDbSeeder
 
         
         // seed copmpanies
-        await SeedCompanies.SeedCompaniesAsync(context, CancellationToken.None);
+        SeedCompanies.SeedCompaniesAsync(context, CancellationToken.None);
         
         // seed users
-        await SeedUsers.SeedUsersWithRolesAsync(userManager);
+        SeedUsers.SeedUsersWithRolesAsync(userManager);
         
         // seed products
-        await SeedProducts.SeedProductsAsync(context, CancellationToken.None);
+        SeedProducts.SeedProductsAsync(context, CancellationToken.None);
         
         //seed registered products
-        await SeedRegisteredProducts.SeedRegisteredProductsAsync(context, CancellationToken.None);
+        SeedRegisteredProducts.SeedRegisteredProductsAsync(context, CancellationToken.None);
         
         // seed auctions
-        await SeedAuctions.SeedAuctionsAsync(context, CancellationToken.None);
+        SeedAuctions.SeedAuctionsAsync(context, CancellationToken.None);
         
         // seed auction products
-        await SeedAuctionProducts.SeedAuctionProductsAsync(context, CancellationToken.None);
+        SeedAuctionProducts.SeedAuctionProductsAsync(context, CancellationToken.None);
         
         // seed auction sales
-        await SeedAuctionSales.SeedAuctionSalesAsync(context, CancellationToken.None);
+        SeedAuctionSales.SeedAuctionSalesAsync(context, CancellationToken.None);
         
         // seed auction sale products
-        await SeedAuctionSaleProducts.SeedAuctionSaleProductsAsync(context, CancellationToken.None);
+        SeedAuctionSaleProducts.SeedAuctionSaleProductsAsync(context, CancellationToken.None);
+        
+        return Task.CompletedTask;
     }
 }

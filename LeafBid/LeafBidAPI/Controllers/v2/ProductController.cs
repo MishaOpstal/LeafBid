@@ -100,28 +100,6 @@ public class ProductController(IProductService productService) : ControllerBase
         );
     }
 
-    [HttpPost]
-    [Authorize(Roles = "Provider")]
-    [ProducesResponseType(typeof(RegisteredProductResponse), StatusCodes.Status201Created)]
-    public async Task<ActionResult<RegisteredProductResponse>> AddProduct(
-        [FromRoute] int productId,
-        [FromBody] CreateRegisteredProductDto registeredProductData)
-    {
-        RegisteredProduct registeredProduct = await productService.AddProduct(productId, registeredProductData);
-        RegisteredProductResponse registeredProductResponse =
-            productService.CreateRegisteredProductResponse(registeredProduct);
-
-        return CreatedAtAction(
-            actionName: nameof(GetRegisteredProductById),
-            routeValues: new
-            {
-                id = registeredProductResponse.Id,
-                version = "2.0"
-            },
-            value: registeredProductResponse
-        );
-    }
-
     /// <summary>
     /// Update an existing product.
     /// </summary>
