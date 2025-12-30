@@ -19,10 +19,28 @@ public class ApplicationDbSeeder
             .GetRequiredService<UserManager<User>>();
 
         
+        // seed copmpanies
+        await SeedCompanies.SeedCompaniesAsync(context, CancellationToken.None);
+        
         // seed users
         await SeedUsers.SeedUsersWithRolesAsync(userManager);
         
         // seed products
         await SeedProducts.SeedProductsAsync(context, CancellationToken.None);
+        
+        //seed registered products
+        await SeedRegisteredProducts.SeedRegisteredProductsAsync(context, CancellationToken.None);
+        
+        // seed auctions
+        await SeedAuctions.SeedAuctionsAsync(context, CancellationToken.None);
+        
+        // seed auction products
+        await SeedAuctionProducts.SeedAuctionProductsAsync(context, CancellationToken.None);
+        
+        // seed auction sales
+        await SeedAuctionSales.SeedAuctionSalesAsync(context, CancellationToken.None);
+        
+        // seed auction sale products
+        await SeedAuctionSaleProducts.SeedAuctionSaleProductsAsync(context, CancellationToken.None);
     }
 }

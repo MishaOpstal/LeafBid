@@ -44,5 +44,9 @@
       <_ContentIncludedByDefault Remove="LeafBidTest\obj\LeafBidTest.csproj.nuget.dgspec.json" />
       <_ContentIncludedByDefault Remove="LeafBidTest\obj\project.assets.json" />
     </ItemGroup>
+
+    <ItemGroup>
+      <Folder Include="Migrations\" />
+    </ItemGroup>
     
 </Project>

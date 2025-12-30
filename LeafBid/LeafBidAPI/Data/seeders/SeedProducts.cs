@@ -7,25 +7,29 @@ public class SeedProducts
 {
     public static async Task SeedProductsAsync(ApplicationDbContext context, CancellationToken cancellationToken)
     {
-        if (await context.Products.AnyAsync(cancellationToken))
+        await SeedProductAsync(context, "TestProduct1", "Classic red rose", "Rosa chinensis", cancellationToken);
+        await SeedProductAsync(context, "TestProduct2", "Yellow spring tulip", "Tulipa gesneriana", cancellationToken);
+        await SeedProductAsync(context, "TestProduct3", "Purple lily", "Lilium pratense", cancellationToken);
+        await SeedProductAsync(context, "TestProduct4", "White lily", "Lilium occidentale", cancellationToken);
+    }
+
+    private static async Task SeedProductAsync(
+        ApplicationDbContext context,
+        string name,
+        string description,
+        string species,
+        CancellationToken cancellationToken)
+    {
+        if (await context.Products.AnyAsync(p => p.Name == name, cancellationToken))
             return;
 
-        context.Products.AddRange(
-            new Product
-            {
-                Name = "Rose",
-                Description = "Classic red rose",
-                Species = "Rosa chinensis",
-                Picture = null
-            },
-            new Product
-            {
-                Name = "Tulip",
-                Description = "Yellow spring tulip",
-                Species = "Tulipa gesneriana",
-                Picture = null
-            }
-        );
+        context.Products.Add(new Product
+        {
+            Name = name,
+            Description = description,
+            Species = species,
+            Picture = null
+        });
 
         await context.SaveChangesAsync(cancellationToken);
     }

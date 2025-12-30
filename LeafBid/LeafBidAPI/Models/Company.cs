@@ -44,4 +44,9 @@ public class Company
     /// Country Code (NL)
     /// </summary>
     public required string CountryCode { get; set; }
+
+    /// <summary>
+    /// Users associated with the company.
+    /// </summary>
+    public ICollection<User> Users { get; set; } = new List<User>();
 }
