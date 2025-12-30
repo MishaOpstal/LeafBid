@@ -34,6 +34,9 @@ public class ApplicationDbSeeder
         // seed auctions
         await SeedAuctions.SeedAuctionsAsync(context, CancellationToken.None);
         
+        // seed auction products
+        await SeedAuctionProducts.SeedAuctionProductsAsync(context, CancellationToken.None);
+        
         // seed auction sales
         await SeedAuctionSales.SeedAuctionSalesAsync(context, CancellationToken.None);
         

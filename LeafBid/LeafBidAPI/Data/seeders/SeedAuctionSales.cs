@@ -11,7 +11,7 @@ public class SeedAuctionSales
         if (await context.Products.AnyAsync(cancellationToken))
             return;
 
-        var AuctioneerID = await context.Users
+        string auctioneerId = await context.Users
             .Where(u => u.UserName == "Auctioneer")
             .Select(u => u.Id)
             .FirstAsync(cancellationToken: cancellationToken);
@@ -20,7 +20,7 @@ public class SeedAuctionSales
             new AuctionSale
             {
                 AuctionId = await context.Auctions
-                    .Where(a => a.ClockLocationEnum == ClockLocationEnum.Aalsmeer && a.UserId == AuctioneerID)
+                    .Where(a => a.ClockLocationEnum == ClockLocationEnum.Aalsmeer && a.UserId == auctioneerId)
                     .Select(a => a.Id)
                     .FirstAsync(cancellationToken: cancellationToken),
                 UserId = await context.Users
@@ -32,7 +32,7 @@ public class SeedAuctionSales
             new AuctionSale
             {
                 AuctionId = await context.Auctions
-                    .Where(a => a.ClockLocationEnum == ClockLocationEnum.Naaldwijk && a.UserId == AuctioneerID)
+                    .Where(a => a.ClockLocationEnum == ClockLocationEnum.Naaldwijk && a.UserId == auctioneerId)
                     .Select(a => a.Id)
                     .FirstAsync(cancellationToken: cancellationToken),
                 UserId = await context.Users
