@@ -11,7 +11,7 @@ public class SeedUsers
         await SeedUserAsync(
             userManager,
             email: "Auctioneer1@Leafbid.com",
-            userName: "Auctioneer2",
+            userName: "Auctioneer1",
             password: "Auctioneer123!?",
             role: "Auctioneer");
         
