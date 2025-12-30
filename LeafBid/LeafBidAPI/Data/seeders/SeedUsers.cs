@@ -10,15 +10,30 @@ public class SeedUsers
     {
         await SeedUserAsync(
             userManager,
-            email: "Auctioneer@Leafbid.com",
-            userName: "Auctioneer",
+            email: "Auctioneer1@Leafbid.com",
+            userName: "Auctioneer2",
             password: "Auctioneer123!?",
             role: "Auctioneer");
+        
+        await SeedUserAsync(
+            userManager,
+            email: "Auctioneer2@Leafbid.com",
+            userName: "Auctioneer2",
+            password: "Auctioneer123!?",
+            role: "Auctioneer");
+        
+        await SeedUserAsync(
+            userManager,
+            email: "Provider1@Leafbid.com",
+            userName: "Provider1",
+            password: "Provider123!?",
+            role: "Provider");
+
 
         await SeedUserAsync(
             userManager,
-            email: "Provider@Leafbid.com",
-            userName: "Provider",
+            email: "Provider2@Leafbid.com",
+            userName: "Provider2",
             password: "Provider123!?",
             role: "Provider");
 
