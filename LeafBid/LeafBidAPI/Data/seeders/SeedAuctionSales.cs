@@ -8,18 +8,24 @@ public class SeedAuctionSales
 {
     public static async Task SeedAuctionSalesAsync(ApplicationDbContext context, CancellationToken cancellationToken)
     {
-        string auctioneerId = await context.Users
-            .Where(u => u.UserName == "Auctioneer")
+        var auctioneerId1 = await context.Users
+            .Where(u => u.UserName == "Auctioneer1")
             .Select(u => u.Id)
             .FirstAsync(cancellationToken: cancellationToken);
+        
+        var auctioneerId2 = await context.Users
+            .Where(u => u.UserName == "Auctioneer2")
+            .Select(u => u.Id)
+            .FirstAsync(cancellationToken: cancellationToken);
+
 
         string buyerId = await context.Users
             .Where(u => u.UserName == "Buyer1")
             .Select(u => u.Id)
             .FirstAsync(cancellationToken: cancellationToken);
 
-        await SeedAuctionSaleAsync(context, auctioneerId, buyerId, ClockLocationEnum.Aalsmeer, "1234567890", cancellationToken);
-        await SeedAuctionSaleAsync(context, auctioneerId, buyerId, ClockLocationEnum.Naaldwijk, "0987654321", cancellationToken);
+        await SeedAuctionSaleAsync(context, auctioneerId1, buyerId, ClockLocationEnum.Aalsmeer, "1234567890", cancellationToken);
+        await SeedAuctionSaleAsync(context, auctioneerId2, buyerId, ClockLocationEnum.Naaldwijk, "0987654321", cancellationToken);
     }
 
     private static async Task SeedAuctionSaleAsync(
