@@ -9,12 +9,12 @@ public class SeedAuctionSales
     public static async Task SeedAuctionSalesAsync(ApplicationDbContext context, CancellationToken cancellationToken)
     {
         string auctioneerId1 = await context.Users
-            .Where(u => u.UserName == "Auctioneer")
+            .Where(u => u.UserName == "Auctioneer1")
             .Select(u => u.Id)
             .FirstAsync(cancellationToken: cancellationToken);
         
         string auctioneerId2 = await context.Users
-            .Where(u => u.UserName == "Auctioneer")
+            .Where(u => u.UserName == "Auctioneer2")
             .Select(u => u.Id)
             .FirstAsync(cancellationToken: cancellationToken);
 
