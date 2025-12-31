@@ -17,14 +17,22 @@ public class RegisteredProduct
     
     [JsonIgnore]
     public Product? Product { get; set; }
+    
+    /// <summary>
+    /// Company id associated with the product.
+    /// </summary>
+    public required int CompanyId { get; set; }
+    
+    [JsonIgnore]
+    public Company? Company { get; set; }
 
     /// <summary>
     /// User id associated with the product.
     /// </summary>
-     public required string UserId { get; set; }
+    public required string UserId { get; set; }
     
     [JsonIgnore]
-     public User? User { get; set; }
+    public User? User { get; set; }
 
     /// <summary>
     /// Minimum Price of the product per unit.

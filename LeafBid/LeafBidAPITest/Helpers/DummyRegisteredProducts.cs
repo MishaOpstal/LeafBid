@@ -12,6 +12,7 @@ public class DummyRegisteredProducts
             {
                 Id = 1,
                 ProductId = 1,
+                CompanyId = 1,
                 MinPrice = 1.34m,
                 MaxPrice = 1.34m,
                 Region = "Netherlands",
@@ -26,6 +27,7 @@ public class DummyRegisteredProducts
             {
                 Id = 2,
                 ProductId = 2,
+                CompanyId = 2,
                 MinPrice = 0.89m,
                 MaxPrice = 0.89m,
                 Region = "Netherlands",
@@ -40,6 +42,7 @@ public class DummyRegisteredProducts
             {
                 Id = 3,
                 ProductId = 3,
+                CompanyId = 3,
                 MinPrice = 15.00m,
                 MaxPrice = 15.00m,
                 Region = "Thailand",
@@ -54,6 +57,7 @@ public class DummyRegisteredProducts
             {
                 Id = 4,
                 ProductId = 4,
+                CompanyId = 4,
                 MinPrice = 2.50m,
                 MaxPrice = 2.50m,
                 Region = "Spain",

@@ -5,11 +5,15 @@ using LeafBidAPI.Enums;
 using LeafBidAPI.Exceptions;
 using LeafBidAPI.Interfaces;
 using LeafBidAPI.Models;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
 namespace LeafBidAPI.Services;
 
-public class PagesServices(ApplicationDbContext context) : IPagesServices
+public class PagesServices(
+    ApplicationDbContext context,
+    UserManager<User> userManager
+) : IPagesServices
 {
     public async Task<GetAuctionWithProductsDto> GetAuctionWithProducts(ClockLocationEnum clockLocation)
     {
@@ -35,7 +39,7 @@ public class PagesServices(ApplicationDbContext context) : IPagesServices
             throw new NotFoundException("No registered products found for this auction.");
         }
 
-        ProductService productService = new(context);
+        ProductService productService = new(context, userManager);
         List<RegisteredProductResponse> registeredProductResponses = registeredProducts
             .OfType<RegisteredProduct>()
             .Select(registeredProduct => productService.CreateRegisteredProductResponse(registeredProduct))
@@ -73,7 +77,7 @@ public class PagesServices(ApplicationDbContext context) : IPagesServices
             throw new NotFoundException("No registered products found for this auction.");
         }
 
-        ProductService productService = new(context);
+        ProductService productService = new(context, userManager);
         List<RegisteredProductResponse> registeredProductResponses = registeredProducts
             .OfType<RegisteredProduct>()
             .Select(registeredProduct => productService.CreateRegisteredProductResponse(registeredProduct))

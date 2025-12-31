@@ -4,6 +4,7 @@ using LeafBidAPI.DTOs.RegisteredProduct;
 using LeafBidAPI.Exceptions;
 using LeafBidAPI.Interfaces;
 using LeafBidAPI.Models;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Processing;
@@ -12,7 +13,10 @@ using Rectangle = SixLabors.ImageSharp.Rectangle;
 
 namespace LeafBidAPI.Services;
 
-public class ProductService(ApplicationDbContext context) : IProductService
+public class ProductService(
+    ApplicationDbContext context,
+    UserManager<User> userManager
+) : IProductService
 {
     public async Task<List<Product>> GetProducts()
     {
@@ -111,9 +115,22 @@ public class ProductService(ApplicationDbContext context) : IProductService
 
     public async Task<RegisteredProduct> AddProduct(int productId, CreateRegisteredProductDto registeredProductData)
     {
+        User? user = await userManager.FindByIdAsync(registeredProductData.UserId);
+        if (user == null)
+        {
+            throw new NotFoundException("User not found");
+        }
+
+        Company? company = context.Companies.FirstOrDefault(c => c.Id == user.CompanyId);
+        if (company == null)
+        {
+            throw new NotFoundException("Company not found");
+        }
+
         RegisteredProduct registeredProduct = new()
         {
             ProductId = productId,
+            CompanyId = company.Id,
             UserId = registeredProductData.UserId,
             MinPrice = registeredProductData.MinPrice,
             MaxPrice = registeredProductData.MaxPrice,

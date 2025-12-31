@@ -33,7 +33,7 @@ public class Company
     /// <summary>
     /// Suffix for the house number 123(A)
     /// </summary>
-    public required string HouseNumberSuffix { get; set; }
+    public string? HouseNumberSuffix { get; set; }
 
     /// <summary>
     /// Postal code (1234AB)

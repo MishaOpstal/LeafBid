@@ -1,5 +1,7 @@
 using System.Reflection;
 using LeafBidAPI.Data;
+using LeafBidAPI.Data.extensions;
+using LeafBidAPI.Data.seeders;
 using LeafBidAPI.Filters;
 using LeafBidAPI.Interfaces;
 using LeafBidAPI.Models;
@@ -117,6 +119,13 @@ public class Program
         {
             builder.Services.AddTransient<IEmailSender<User>, EmailSenderService>();
         }
+        
+        builder.Services.ConfigureSeedersEngine();
+        builder.Services.AddSeeder<CompanySeeder>();
+        builder.Services.AddSeeder<UserSeeder>();
+        builder.Services.AddSeeder<ProductSeeder>();
+        builder.Services.AddSeeder<RegisteredProductSeeder>();
+        builder.Services.AddSeeder<AuctionSeeder>();
 
         // Set-up versioning
         builder.Services.AddApiVersioning(options =>
@@ -171,9 +180,6 @@ public class Program
                 }
             }
         }
-        
-        //seed items for developing/testing
-        ApplicationDbSeeder.SeedAsync(app.Services).GetAwaiter().GetResult();
 
         // Configure HTTPS if not in development
         if (!app.Environment.IsDevelopment())
@@ -190,6 +196,14 @@ public class Program
         // app.MapIdentityApi<User>();
         app.MapControllers();
         app.UseStaticFiles();
+
+        // Check for seed commands
+        bool appliedAny = app.MapSeedCommandsAsync(args).Result;
+        if (appliedAny)
+        {
+            // Prevent the app from continuing further.
+            return;
+        }
         
         app.Run();
     }

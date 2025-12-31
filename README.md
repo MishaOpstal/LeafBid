@@ -109,5 +109,9 @@ In order to apply changes made to the codebase, (re)run `docker compose up --bui
 3. Test locally using the development environment
 4. Submit a pull request
 
-## License
-[https://github.com/MishaOpstal/LeafBid/blob/main/LICENSE](https://github.com/MishaOpstal/LeafBid/blob/main/LICENSE)
+## Licenses
+[LeafBid is MIT Licensed](https://github.com/MishaOpstal/LeafBid/blob/main/LICENSE)
+
+We use the [dotnet-ef-seeder](https://github.com/djoufson/dotnet-ef-seeder/) from [djoufson](https://github.com/djoufson/) for seeding the database.
+- See it's License here:
+[dotnet-ef-seeder MIT](https://github.com/djoufson/dotnet-ef-seeder/blob/main/LICENSE.txt)
