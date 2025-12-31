@@ -77,6 +77,17 @@ The `docker-compose.yml` file includes:
 
 Services communicate internally via Docker networking. The API references SQL Server by service name, not `localhost`.
 
+### Seeding the Database
+Run the following command to seed using an available seeder:
+```bash
+dotnet run --seed <FirstSeederName> <SecondSeederName> ...
+```
+
+Example to seed the entire database with dummy data:
+```
+dotnet run --seed CompanySeeder UserSeeder ProductSeeder RegisteredProductSeeder AuctionSeeder
+```
+
 ## Troubleshooting
 
 ### Port Already in Use
