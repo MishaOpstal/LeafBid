@@ -20,7 +20,8 @@ public class AuctionProduct
     /// </summary>
     public required int RegisteredProductId { get; set; }
 
-    [JsonIgnore] public RegisteredProduct? RegisteredProduct { get; set; }
+    [JsonIgnore]
+    public RegisteredProduct? RegisteredProduct { get; set; }
 
     /// <summary>
     /// Order in auction. (A lower number will be served first)

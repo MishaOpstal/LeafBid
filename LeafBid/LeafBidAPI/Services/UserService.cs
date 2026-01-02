@@ -45,6 +45,11 @@ public class UserService(
         }
 
         IdentityResult result = await userManager.CreateAsync(user, userData.Password);
+        
+        if (!result.Succeeded)
+        {
+            throw new UserCreationFailedException("User creation failed, error: " + string.Join(", ", result.Errors.Select(e => e.Description)));
+        }
 
         if (userData.Roles != null && !Array.Empty<string>().Equals(userData.Roles))
         {

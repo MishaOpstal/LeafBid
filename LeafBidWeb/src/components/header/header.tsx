@@ -7,12 +7,14 @@ import { MoonFill, Sun } from "react-bootstrap-icons";
 import ThemeInitializer, { getTheme, toggleTheme } from "./theme";
 import { useEffect, useState } from "react";
 import {LoggedInResponse} from "@/types/User/Auth/LoggedInResponse";
+import { useRouter } from "next/navigation";
 
 interface HeaderProps {
     returnOption?: boolean;
 }
 
 export default function Header({ returnOption = false }: HeaderProps) {
+    const router = useRouter();
     const [theme, setTheme] = useState<"dark" | "light">("light");
 
     useEffect(() => {
@@ -102,7 +104,7 @@ export default function Header({ returnOption = false }: HeaderProps) {
 
             <nav aria-label="main navigation" className="user-select-none">
                 {returnOption && (
-                    <Link href="/" className={s.link}>
+                    <Link href="#" onClick={() => router.back()} className={s.link}>
                         Terug
                     </Link>
                 )}

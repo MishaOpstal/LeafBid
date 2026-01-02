@@ -9,7 +9,7 @@ export default function RootLayout({
 }>) {
   return (
     <>
-      <Header />
+      <Header returnOption={true} />
       <main className={s.main}>{children}</main>
     </>
   );
