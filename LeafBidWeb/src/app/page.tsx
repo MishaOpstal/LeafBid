@@ -22,7 +22,7 @@ export default function Home() {
                 // Fetch all auctions in parallel
                 const results = await Promise.all(
                     clockIds.map(async (clockLocation) => {
-                        const res = await fetch(`http://localhost:5001/api/v1/Pages/closest/${clockLocation}`, {
+                        const res = await fetch(`http://localhost:5001/api/v2/Pages/closest/${clockLocation}`, {
                             method: "GET",
                             credentials: "include",
                         });

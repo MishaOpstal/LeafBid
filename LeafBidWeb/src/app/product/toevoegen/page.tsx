@@ -118,7 +118,7 @@ export default function ProductForm() {
                 userId: userId,
             };
 
-            const response = await fetch("http://localhost:5001/api/v1/Product", {
+            const response = await fetch("http://localhost:5001/api/v2/Product", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 credentials: "include",

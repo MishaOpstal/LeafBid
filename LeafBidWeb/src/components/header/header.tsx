@@ -28,7 +28,7 @@ export default function Header({ returnOption = false }: HeaderProps) {
         e?.preventDefault();
 
         try {
-            const res = await fetch("http://localhost:5001/api/v1/User/logout", {
+            const res = await fetch("http://localhost:5001/api/v2/User/logout", {
                 method: "POST",
                 credentials: "include",
                 headers: { "Content-Type": "application/json" },
@@ -49,8 +49,8 @@ export default function Header({ returnOption = false }: HeaderProps) {
     };
 
     const fetchUserData = () => {
-        // Send request to localhost:5001/api/v1/User/me
-        fetch("http://localhost:5001/api/v1/User/me", {
+        // Send request to localhost:5001/api/v2/User/me
+        fetch("http://localhost:5001/api/v2/User/me", {
             method: "GET",
             credentials: "include",
         })

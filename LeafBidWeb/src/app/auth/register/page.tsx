@@ -20,7 +20,7 @@ const roles: Role[] = [];
 
 // Retrieve roles from backend using fetch
 const fetchRoles = async () => {
-    const response = await fetch("http://localhost:5001/api/v1/Role", {
+    const response = await fetch("http://localhost:5001/api/v2/Role", {
         method: "GET",
         headers: {"Content-Type": "application/json"},
     });
@@ -68,7 +68,7 @@ export default function RegisterPage() {
         setIsSubmitting(true);
 
         try {
-            const response = await fetch("http://localhost:5001/api/v1/User/register", {
+            const response = await fetch("http://localhost:5001/api/v2/User/register", {
                 method: "POST",
                 headers: {"Content-Type": "application/json"},
                 body: JSON.stringify(registerData),

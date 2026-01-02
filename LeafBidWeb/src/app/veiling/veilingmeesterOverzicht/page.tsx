@@ -57,7 +57,7 @@ export default function Home() {
             try {
                 const results = await Promise.all(
                     auctionIdList.map(async (id) => {
-                        const res = await fetch(`http://localhost:5001/api/v1/Pages/${id}`);
+                        const res = await fetch(`http://localhost:5001/api/v2/Pages/${id}`);
                         if (!res.ok) return null;
 
                         const data: PageResponse = await res.json();
