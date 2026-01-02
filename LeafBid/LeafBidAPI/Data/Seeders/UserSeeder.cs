@@ -31,8 +31,8 @@ public class UserSeeder(
 
             for (int i = 0; i < 5; i++)
             {
-                string firstName = faker.Person.FirstName;
-                string lastName = faker.Person.LastName;
+                string firstName = faker.Name.FirstName();
+                string lastName = faker.Name.LastName();
                 
                 string email = faker.Internet.Email(firstName, lastName);
                 string userName = faker.Internet.UserName(firstName, lastName);
