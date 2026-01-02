@@ -4,7 +4,7 @@ import styles from '../../page.module.css';
 import Header from "@/components/header/header";
 import ActionButtons from "@/components/smallButton/smallButton";
 import DashboardPanel from "@/components/dashboardPanel/dashboardpanel";
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 
 type Auction = {
     id: number;
@@ -89,7 +89,7 @@ export default function Home() {
 
     return (
         <>
-            <Header />
+            <Header returnOption={true} />
             <main className={styles.main}>
                 <div className={styles.page}>
                     <h1>Alle veilingen</h1>
