@@ -37,7 +37,7 @@ export default function Home() {
     useEffect(() => {
         (async () => {
             try {
-                const res = await fetch("http://localhost:5001/api/v1/Product/available", {
+                const res = await fetch("http://localhost:5001/api/v2/Product/available", {
                     method: "GET",
                     credentials: "include",
                 });
@@ -90,7 +90,7 @@ export default function Home() {
         setIsSubmitting(true);
         try {
             // Submit auctionData directly
-            const response = await fetch("http://localhost:5001/api/v1/Auction", {
+            const response = await fetch("http://localhost:5001/api/v2/Auction", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(auctionData),
