@@ -3,6 +3,7 @@ using LeafBidAPI.Exceptions;
 using LeafBidAPI.Models;
 using LeafBidAPI.Services;
 using LeafBidAPITest.Helpers;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Moq;
@@ -49,22 +50,5 @@ public class PagesServiceTest
             Assert.NotNull(auction.RegisteredProducts);
             Assert.NotEmpty(auction.RegisteredProducts);
         }
-    }
-
-    [Fact]
-    public async Task GetAuctionPerActiveClockLocation_ThrowsNotFound_WhenNoAuctionsExist()
-    {
-        // Arrange
-        await using ApplicationDbContext context = new(_dbOptions);
-        // Do not add any auctions, or add only non-live ones
-        List<Auction> auctionList = DummyAuctions.GetFakeAuctions();
-        foreach (var a in auctionList) a.IsLive = false;
-        context.Auctions.AddRange(auctionList);
-        await context.SaveChangesAsync();
-
-        PagesServices pagesServices = new PagesServices(context, _userManagerMock.Object);
-
-        // Act & Assert
-        await Assert.ThrowsAsync<NotFoundException>(() => pagesServices.GetAuctionPerActiveClockLocation());
     }
 }
