@@ -1,71 +1,44 @@
 'use client';
 
-import styles from '../../page.module.css';
+import styles from "@/app/page.module.css";
 import Header from "@/components/header/header";
-import ActionButtons from "@/components/smallButton/smallButton";
 import DashboardPanel from "@/components/dashboardPanel/dashboardpanel";
 import { useState, useEffect } from "react";
+import { Auction } from "@/types/Auction/Auction";
+import { ClockLocation, parseClockLocation } from "@/enums/ClockLocation";
+import Link from "next/link";
 
-type Auction = {
-    id: number;
-    startDate: string;
-    clockLocationEnum: number;
-    auctioneerId: number;
-    products: Product[];
-};
-
-type Product = {
-    id: number;
-    name: string;
-    description: string;
-    minPrice: string;
-    maxPrice: string;
-    weight: number;
-    picture: string;
-    species: string;
-    region: string;
-    potSize: number;
-    stemLength: number;
-    stock: number;
-    harvestedAt: string;
-    providerId: number;
-    auctionId: number;
-};
-
-type PageResponse = {
-    auction: Auction;
-    products: Product[];
-};
-
-const auctionIdList = [1, 2, 3, 4, 7]; // example IDs
-
-export default function Home() {
+export default function VeilingmeesterOverzicht() {
     const [auctions, setAuctions] = useState<Auction[]>([]);
     const [loading, setLoading] = useState(true);
 
-    const handleDelete = () => {
-        // TODO : implement delete functionality
-    };
-
-    const handleUpdate = () => {
-        // TODO : implement update functionality
-    };
+    // Extract numeric enum values (1,2,3...)
+    const clockIds = Object.values(ClockLocation).filter(
+        (v): v is number => typeof v === "number"
+    );
 
     useEffect(() => {
         const fetchAuctions = async () => {
             setLoading(true);
+
             try {
                 const results = await Promise.all(
-                    auctionIdList.map(async (id) => {
-                        const res = await fetch(`http://localhost:5001/api/v2/Pages/${id}`);
+                    clockIds.map(async (clockLocation) => {
+                        const res = await fetch(
+                            `http://localhost:5001/api/v2/Pages/closest/${clockLocation}`,
+                            { method: "GET", credentials: "include" }
+                        );
+
                         if (!res.ok) return null;
 
-                        const data: PageResponse = await res.json();
+                        const data = await res.json();
 
-                        return {
+                        const auction: Auction = {
                             ...data.auction,
-                            products: data.products || [],
-                        } as Auction;
+                            products: data.products ?? []
+                        };
+
+                        return auction;
                     })
                 );
 
@@ -83,104 +56,118 @@ export default function Home() {
 
     // Categorize auctions
     const now = new Date();
-    const current = auctions.filter(a => new Date(a.startDate) <= now);
-    const upcoming = auctions.filter(a => new Date(a.startDate) > now);
-    const past: Auction[] = []; // TODO somehow add past auctions with something like a end date in database
+
+    const currentAuctions = auctions.filter(a => new Date(a.startDate) <= now);
+    const upcomingAuctions = auctions.filter(a => new Date(a.startDate) > now);
+
+    // No endDate yet → empty
+    const pastAuctions: Auction[] = [];
 
     return (
         <>
             <Header />
+
             <main className={styles.main}>
                 <div className={styles.page}>
-                    <h1>Alle veilingen</h1>
+                    <h1 className={styles.huidigeVeilingen}>Veilingmeester Dashboard</h1>
 
-                    <h2 className={styles.padding}>Huidige veilingen</h2>
+                    {/* ---------------------- HUIDIGE VEILINGEN ---------------------- */}
+                    <h2 className={styles.sectionTitle}>Huidige veilingen</h2>
                     <div className={styles.panels}>
                         {loading ? (
-                            <DashboardPanel
-                                compact
-                                loading
-                                title="Placeholder title"
-                                kloklocatie="Klok X"
-                                resterendeTijd="--:--"
-                                imageSrc="/images/PIPIPOTATO.png"
-                            />
-                        ) : current.length === 0 ? (
-                            <p>Geen huidige veilingen beschikbaar</p>
+                            <>
+                                <DashboardPanel compact loading title="Laden..." />
+                                <DashboardPanel compact loading title="Laden..." />
+                                <DashboardPanel compact loading title="Laden..." />
+                            </>
+                        ) : currentAuctions.length === 0 ? (
+                            <DashboardPanel compact loading title="Geen veilingen beschikbaar..." />
                         ) : (
-                            current.map((auction) => {
-                                const product = auction.products[0];
+                            currentAuctions.map((auction) => {
+                                const product = auction.products?.[0] ?? null;
+
                                 return (
-                                    <DashboardPanel
-                                        key={auction.id}
-                                        compact
-                                        imageSrc={product?.picture ? `http://localhost:5001/uploads/${product.picture}` : "/images/placeholder.png"}
-                                        kloklocatie={`Klok ${auction.clockLocationEnum}`}
-                                        resterendeTijd={new Date(auction.startDate).toLocaleString()}
-                                    >
-                                        <ActionButtons onDelete={handleDelete} onUpdate={handleUpdate} />
-                                    </DashboardPanel>
+                                    <Link key={auction.id} href={`/veiling/${auction.id}`}>
+                                        <DashboardPanel
+                                            compact
+                                            loading={false}
+                                            title={product?.name ?? `Veiling #${auction.id}`}
+                                            kloklocatie={parseClockLocation(auction.clockLocationEnum)}
+                                            imageSrc={
+                                                product?.picture
+                                                    ? `http://localhost:5001/uploads/${product.picture}`
+                                                    : undefined
+                                            }
+                                            resterendeTijd={new Date(auction.startDate).toLocaleString()}
+                                        />
+                                    </Link>
                                 );
                             })
                         )}
                     </div>
 
-                    <h2 className={styles.padding}>Aankomende veilingen</h2>
+                    {/* ---------------------- AANKOMENDE VEILINGEN ---------------------- */}
+                    <h2 className={styles.sectionTitle}>Aankomende veilingen</h2>
                     <div className={styles.panels}>
                         {loading ? (
-                            <DashboardPanel
-                                compact
-                                loading
-                                title="Placeholder title"
-                                kloklocatie="Klok X"
-                                resterendeTijd="--:--"
-                                imageSrc="/images/PIPIPOTATO.png"
-                            />
-                        ) : upcoming.length === 0 ? (
-                            <p>Geen aankomende veilingen beschikbaar</p>
+                            <>
+                                <DashboardPanel compact loading title="Laden..." />
+                                <DashboardPanel compact loading title="Laden..." />
+                            </>
+                        ) : upcomingAuctions.length === 0 ? (
+                            <DashboardPanel compact loading title="Geen veilingen beschikbaar..." />
                         ) : (
-                            upcoming.map((auction) => {
-                                const product = auction.products[0];
+                            upcomingAuctions.map((auction) => {
+                                const product = auction.products?.[0] ?? null;
+
                                 return (
-                                    <DashboardPanel
-                                        key={auction.id}
-                                        compact
-                                        imageSrc={product?.picture ? `http://localhost:5001/uploads/${product.picture}` : "/images/placeholder.png"}
-                                        kloklocatie={`Klok ${auction.clockLocationEnum}`}
-                                        resterendeTijd={new Date(auction.startDate).toLocaleString()}
-                                    >
-                                        <ActionButtons onDelete={handleDelete} onUpdate={handleUpdate} />
-                                    </DashboardPanel>
+                                    <Link key={auction.id} href={`/veiling/${auction.id}`}>
+                                        <DashboardPanel
+                                            compact
+                                            loading={false}
+                                            title={product?.name ?? `Veiling #${auction.id}`}
+                                            kloklocatie={parseClockLocation(auction.clockLocationEnum)}
+                                            imageSrc={
+                                                product?.picture
+                                                    ? `http://localhost:5001/uploads/${product.picture}`
+                                                    : undefined
+                                            }
+                                            resterendeTijd={new Date(auction.startDate).toLocaleString()}
+                                        />
+                                    </Link>
                                 );
                             })
                         )}
                     </div>
 
-                    <h2 className={styles.padding}>Afgelopen veilingen</h2>
+                    {/* ---------------------- AFGELOPEN VEILINGEN ---------------------- */}
+                    <h2 className={styles.sectionTitle}>Afgelopen veilingen</h2>
                     <div className={styles.panels}>
                         {loading ? (
-                            <DashboardPanel
-                                compact
-                                loading
-                                title="Placeholder title"
-                                kloklocatie="Klok X"
-                                resterendeTijd="--:--"
-                                imageSrc="/images/PIPIPOTATO.png"
-                            />
-                        ) : past.length === 0 ? (
-                            <p>Geen afgelopen veilingen beschikbaar</p>
+                            <DashboardPanel compact loading title="Laden..." />
+                        ) : pastAuctions.length === 0 ? (
+                            <DashboardPanel compact loading title="Geen veilingen beschikbaar..." />
                         ) : (
-                            past.map((auction) => (
-                                <DashboardPanel
-                                    key={auction.id}
-                                    compact
-                                    imageSrc={"/images/placeholder.png"}
-                                    kloklocatie={`Klok ${auction.clockLocationEnum}`}
-                                    resterendeTijd={new Date(auction.startDate).toLocaleString()}
-                                >
-                                    <ActionButtons onDelete={handleDelete} onUpdate={handleUpdate} />
-                                </DashboardPanel>
-                            ))
+                            pastAuctions.map((auction) => {
+                                const product = auction.products?.[0] ?? null;
+
+                                return (
+                                    <Link key={auction.id} href={`/veiling/${auction.id}`}>
+                                        <DashboardPanel
+                                            compact
+                                            loading={false}
+                                            title={product?.name ?? `Veiling #${auction.id}`}
+                                            kloklocatie={parseClockLocation(auction.clockLocationEnum)}
+                                            imageSrc={
+                                                product?.picture
+                                                    ? `http://localhost:5001/uploads/${product.picture}`
+                                                    : undefined
+                                            }
+                                            resterendeTijd={new Date(auction.startDate).toLocaleString()}
+                                        />
+                                    </Link>
+                                );
+                            })
                         )}
                     </div>
                 </div>
@@ -188,99 +175,3 @@ export default function Home() {
         </>
     );
 }
-
-
-
-// 'use client';
-//
-// import styles from '../page.module.css';
-// import Header from "@/components/header/header";
-// import ActionButtons from "@/components/smallButton/smallButton";
-// import DashboardPanel from "@/components/dashboardPanel/dashboardpanel";
-//
-// export default function Home() {
-//
-//     const handleDelete = () => {
-//         // TODO : implement delete functionality
-//     };
-//
-//     const handleUpdate = () => {
-//         // TODO : implement update functionality
-//     };
-//
-//
-//     return (
-//         <>
-//             <Header></Header>
-//             <main className={styles.main}>
-//
-//                 <div className={styles.page}>
-//                     <h1>Alle veilingen</h1>
-//                     <h2>Huidige veilingen</h2>
-//
-//                     <DashboardPanel
-//                         compact
-//                         imageSrc="/images/PIPIPOTATO.png"
-//                         kloklocatie="Klok 1 - Hal A"
-//                         resterendeTijd="9 nov 2025, 16:45"
-//                     >
-//                         <ActionButtons onDelete={handleDelete} onUpdate={handleUpdate} />
-//                     </DashboardPanel>
-//
-//
-//
-//                     <DashboardPanel
-//                         compact
-//                         imageSrc="/images/PIPIPOTATO.png"
-//                         kloklocatie="Klok 2 - Kantine"
-//                         resterendeTijd="10 nov 2025, 08:30"
-//                     >
-//                         <ActionButtons onDelete={handleDelete} onUpdate={handleUpdate} />
-//                     </DashboardPanel>
-//
-//                     <h2>Aankomende veilingen</h2>
-//                     <DashboardPanel
-//                         compact
-//                         imageSrc="/images/PIPIPOTATO.png"
-//                         kloklocatie="Klok 3 - Vergaderzaal B"
-//                         resterendeTijd="11 nov 2025, 12:00"
-//                     >
-//                         <ActionButtons onDelete={handleDelete} onUpdate={handleUpdate} />
-//                     </DashboardPanel>
-//
-//                     <DashboardPanel
-//                         compact
-//                         imageSrc="/images/PIPIPOTATO.png"
-//                         kloklocatie="Klok 4 - Receptie"
-//                         resterendeTijd="12 nov 2025, 17:15"
-//                     >
-//                         <ActionButtons onDelete={handleDelete} onUpdate={handleUpdate} />
-//                     </DashboardPanel>
-//                     <h2>Afgelopen veilingen</h2>
-//                     <DashboardPanel
-//                         compact
-//                         imageSrc="/images/PIPIPOTATO.png"
-//                         kloklocatie="Klok 5 - Werkplaats"
-//                         resterendeTijd="13 nov 2025, 09:45"
-//                     >
-//                         <ActionButtons onDelete={handleDelete} onUpdate={handleUpdate} />
-//                     </DashboardPanel>
-//
-//                     <DashboardPanel
-//                         compact
-//                         imageSrc="/images/PIPIPOTATO.png"
-//                         kloklocatie="Klok 4 - Receptie"
-//                         resterendeTijd="12 nov 2025, 17:15"
-//                     >
-//                         <ActionButtons onDelete={handleDelete} onUpdate={handleUpdate} />
-//                     </DashboardPanel>
-//
-//                 </div>
-//
-//             </main>
-//
-//         </>
-//
-//
-//     );
-// }
