@@ -51,4 +51,22 @@ public class PagesServiceTest
             Assert.NotEmpty(auction.RegisteredProducts);
         }
     }
+
+    [Fact]
+    public async Task GetAuctionWithProductsById_ReturnsProductsNotFoundException()
+    {
+        // Arrange (create auction without products)
+        await using ApplicationDbContext context = new(_dbOptions);
+        List<Auction> auctionList = DummyAuctions.GetFakeAuctions();
+        context.Auctions.AddRange(auctionList);
+        await context.SaveChangesAsync();
+        
+        PagesServices pagesServices = new PagesServices(context, _userManagerMock.Object);
+        
+        // Act & Assert
+        await Assert.ThrowsAsync<NotFoundException>(async () =>
+        {
+            await pagesServices.GetAuctionWithProductsById(auctionList.First().Id);
+        });
+    }
 }
