@@ -146,7 +146,6 @@ public class Program
         builder.Services.AddEndpointsApiExplorer();
         builder.Services.AddSwaggerGen(c =>
         {
-            c.SwaggerDoc("v1", new OpenApiInfo { Title = "LeafBidAPI", Version = "v1" });
             c.SwaggerDoc("v2", new OpenApiInfo { Title = "LeafBidAPI", Version = "v2" });
 
             string xmlFilename = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
@@ -162,7 +161,6 @@ public class Program
             app.UseSwagger();
             app.UseSwaggerUI(c =>
             {
-                c.SwaggerEndpoint("/swagger/v1/swagger.json", "LeafBidAPI V1");
                 c.SwaggerEndpoint("/swagger/v2/swagger.json", "LeafBidAPI V2");
             });
         }
