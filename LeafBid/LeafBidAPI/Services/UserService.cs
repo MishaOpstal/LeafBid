@@ -114,7 +114,9 @@ public class UserService(
     
     public async Task<User> LoginUser(LoginUserDto loginData)
     {
-        User? user = await userManager.FindByEmailAsync(loginData.Email);
+        // Check for email, then username if email wasn't found.
+        User? user = await userManager.FindByEmailAsync(loginData.Email)
+            ?? await userManager.FindByNameAsync(loginData.Email);
         if (user == null)
         {
             throw new NotFoundException("User not found");
@@ -135,6 +137,13 @@ public class UserService(
         user.LastLogin = DateTime.UtcNow;
         await userManager.UpdateAsync(user);
 
+        return user;
+    }
+    
+    public async Task<User> VerifyUser(User user)
+    {
+        user.EmailConfirmed = true;
+        await userManager.UpdateAsync(user);
         return user;
     }
     

@@ -80,6 +80,9 @@ public class UserController(IUserService userService, IRoleService roleService) 
                 createdUser,
                 await roleService.GetRolesForUser(createdUser)
             );
+            
+            // Set the email verified to true
+            await userService.VerifyUser(createdUser);
 
             return CreatedAtAction(
                 actionName: nameof(GetUser),

@@ -73,6 +73,16 @@ public interface IUserService
     /// Thrown when the password is invalid or sign-in fails.
     /// </exception>
     Task<User> LoginUser(LoginUserDto loginData);
+    
+    /// <summary>
+    /// Verify a user's email address.
+    /// </summary>
+    /// <param name="user">The user to verify.</param>
+    /// <returns>The authenticated user entity.</returns>
+    /// <exception cref="NotFoundException">
+    /// Thrown when no user is found.
+    /// </exception>
+    Task<User> VerifyUser(User user);
 
     /// <summary>
     /// Logout the currently logged-in user.

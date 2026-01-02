@@ -46,7 +46,7 @@ export default function RegisterPage() {
     const handleSubmit = async (e: React.FormEvent) => {
         try {
             await submitForm(e);
-            router.push('/login');
+            router.push('/auth/login');
         } catch (error) {
             if (isRegisterFailedException(error) || isValidationFailedException(error)) {
                 setMessage(error.getMessage());
