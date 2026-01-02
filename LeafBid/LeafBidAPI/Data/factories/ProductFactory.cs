@@ -7,26 +7,19 @@ public class ProductFactory : Factory<Product>
 {
     protected override Faker<Product> BuildRules()
     {
-        Faker faker = new();
-
-        string productName = faker.Commerce.ProductName();
-        
         return new Faker<Product>()
+            .RuleFor(p => p.Species, f => f.Commerce.Categories(1)[0])
             .RuleFor(
                 p => p.Name,
-                productName
+                (f, p) => $"{p.Species} {f.Commerce.ProductMaterial()}"
             )
             .RuleFor(
                 p => p.Description,
                 f => f.Commerce.ProductDescription()
             )
             .RuleFor(
-                p => p.Species,
-                f => f.Random.Word()
-            )
-            .RuleFor(
                 p => p.Picture,
-                f => f.Image.PlaceholderUrl(1200, 1200, productName)
+                (f, p) => f.Image.PlaceholderUrl(1200, 1200, p.Name)
             );
     }
 }
