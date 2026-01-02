@@ -65,4 +65,24 @@ public class PagesController(IPagesServices pagesServices) : ControllerBase
             return NotFound(e.Message);
         }
     }
+
+    /// <summary>
+    /// returns the active auction per clock location
+    /// </summary>
+    /// <returns>A DTO containing the active auction and its products for the specified clock location.</returns>
+    [HttpGet]
+    [ProducesResponseType(typeof(GetAuctionWithProductsDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<GetAuctionPerActiveClockLocationDto>> GetActiveAuctionWithProducts()
+    {
+        try
+        {
+            GetAuctionPerActiveClockLocationDto result = await pagesServices.GetAuctionPerActiveClockLocation();
+            return Ok(result);
+        }
+        catch (NotFoundException e)
+        {
+            return NotFound(e.Message);
+        }
+    }
 }
