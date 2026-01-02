@@ -96,7 +96,6 @@ public class PagesServices(
     {
         // return list of auctions with products (running through for each loop using our clock location enums)
         List<Auction> auctions = await context.Auctions
-            .Where(a => a.IsLive)
             .OrderBy(a => a.ClockLocationEnum)
             .ToListAsync();
 

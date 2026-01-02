@@ -52,7 +52,7 @@ public class PagesServiceTest
     }
 
     [Fact]
-    public async Task GetAuctionPerActiveClockLocation_ThrowsNotFound_WhenNoLiveAuctionsExist()
+    public async Task GetAuctionPerActiveClockLocation_ThrowsNotFound_WhenNoAuctionsExist()
     {
         // Arrange
         await using ApplicationDbContext context = new(_dbOptions);
