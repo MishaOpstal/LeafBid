@@ -1,4 +1,5 @@
 ﻿using LeafBidAPI.Data;
+using LeafBidAPI.Exceptions;
 using LeafBidAPI.Models;
 using LeafBidAPI.Services;
 using LeafBidAPITest.Helpers;
@@ -24,12 +25,46 @@ public class PagesServiceTest
         context.Auctions.AddRange(auctionList);
         await context.SaveChangesAsync();
         
-        List<RegisteredProduct> productList = DummyRegisteredProducts.GetFakeRegisteredProducts();
-        context.RegisteredProducts.AddRange(productList);
+        List<AuctionProduct> productList = DummyAuctionProducts.GetFakeAuctionProducts();
+        context.AuctionProducts.AddRange(productList);
+        await context.SaveChangesAsync();
+
+        List<RegisteredProduct> registeredProducts = DummyRegisteredProducts.GetFakeRegisteredProducts();
+        context.RegisteredProducts.AddRange(registeredProducts);
+        await context.SaveChangesAsync();
+
+        List<Product> products = DummyProducts.GetFakeProducts();
+        context.Products.AddRange(products);
         await context.SaveChangesAsync();
         
-        
-        
         PagesServices pagesServices = new PagesServices(context, _userManagerMock.Object);
+        
+        // Act 
+        var result =  await pagesServices.GetAuctionPerActiveClockLocation();
+        
+        // Assert
+        Assert.NotEmpty(result.Auctions);
+        foreach (var auction in result.Auctions)
+        {
+            Assert.NotNull(auction.RegisteredProducts);
+            Assert.NotEmpty(auction.RegisteredProducts);
+        }
+    }
+
+    [Fact]
+    public async Task GetAuctionPerActiveClockLocation_ThrowsNotFound_WhenNoLiveAuctionsExist()
+    {
+        // Arrange
+        await using ApplicationDbContext context = new(_dbOptions);
+        // Do not add any auctions, or add only non-live ones
+        List<Auction> auctionList = DummyAuctions.GetFakeAuctions();
+        foreach (var a in auctionList) a.IsLive = false;
+        context.Auctions.AddRange(auctionList);
+        await context.SaveChangesAsync();
+
+        PagesServices pagesServices = new PagesServices(context, _userManagerMock.Object);
+
+        // Act & Assert
+        await Assert.ThrowsAsync<NotFoundException>(() => pagesServices.GetAuctionPerActiveClockLocation());
     }
 }

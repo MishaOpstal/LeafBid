@@ -4,7 +4,7 @@ namespace LeafBidAPITest.Helpers;
 
 public class DummyAuctionProducts
 {
-    public static List<AuctionProduct>
+    public static List<AuctionProduct> GetFakeAuctionProducts()
     {
         return
         [
