@@ -94,30 +94,39 @@ public class PagesServices(
 
     public async Task<GetAuctionPerActiveClockLocationDto> GetAuctionPerActiveClockLocation()
     {
-        // return list of auctions with products (running through for each loop using our clock location enums)
+        
+        //TODO: fix this entire mess up, make it so that running the endpoint doesn't just keep giving me a NotFoundException
+        
+        // Define the start and end of today to filter auctions
+        DateTime today = DateTime.Today;
+        DateTime tomorrow = today.AddDays(1);
+
+        // Get auctions starting today, sorted by ClockLocationEnum
         List<Auction> auctions = await context.Auctions
+            .Where(a => a.StartDate >= today && a.StartDate < tomorrow)
             .OrderBy(a => a.ClockLocationEnum)
             .ToListAsync();
 
-        if (auctions.Count == 0) throw new NotFoundException("No live auctions found.");
+        if (auctions.Count == 0) throw new NotFoundException("No auctions found for today.");
 
         ProductService productService = new ProductService(context, userManager);
         List<GetAuctionWithProductsDto> auctionDtos = new List<GetAuctionWithProductsDto>();
 
         foreach (Auction auction in auctions)
         {
-            List<RegisteredProduct?> RegisteredProducts = await context.AuctionProducts
+            // Retrieve products for this specific auction, explicitly ordered by ServeOrder
+            List<RegisteredProduct?> registeredProducts = await context.AuctionProducts
                 .Where(ap => ap.AuctionId == auction.Id)
-                .OrderBy(ap => ap.ServeOrder)
+                .OrderBy(ap => ap.ServeOrder) // Ensures sorting by serve order
                 .Select(ap => ap.RegisteredProduct)
                 .Where(p => p != null)
                 .ToListAsync();
 
-            List<RegisteredProductResponse> registeredProductResponses = RegisteredProducts
+            List<RegisteredProductResponse> registeredProductResponses = registeredProducts
                 .OfType<RegisteredProduct>()
                 .Select(rp => productService.CreateRegisteredProductResponse(rp))
                 .ToList();
-            
+        
             auctionDtos.Add(new GetAuctionWithProductsDto
             {
                 Auction = auction,
