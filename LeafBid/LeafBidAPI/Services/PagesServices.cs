@@ -91,4 +91,44 @@ public class PagesServices(
 
         return result;
     }
+
+    public async Task<GetAuctionPerActiveClockLocationDto> GetAuctionPerActiveClockLocation()
+    {
+        // return list of auctions with products (running through for each loop using our clock location enums)
+        List<Auction> auctions = await context.Auctions
+            .Where(a => a.IsLive)
+            .OrderBy(a => a.ClockLocationEnum)
+            .ToListAsync();
+
+        if (auctions.Count == 0) throw new NotFoundException("No live auctions found.");
+
+        ProductService productService = new ProductService(context, userManager);
+        List<GetAuctionWithProductsDto> auctionDtos = new List<GetAuctionWithProductsDto>();
+
+        foreach (Auction auction in auctions)
+        {
+            List<RegisteredProduct?> RegisteredProducts = await context.AuctionProducts
+                .Where(ap => ap.AuctionId == auction.Id)
+                .OrderBy(ap => ap.ServeOrder)
+                .Select(ap => ap.RegisteredProduct)
+                .Where(p => p != null)
+                .ToListAsync();
+
+            List<RegisteredProductResponse> registeredProductResponses = RegisteredProducts
+                .OfType<RegisteredProduct>()
+                .Select(rp => productService.CreateRegisteredProductResponse(rp))
+                .ToList();
+            
+            auctionDtos.Add(new GetAuctionWithProductsDto
+            {
+                Auction = auction,
+                RegisteredProducts = registeredProductResponses
+            });
+        }
+
+        return new GetAuctionPerActiveClockLocationDto
+        {
+            Auctions = auctionDtos
+        };
+    }
 }
