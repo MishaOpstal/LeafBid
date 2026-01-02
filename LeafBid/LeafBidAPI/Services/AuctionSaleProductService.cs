@@ -27,6 +27,25 @@ public class AuctionSaleProductService(ApplicationDbContext context) : IAuctionS
         return auctionSaleProduct;
     }
     
+    public async Task<List<AuctionSaleProductResponse>> GetAuctionSaleProductsByUserId(string userId)
+    {
+        List<AuctionSaleProduct> list = await context.AuctionSaleProducts
+            .Where(asp => asp.AuctionSale != null && asp.AuctionSale.UserId == userId)
+            .Include(auctionSaleProduct => auctionSaleProduct.Product)
+            .Include(auctionSaleProduct => auctionSaleProduct.AuctionSale)
+            .ToListAsync();
+        List<AuctionSaleProductResponse> responseList = list.Select(asp => new AuctionSaleProductResponse
+        {
+            Name = asp.Product?.Name ?? "Unknown Product",
+            Picture = asp.Product?.Picture ?? string.Empty,
+            Price = asp.Price,
+            Quantity = asp.Quantity,
+            Date = asp.AuctionSale?.Date ?? DateTime.MinValue
+        }).ToList();
+        return responseList;
+    }
+
+    
     public async Task<AuctionSaleProduct> CreateAuctionSaleProduct(
         CreateAuctionSaleProductDto auctionSaleProductData)
     {
