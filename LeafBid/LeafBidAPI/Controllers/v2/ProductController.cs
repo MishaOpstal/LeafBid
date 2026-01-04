@@ -107,13 +107,33 @@ public class ProductController(IProductService productService) : ControllerBase
     /// <param name="productId"></param>
     /// <param name="userId"></param>
     /// <returns>The created product.</returns>
+    /// <exception cref="Exception">Thrown when the main product cannot be found.</exception>
     [HttpPost("/registeredCreate/{ProductId:int}")]
+    [ProducesResponseType(typeof(RegisteredProductResponse), StatusCodes.Status201Created)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<RegisteredProductResponse>> CreateRegisteredProduct(
         [FromBody] CreateRegisteredProductEndpointDto productData, int productId, string userId)
     {
-        var result = 0;
+        try
+        {
+            RegisteredProduct registeredProduct = await productService.CreateProductDeliveryGuy(productData, productId, userId);
+            RegisteredProductResponse registeredProductResponse = productService.CreateRegisteredProductResponse(registeredProduct);
+            return CreatedAtAction(
+                actionName: nameof(GetProductById),
+                routeValues: new
+                {
+                    id = registeredProductResponse.Id,
+                    version = "2.0"
+                },
+                value: registeredProductResponse
+            );
+        }
+        catch (NotFoundException e)
+        {
+            Console.WriteLine(e);
+            throw;
+        }
 
-        return Ok(result);
     }
 
     /// <summary>

@@ -123,22 +123,35 @@ public class ProductService(
             throw new NotFoundException("Product not found");
         }
         User? user = await userManager.FindByIdAsync(userId);
-
-        RegisteredProduct registeredProduct = new()
+        if (user == null)
         {
-            ProductId = productId,
-            MinPrice = registeredProductData.MinPrice,
-            Stock = registeredProductData.Stock,
-            Region = registeredProductData.Region,
-            HarvestedAt = registeredProductData.HarvestedAt,
-            CompanyId = user.CompanyId.Value,
-            UserId = userId
-        };
+            throw new NotFoundException("User not found");
+        }
 
-        context.RegisteredProducts.Add(registeredProduct);
-        await context.SaveChangesAsync();
+        if (user.CompanyId != null)
+        {
+            RegisteredProduct registeredProduct = new()
+            {
+                ProductId = productId,
+                MinPrice = registeredProductData.MinPrice,
+                Stock = registeredProductData.Stock,
+                Region = registeredProductData.Region,
+                HarvestedAt = registeredProductData.HarvestedAt,
+                StemLength = registeredProductData.StemLength,
+                PotSize = registeredProductData.PotSize,
+                CompanyId = user.CompanyId.Value,
+                UserId = userId
+            };
 
-        return registeredProduct;
+            context.RegisteredProducts.Add(registeredProduct);
+            await context.SaveChangesAsync();
+
+            return registeredProduct;
+        }
+        else
+        {
+            throw new NotFoundException("User is not a company");
+        }
     }
 
     public async Task<RegisteredProduct> AddProduct(int productId, CreateRegisteredProductDto registeredProductData)
