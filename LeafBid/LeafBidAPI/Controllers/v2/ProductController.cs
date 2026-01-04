@@ -101,6 +101,22 @@ public class ProductController(IProductService productService) : ControllerBase
     }
 
     /// <summary>
+    /// Create a new registered product.
+    /// </summary>
+    /// <param name="productData">The product data.</param>
+    /// <param name="productId"></param>
+    /// <param name="userId"></param>
+    /// <returns>The created product.</returns>
+    [HttpPost("/registeredCreate/{ProductId:int}")]
+    public async Task<ActionResult<RegisteredProductResponse>> CreateRegisteredProduct(
+        [FromBody] CreateRegisteredProductEndpointDto productData, int productId, string userId)
+    {
+        var result = 0;
+
+        return Ok(result);
+    }
+
+    /// <summary>
     /// Update an existing product.
     /// </summary>
     /// <param name="id">The product ID.</param>
