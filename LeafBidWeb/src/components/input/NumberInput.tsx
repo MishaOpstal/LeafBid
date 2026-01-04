@@ -42,13 +42,13 @@ const NumberInput: React.FC<NumberInputProps> = ({
             {prefix || postfix ? (
                 <InputGroup>
                     {prefix && (
-                        <InputGroup.Text id={`${name}-prefix`}>{prefix}</InputGroup.Text>
+                        <InputGroup.Text id={`${name}-prefix`} style={{backgroundColor: "var(--primary)",  borderColor: "var(--primary)", color: "var(--background)"}}>{prefix}</InputGroup.Text>
                     )}
 
                     {control}
 
                     {postfix && (
-                        <InputGroup.Text id={`${name}-postfix`}>{postfix}</InputGroup.Text>
+                        <InputGroup.Text id={`${name}-postfix`} style={{backgroundColor: "var(--primary)",  borderColor: "var(--primary)", color: "var(--background)"}}>{postfix}</InputGroup.Text>
                     )}
                 </InputGroup>
             ) : (
