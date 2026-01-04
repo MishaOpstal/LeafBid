@@ -12,8 +12,7 @@ namespace LeafBidAPI.Services;
 
 public class PagesServices(
     ApplicationDbContext context,
-    UserManager<User> userManager,
-    ILogger<PagesServices> logger
+    UserManager<User> userManager
 ) : IPagesServices
 {
     public async Task<GetAuctionWithProductsDto> GetAuctionWithProducts(ClockLocationEnum clockLocation)
@@ -109,19 +108,16 @@ public class PagesServices(
    // TODO: remove hardcoded date
     DateTime today = new DateTime(2019, 12, 29);
     DateTime tomorrow = today.AddDays(1);
-
-    logger.LogInformation("GetAuctionPerActiveClockLocation start - range {Today} to {Tomorrow}", today, tomorrow);
+    
 
     var auctions = await context.Auctions
         .Where(a => a.StartDate >= today && a.StartDate < tomorrow)
         .OrderBy(a => a.ClockLocationEnum)
         .ToListAsync();
-
-    logger.LogInformation("Found {Count} auctions for today range", auctions.Count);
+    
 
     if (!auctions.Any())
     {
-        logger.LogWarning("No auctions found for today range {Today}-{Tomorrow}", today, tomorrow);
         throw new NotFoundException("No auctions found for today.");
     }
 
@@ -142,7 +138,6 @@ public class PagesServices(
 
         if (!registeredProducts.Any())
         {
-            logger.LogWarning("No registered products for auction {AuctionId} starting {StartDate} - skipping", auction.Id, auction.StartDate);
             continue; // skip this auction but keep processing others
         }
 
@@ -155,7 +150,6 @@ public class PagesServices(
             }
             catch (Exception ex)
             {
-                logger.LogWarning(ex, "Failed to create response for RegisteredProduct {RegisteredProductId} in auction {AuctionId}", rp?.Id, auction.Id);
                 // continue processing remaining products, this is normal flow
             }
         }
@@ -165,14 +159,13 @@ public class PagesServices(
             Auction = auction,
             RegisteredProducts = registeredProductResponses
         });
-
-        logger.LogInformation("Processed auction {AuctionId} with {Count} products", auction.Id, registeredProductResponses.Count);
+        
     }
 
     var ordered = auctionDtos
         .OrderBy(dto => dto.Auction.ClockLocationEnum)
         .ToList();
-
-    logger.LogInformation("GetAuctionPerActiveClockLocation completed - returning {Count} DTOs", ordered.Count);
-    return ordered;    }
+    
+    return ordered;    
+    }
 }
