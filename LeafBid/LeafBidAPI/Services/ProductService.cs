@@ -122,6 +122,7 @@ public class ProductService(
         {
             throw new NotFoundException("Product not found");
         }
+        
         User? user = await userManager.FindByIdAsync(userId);
         if (user == null)
         {

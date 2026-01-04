@@ -107,8 +107,9 @@ public class ProductController(IProductService productService) : ControllerBase
     /// <param name="productId"></param>
     /// <param name="userId"></param>
     /// <returns>The created product.</returns>
-    /// <exception cref="Exception">Thrown when the main product cannot be found.</exception>
+    /// <exception cref="NotFoundException">Thrown when the main product cannot be found.</exception>
     [HttpPost("/registeredCreate/{ProductId:int}")]
+    [Authorize(Roles = "Provider")]
     [ProducesResponseType(typeof(RegisteredProductResponse), StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<RegisteredProductResponse>> CreateRegisteredProduct(
