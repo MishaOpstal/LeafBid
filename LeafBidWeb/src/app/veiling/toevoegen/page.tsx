@@ -156,7 +156,7 @@ export default function Home() {
                     <section className={s.section}>
                         <h3 className={s.h3}>Gekoppelde Producten</h3>
                         <OrderedMultiSelect
-                            items={products}
+                            items={[...products].sort((a, b) => a.name.localeCompare(b.name))} //dit soorteert alfabetisch
                             value={auctionData.products}
                             onChange={handleProductsSelect}
                             showBadges={false}
