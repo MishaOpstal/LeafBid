@@ -104,6 +104,8 @@ public class AuctionService(
         List<RegisteredProduct?> registeredProducts = await context.AuctionProducts
             .Where(ap => ap.AuctionId == auctionId)
             .OrderBy(ap => ap.ServeOrder)
+            .Include(ap => ap.RegisteredProduct)
+            .ThenInclude(rp => rp!.Product)
             .Select(ap => ap.RegisteredProduct)
             .ToListAsync();
 

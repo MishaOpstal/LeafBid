@@ -1,3 +1,5 @@
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using LeafBidAPI.Data;
 using LeafBidAPI.DTOs.Product;
 using LeafBidAPI.DTOs.RegisteredProduct;
@@ -43,9 +45,9 @@ public class ProductService(
     public async Task<RegisteredProduct> GetRegisteredProductById(int id)
     {
         RegisteredProduct? registeredProduct = await context.RegisteredProducts
-            .FirstOrDefaultAsync(
-                p => p.Id == id
-            );
+            .Where(rp => rp.Id == id)
+            .Include(rp => rp.Product)
+            .FirstOrDefaultAsync();
 
         return registeredProduct ?? throw new NotFoundException("Registered product not found");
     }
