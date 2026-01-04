@@ -67,7 +67,7 @@ public class PagesController(IPagesServices pagesServices) : ControllerBase
     }
 
     /// <summary>
-    /// returns the active auction per clock location
+    /// returns all the auctions per clock location of todays date
     /// </summary>
     /// <returns>A DTO containing the active auction and its products for the specified clock location.</returns>
     [HttpGet]
