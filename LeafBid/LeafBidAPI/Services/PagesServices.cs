@@ -29,6 +29,10 @@ public class PagesServices(
 
         List<RegisteredProduct?> registeredProducts = await context.AuctionProducts
             .Where(ap => ap.AuctionId == auction.Id)
+            .Include(ap => ap.RegisteredProduct)
+                .ThenInclude(rp => rp!.Product)
+            .Include(ap => ap.RegisteredProduct)
+                .ThenInclude(rp => rp!.User)
             .OrderBy(ap => ap.ServeOrder)
             .Select(ap => ap.RegisteredProduct)
             .Where(p => p != null)
@@ -67,6 +71,10 @@ public class PagesServices(
 
         List<RegisteredProduct?> registeredProducts = await context.AuctionProducts
             .Where(ap => ap.AuctionId == auction.Id)
+            .Include(ap => ap.RegisteredProduct)
+                .ThenInclude(rp => rp!.Product)
+            .Include(ap => ap.RegisteredProduct)
+                .ThenInclude(rp => rp!.User)
             .OrderBy(ap => ap.ServeOrder)
             .Select(ap => ap.RegisteredProduct)
             .Where(p => p != null)
@@ -90,5 +98,74 @@ public class PagesServices(
         };
 
         return result;
+    }
+
+    public async Task<List<GetAuctionWithProductsDto>> GetAuctionPerActiveClockLocation()
+    {
+        
+       
+   // TODO: remove hardcoded date once product goes live
+    DateTime today = new DateTime(2019, 12, 29);
+    DateTime tomorrow = today.AddDays(1);
+    
+
+    var auctions = await context.Auctions
+        .Where(a => a.StartDate >= today && a.StartDate < tomorrow)
+        .OrderBy(a => a.ClockLocationEnum)
+        .ToListAsync();
+    
+
+    if (!auctions.Any())
+    {
+        throw new NotFoundException("No auctions found for today.");
+    }
+
+    var productService = new ProductService(context, userManager);
+    var auctionDtos = new List<GetAuctionWithProductsDto>();
+
+    foreach (var auction in auctions)
+    {
+        var registeredProducts = await context.AuctionProducts
+            .Where(ap => ap.AuctionId == auction.Id && ap.RegisteredProductId != null)
+                .Include(ap => ap.RegisteredProduct)
+                    .ThenInclude(rp => rp!.Product)
+                .Include(ap => ap.RegisteredProduct)
+                    .ThenInclude(rp => rp!.User)  
+            .OrderBy(ap => ap.ServeOrder)
+            .Select(ap => ap.RegisteredProduct!)
+            .ToListAsync();
+
+        if (!registeredProducts.Any())
+        {
+            continue; // skip this auction but keep processing others
+        }
+
+        var registeredProductResponses = new List<RegisteredProductResponse>();
+        foreach (var rp in registeredProducts)
+        {
+            try
+            {
+                registeredProductResponses.Add(productService.CreateRegisteredProductResponse(rp));
+            }
+            catch (Exception ex)
+            {
+                throw new NotFoundException($"Failed to create RegisteredProductResponse for RegisteredProduct {rp.Id}", ex);
+                // continue processing remaining products, this is normal flow
+            }
+        }
+
+        auctionDtos.Add(new GetAuctionWithProductsDto
+        {
+            Auction = auction,
+            RegisteredProducts = registeredProductResponses
+        });
+        
+    }
+
+    var ordered = auctionDtos
+        .OrderBy(dto => dto.Auction.ClockLocationEnum)
+        .ToList();
+    
+    return ordered;    
     }
 }
