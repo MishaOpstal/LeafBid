@@ -2,7 +2,3 @@
 
 using Models;
 
-public class GetAuctionPerActiveClockLocationDto
-{
-    public required List<GetAuctionWithProductsDto> Auctions { get; set; }
-}

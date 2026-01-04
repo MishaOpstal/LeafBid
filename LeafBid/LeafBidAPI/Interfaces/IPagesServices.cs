@@ -39,6 +39,6 @@ public interface IPagesServices
     /// </summary>
     /// <returns>A DTO containing the active auction and its products for each clock location.</returns>
     /// <exception cref="NotFoundException">Thrown when no active auction is found for any clock location.</exception>
-    Task<GetAuctionPerActiveClockLocationDto> GetAuctionPerActiveClockLocation();
+    Task<List<GetAuctionWithProductsDto>> GetAuctionPerActiveClockLocation();
 
 }

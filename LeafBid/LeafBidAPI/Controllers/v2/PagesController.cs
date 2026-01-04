@@ -73,11 +73,11 @@ public class PagesController(IPagesServices pagesServices) : ControllerBase
     [HttpGet]
     [ProducesResponseType(typeof(GetAuctionWithProductsDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<ActionResult<GetAuctionPerActiveClockLocationDto>> GetActiveAuctionWithProducts()
+    public async Task<ActionResult<GetAuctionWithProductsDto>> GetActiveAuctionWithProducts()
     {
         try
         {
-            GetAuctionPerActiveClockLocationDto result = await pagesServices.GetAuctionPerActiveClockLocation();
+            List<GetAuctionWithProductsDto> result = await pagesServices.GetAuctionPerActiveClockLocation();
             return Ok(result);
         }
         catch (NotFoundException e)
