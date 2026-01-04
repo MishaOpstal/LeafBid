@@ -128,9 +128,9 @@ public class PagesServices(
         var registeredProducts = await context.AuctionProducts
             .Where(ap => ap.AuctionId == auction.Id && ap.RegisteredProductId != null)
                 .Include(ap => ap.RegisteredProduct)
-                    .ThenInclude(rp => rp!.Product) // Add this
+                    .ThenInclude(rp => rp!.Product)
                 .Include(ap => ap.RegisteredProduct)
-                    .ThenInclude(rp => rp!.User)    // Add this
+                    .ThenInclude(rp => rp!.User)  
             .OrderBy(ap => ap.ServeOrder)
             .Select(ap => ap.RegisteredProduct!)
             .ToListAsync();
