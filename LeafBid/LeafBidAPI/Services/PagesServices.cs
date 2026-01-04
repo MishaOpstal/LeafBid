@@ -30,6 +30,10 @@ public class PagesServices(
 
         List<RegisteredProduct?> registeredProducts = await context.AuctionProducts
             .Where(ap => ap.AuctionId == auction.Id)
+            .Include(ap => ap.RegisteredProduct)
+                .ThenInclude(rp => rp!.Product)
+            .Include(ap => ap.RegisteredProduct)
+                .ThenInclude(rp => rp!.User)
             .OrderBy(ap => ap.ServeOrder)
             .Select(ap => ap.RegisteredProduct)
             .Where(p => p != null)
@@ -68,6 +72,10 @@ public class PagesServices(
 
         List<RegisteredProduct?> registeredProducts = await context.AuctionProducts
             .Where(ap => ap.AuctionId == auction.Id)
+            .Include(ap => ap.RegisteredProduct)
+                .ThenInclude(rp => rp!.Product)
+            .Include(ap => ap.RegisteredProduct)
+                .ThenInclude(rp => rp!.User)
             .OrderBy(ap => ap.ServeOrder)
             .Select(ap => ap.RegisteredProduct)
             .Where(p => p != null)
@@ -98,61 +106,73 @@ public class PagesServices(
         
         //TODO: fix this entire mess up, make it so that running the endpoint doesn't just keep giving me a NotFoundException
        
-        DateTime today = new DateTime(2019, 12, 29); // TODO: remove hardcoded date
-        DateTime tomorrow = today.AddDays(1);
+   // TODO: remove hardcoded date
+    DateTime today = new DateTime(2019, 12, 29);
+    DateTime tomorrow = today.AddDays(1);
 
-        logger.LogInformation("GetAuctionPerActiveClockLocation start - range {Today} to {Tomorrow}", today, tomorrow);
+    logger.LogInformation("GetAuctionPerActiveClockLocation start - range {Today} to {Tomorrow}", today, tomorrow);
 
-        List<Auction> auctions = await context.Auctions
-            .Where(a => a.StartDate >= today && a.StartDate < tomorrow)
-            .OrderBy(a => a.ClockLocationEnum)
+    var auctions = await context.Auctions
+        .Where(a => a.StartDate >= today && a.StartDate < tomorrow)
+        .OrderBy(a => a.ClockLocationEnum)
+        .ToListAsync();
+
+    logger.LogInformation("Found {Count} auctions for today range", auctions.Count);
+
+    if (!auctions.Any())
+    {
+        logger.LogWarning("No auctions found for today range {Today}-{Tomorrow}", today, tomorrow);
+        throw new NotFoundException("No auctions found for today.");
+    }
+
+    var productService = new ProductService(context, userManager);
+    var auctionDtos = new List<GetAuctionWithProductsDto>();
+
+    foreach (var auction in auctions)
+    {
+        var registeredProducts = await context.AuctionProducts
+            .Where(ap => ap.AuctionId == auction.Id && ap.RegisteredProductId != null)
+                .Include(ap => ap.RegisteredProduct)
+                    .ThenInclude(rp => rp!.Product) // Add this
+                .Include(ap => ap.RegisteredProduct)
+                    .ThenInclude(rp => rp!.User)    // Add this
+            .OrderBy(ap => ap.ServeOrder)
+            .Select(ap => ap.RegisteredProduct!)
             .ToListAsync();
 
-        logger.LogInformation("Found {Count} auctions for today range", auctions.Count);
-
-        if (auctions.Count == 0)
+        if (!registeredProducts.Any())
         {
-            logger.LogWarning("No auctions found for today range {Today}-{Tomorrow}", today, tomorrow);
-            throw new NotFoundException("No auctions found for today.");
+            logger.LogWarning("No registered products for auction {AuctionId} starting {StartDate} - skipping", auction.Id, auction.StartDate);
+            continue; // skip this auction but keep processing others
         }
 
-        ProductService productService = new ProductService(context, userManager);
-        List<GetAuctionWithProductsDto> auctionDtos = new List<GetAuctionWithProductsDto>();
-
-        foreach (Auction auction in auctions)
+        var registeredProductResponses = new List<RegisteredProductResponse>();
+        foreach (var rp in registeredProducts)
         {
-            List<RegisteredProduct?> registeredProducts = await context.AuctionProducts
-                .Where(ap => ap.AuctionId == auction.Id)
-                .OrderBy(ap => ap.ServeOrder)
-                .Select(ap => ap.RegisteredProduct)
-                .Where(p => p != null)
-                .ToListAsync();
-
-            if (registeredProducts.Count == 0)
+            try
             {
-                logger.LogWarning("No registered products for auction {AuctionId} starting {StartDate}", auction.Id, auction.StartDate);
-                throw new NotFoundException($"No registered products found for auction {auction.Id}.");
+                registeredProductResponses.Add(productService.CreateRegisteredProductResponse(rp));
             }
-
-            List<RegisteredProductResponse> registeredProductResponses = registeredProducts
-                .OfType<RegisteredProduct>()
-                .Select(rp => productService.CreateRegisteredProductResponse(rp))
-                .ToList();
-
-            auctionDtos.Add(new GetAuctionWithProductsDto
+            catch (Exception ex)
             {
-                Auction = auction,
-                RegisteredProducts = registeredProductResponses
-            });
-
-            logger.LogInformation("Processed auction {AuctionId} with {Count} products", auction.Id, registeredProductResponses.Count);
+                logger.LogWarning(ex, "Failed to create response for RegisteredProduct {RegisteredProductId} in auction {AuctionId}", rp?.Id, auction.Id);
+                // continue processing remaining products, this is normal flow
+            }
         }
 
-        var ordered = auctionDtos
-            .OrderBy(dto => dto.Auction.ClockLocationEnum)
-            .ToList();
+        auctionDtos.Add(new GetAuctionWithProductsDto
+        {
+            Auction = auction,
+            RegisteredProducts = registeredProductResponses
+        });
 
-        logger.LogInformation("GetAuctionPerActiveClockLocation completed - returning {Count} DTOs", ordered.Count);
-        return ordered;
+        logger.LogInformation("Processed auction {AuctionId} with {Count} products", auction.Id, registeredProductResponses.Count);
     }
+
+    var ordered = auctionDtos
+        .OrderBy(dto => dto.Auction.ClockLocationEnum)
+        .ToList();
+
+    logger.LogInformation("GetAuctionPerActiveClockLocation completed - returning {Count} DTOs", ordered.Count);
+    return ordered;    }
 }
