@@ -103,9 +103,8 @@ public class PagesServices(
     public async Task<List<GetAuctionWithProductsDto>> GetAuctionPerActiveClockLocation()
     {
         
-        //TODO: fix this entire mess up, make it so that running the endpoint doesn't just keep giving me a NotFoundException
        
-   // TODO: remove hardcoded date
+   // TODO: remove hardcoded date once product goes live
     DateTime today = new DateTime(2019, 12, 29);
     DateTime tomorrow = today.AddDays(1);
     
