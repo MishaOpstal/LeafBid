@@ -149,6 +149,7 @@ public class PagesServices(
             }
             catch (Exception ex)
             {
+                throw new NotFoundException($"Failed to create RegisteredProductResponse for RegisteredProduct {rp.Id}", ex);
                 // continue processing remaining products, this is normal flow
             }
         }
