@@ -1,8 +1,9 @@
 "use client";
 import Table from 'react-bootstrap/Table'
+import Image from 'next/image';
 import {useEffect, useState} from "react";
 interface Product {
-    imageUrl: string;
+    picture: string;
     name: string;
     quantity: number;
     price: number;
@@ -27,44 +28,57 @@ export default function ProductTable() {
                     method: "GET",
                     credentials: "include",
                 });
-                if (!res.ok) throw new Error("Failed to fetch products");
                 const data = await res.json();
                 setProducts(data);
-                console.log(data);
             } catch (error) {
                 console.error("Error fetching products:", error);
             }
         };
-        fetchProducts();
+        fetchProducts().then(() => console.log("Fetched products"));
     }, []);
 
 
-
     return (
-        <Table className="productTable">
-            <thead>
-            <tr>
-                <th>#</th>
-                <th>Product</th>
-                <th>Aantal</th>
-                <th>Prijs</th>
-                <th>Datum</th>
-            </tr>
-            </thead>
-            <tbody>
-            {
-                products.map((product: Product, index) => (
-                    <tr key={index}>
-                        <td>{index + 1}</td>
-                        <td>{product.name}</td>
-                        <td>{product.quantity}</td>
-                        <td>{product.price}</td>
-                        <td>{formatDate(product.date)}</td>
-
+        <div className="h-100 w-100 overflow-y-scroll rounded-4">
+            {products.length === 0 ? (
+                <div className="d-flex flex-column justify-content-center align-items-center h-100">
+                    <h3 className="text-center">Je hebt nog geen producten gekocht.</h3>
+                    <p className="text-center">Zodra je een product hebt gekocht, verschijnt het hier.</p>
+                </div>
+            ) : (
+                <Table className="productTable" striped>
+                    <thead className="sticky-top top-0">
+                    <tr>
+                        <th>#</th>
+                        <th>Product</th>
+                        <th>Aantal</th>
+                        <th>Prijs</th>
+                        <th>Datum</th>
                     </tr>
-                ))
-            }
-            </tbody>
-        </Table>
+                    </thead>
+                    <tbody>
+                    {products.map((product: Product, index) => (
+                        <tr key={index}>
+                            <td className="align-middle">{index + 1}</td>
+                            <td className="align-middle">
+                                <Image
+                                    src={product.picture}
+                                    alt={product.name}
+                                    width={40}
+                                    height={40}
+                                    className="me-2 rounded"
+                                />
+                                <span>{product.name}</span>
+                            </td>
+                            <td className="align-middle">{product.quantity}</td>
+                            <td className="align-middle">{product.price}</td>
+                            <td className="align-middle">{formatDate(product.date)}</td>
+                        </tr>
+
+                    ))}
+                    </tbody>
+                </Table>
+            )}
+        </div>
     );
 }

@@ -4,7 +4,9 @@ export default function Page() {
     return (
         <>
         <Header />
-        <ProductTable />
+            <main style={{ height: 'calc(100dvh - 100px)' }} className="d-flex flex-column justify-content-center align-items-center p-4">
+            <ProductTable />
+            </main>
         </>
     );
 }

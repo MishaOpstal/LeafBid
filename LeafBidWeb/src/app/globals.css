@@ -2,24 +2,26 @@
 @import "react-bootstrap-icons";
 
 :root {
-    --primary: #5c983b;
-    --primary-hover: #25632c;
-    --accent-soft: #c9e9b5;
-    --background: #ffffff;
+    --primary: rgba(92, 152, 59, 1);
+    --primary-hover: rgba(37, 99, 44, 1);
+    --accent-soft: rgba(201, 233, 181, 1);
+    --background: rgba(255, 255, 255, 1);
     --surface: rgba(255, 255, 255, 0.01);
-    --text: #1b1b1b;
-    --muted-text: #6a6a6a;
+    --text: rgba(27, 27, 27, 1);
+    --muted-text: rgba(106, 106, 106, 1);
 }
+
 :root[data-theme="dark"] {
-    --primary: #5c983b;
-    --primary-hover: #25632c;
-    --accent-soft: #c7f5a9;
-    --background: #0f1210;
+    --primary: rgba(92, 152, 59, 1);
+    --primary-hover: rgba(37, 99, 44, 1);
+    --accent-soft: rgba(199, 245, 169, 1);
+    --background: rgba(15, 18, 16, 1);
     --surface: rgba(27, 31, 28, 0.01);
-    --text: #f4f4f4;
-    --muted-text: #a3a3a3;
+    --text: rgba(244, 244, 244, 1);
+    --muted-text: rgba(163, 163, 163, 1);
     color-scheme: dark;
 }
+
 
 html,
 body {
@@ -36,6 +38,19 @@ body {
     display: flex;
     flex-direction: column;
     height: 100dvh;
+}
+
+.table {
+    --bs-table-color: var(--text);
+    --bs-table-bg: var(--background);
+    --bs-table-striped-color: var(--text);
+    --bs-table-striped-bg: rgba(199, 245, 169, 0.3);
+
+}
+
+.table > thead > tr > th {
+    background-color: var(--primary);
+    color: var(--background);
 }
 * {
     box-sizing: border-box;
