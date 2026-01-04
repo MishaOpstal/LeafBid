@@ -36,7 +36,7 @@ const ProductPriceTable: React.FC<ProductPriceTableProps> = ({
 
     return (
         <div className={s.wrapper} style={{ maxHeight: height }}>
-            <Table striped bordered hover size="sm" className={s.table}>
+            <Table striped size="sm" className={s.table}>
                 <thead className={s.header}>
                 <tr>
                     <th style={{ width: "70%" }} className={s.th}>Productnaam</th>

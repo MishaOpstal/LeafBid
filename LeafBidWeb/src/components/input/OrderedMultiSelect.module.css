@@ -43,8 +43,22 @@
 }
 
 .quantity {
-    color: #6c757d;
+    color: var(--text);
     font-size: 0.875rem;
     min-width: 70px;
     text-align: right;
+}
+
+.active .quantity {
+    color: var(--background);
+}
+
+.badge {
+    margin-left: 1rem;
+    background-color: var(--accent-soft) !important;
+    color: #000 !important;
+}
+
+.container{
+    background-color: var(--background);
 }

@@ -105,7 +105,7 @@ const OrderedMultiSelect: React.FC<OrderedMultiSelectProps> = ({
     useEffect(() => setPage(1), [query]);
 
     return (
-        <div className="p-3 border rounded bg-light">
+        <div className={`p-3 border rounded ${s.container}`}>
             {/* Search bar */}
             <SearchBar placeholder="Search products..." onSearch={setQuery} delay={300} />
 

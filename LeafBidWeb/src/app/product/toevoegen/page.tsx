@@ -15,7 +15,7 @@ import DateSelect from "@/components/input/DateSelect";
 import {isUserInRole} from "@/app/auth/utils/isUserInRole";
 
 // Check if user has a Provider role
-if (!isUserInRole("Provider")) {
+if (!isUserInRole("Provider") && !isUserInRole("Admin")) {
     // Redirect to dashboard
     window.location.href = "/";
 }
