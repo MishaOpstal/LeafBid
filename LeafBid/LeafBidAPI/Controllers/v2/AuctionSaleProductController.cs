@@ -88,6 +88,29 @@ public class AuctionSaleProductController(IUserService userService, IAuctionSale
         return Ok(updated);
     }
     
+    
+    [HttpGet("company/{id:int}")]
+    [Authorize]
+    [ProducesResponseType(typeof(AuctionSaleProduct), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> GetAuctionSaleProductsByCompanyId(int id)
+    {
+        try
+        {
+            List<AuctionSaleProductResponse> products = await auctionSaleProductService.GetAuctionSaleProductsByCompanyId(id);
+            return Ok(products);
+        }
+        catch (NotFoundException e)
+        {
+            return NotFound(e.Message);
+        }
+                
+    }
+    
+    /// <summary>
+    /// Get auction sale products for the logged-in user.
+    /// </summary>
+    /// <returns>A list of auction sale products for the logged-in user.</returns>
     [HttpGet("me")]
     [Authorize(Roles = "Buyer")]
     [ProducesResponseType(typeof(AuctionSaleProductResponse), StatusCodes.Status200OK)]

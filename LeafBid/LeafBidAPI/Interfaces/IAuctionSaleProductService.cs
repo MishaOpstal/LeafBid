@@ -40,5 +40,7 @@ public interface IAuctionSaleProductService
     /// </exception>
     Task<AuctionSaleProduct> UpdateAuctionSaleProduct(int id, UpdateAuctionSaleProductDto auctionSaleProductData);
     
+    Task<List<AuctionSaleProductResponse>> GetAuctionSaleProductsByCompanyId(int companyId);
+    
     Task<List<AuctionSaleProductResponse>> GetAuctionSaleProductsByUserId(string userId);
 }

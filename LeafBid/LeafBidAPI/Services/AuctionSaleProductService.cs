@@ -3,6 +3,7 @@ using LeafBidAPI.DTOs.AuctionSaleProduct;
 using LeafBidAPI.Exceptions;
 using LeafBidAPI.Interfaces;
 using LeafBidAPI.Models;
+using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 
 namespace LeafBidAPI.Services;
@@ -26,12 +27,54 @@ public class AuctionSaleProductService(ApplicationDbContext context) : IAuctionS
 
         return auctionSaleProduct;
     }
-    
-    public async Task<List<AuctionSaleProductResponse>> GetAuctionSaleProductsByUserId(string userId)
+
+    public async Task<List<AuctionSaleProductResponse>> GetAuctionSaleProductsCompanyFilter(int registeredProductId)
+    {
+        const string sql = """
+                           SELECT 
+                               p.Name,
+                               p.Picture,
+                               asp.Quantity,
+                               asp.Price,
+                               a.Date
+                           FROM AuctionSaleProducts asp
+                           JOIN Products p ON asp.ProductId = p.Id
+                           JOIN AuctionSales a ON asp.AuctionSaleId = a.Id
+                           JOIN RegisteredProducts rp ON asp.RegisteredProductId = rp.Id
+                           """;
+        await using var connection = (SqlConnection)context.Database.GetDbConnection();
+        if (connection.State != System.Data.ConnectionState.Open)
+        {
+            await connection.OpenAsync();
+        }
+        await using var command = new SqlCommand(sql, connection);
+        // command.Parameters.AddWithValue("@CompanyId", companyId);
+        var result = new List<AuctionSaleProductResponse>();
+
+        await using var reader = await command.ExecuteReaderAsync();
+        while (await reader.ReadAsync())
+        {
+            result.Add(new AuctionSaleProductResponse
+            {
+                Name = reader.GetString(0),
+                Picture = reader.GetString(1),
+                Quantity = reader.GetInt32(2),
+                Price = reader.GetDecimal(3),
+                Date = reader.GetDateTime(4)
+            });
+        }
+
+        return result;
+    }
+
+
+
+public async Task<List<AuctionSaleProductResponse>> GetAuctionSaleProductsByUserId(string userId)
     {
         List<AuctionSaleProduct> list = await context.AuctionSaleProducts
             .Where(asp => asp.AuctionSale != null && asp.AuctionSale.UserId == userId)
-            .Include(auctionSaleProduct => auctionSaleProduct.Product)
+            .Include(auctionSaleProduct => auctionSaleProduct.RegisteredProduct)
+            .ThenInclude(RegisteredProduct => RegisteredProduct!.Product)
             .Include(auctionSaleProduct => auctionSaleProduct.AuctionSale)
             .ToListAsync();
         List<AuctionSaleProductResponse> responseList = list.Select(asp => new AuctionSaleProductResponse

@@ -22,12 +22,12 @@ public class AuctionSaleProduct
     public AuctionSale? AuctionSale { get; set; }
     
     /// <summary>
-    /// Identifier of the product associated with the auction sale product
+    /// Identifier of the registered product associated with the auction sale product
     /// </summary>
-    public required int ProductId { get; set; }
+    public required int RegisteredProductId { get; set; }
     
     [JsonIgnore]
-    public Product? Product { get; set; }
+    public Product? RegisteredProduct { get; set; }
     
     /// <summary>
     /// Quantity of the product in the auction sale.
