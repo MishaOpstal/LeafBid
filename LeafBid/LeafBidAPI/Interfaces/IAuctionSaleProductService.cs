@@ -39,13 +39,13 @@ public interface IAuctionSaleProductService
     /// Thrown when no auction sale product is found with the specified ID.
     /// </exception>
     Task<AuctionSaleProduct> UpdateAuctionSaleProduct(int id, UpdateAuctionSaleProductDto auctionSaleProductData);
-    
+
     /// <summary>
     /// Get auction sale products history for a registered product excluding company products.
     /// </summary>
     /// <param name="registeredProductId">The registered product ID.</param>
     /// <returns>A list of recent auction sales for the specified registered product excluding company products.</returns>
-    Task<List<AuctionSaleProductResponse>> GetAuctionSaleProductsHistoryNotCompany(int registeredProductId);
+    Task<List<AuctionSaleProductCompanyResponse>> GetAuctionSaleProductsHistoryNotCompany(int registeredProductId);
     
     /// <summary>
     /// Get auction sale products history for a registered product from the same company.

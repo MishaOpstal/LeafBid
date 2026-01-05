@@ -101,7 +101,7 @@ public class AuctionSaleProductController(IUserService userService, IAuctionSale
     {
         try
         {
-            List<AuctionSaleProductResponse> products = await auctionSaleProductService.GetAuctionSaleProductsHistoryNotCompany(id);
+            List<AuctionSaleProductCompanyResponse> products = await auctionSaleProductService.GetAuctionSaleProductsHistoryNotCompany(id);
             return Ok(products);
         }
         catch (NotFoundException e)

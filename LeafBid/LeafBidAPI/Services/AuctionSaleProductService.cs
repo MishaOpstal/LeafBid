@@ -27,12 +27,13 @@ public class AuctionSaleProductService(ApplicationDbContext context) : IAuctionS
 
         return auctionSaleProduct;
     }
-    public async Task<List<AuctionSaleProductResponse>> GetAuctionSaleProductsHistoryNotCompany(int registeredProductId)
+    public async Task<List<AuctionSaleProductCompanyResponse>> GetAuctionSaleProductsHistoryNotCompany(int registeredProductId)
     {
         const string sql = """
                            SELECT 
                                p.Name,
                                p.Picture,
+                                 c.Name AS CompanyName,
                                asp.Quantity,
                                asp.Price,
                                a.Date
@@ -40,10 +41,11 @@ public class AuctionSaleProductService(ApplicationDbContext context) : IAuctionS
                            JOIN AuctionSales a ON asp.AuctionSaleId = a.Id
                            JOIN RegisteredProducts rp ON asp.RegisteredProductId = rp.Id
                            JOIN Products p ON rp.ProductId = p.Id
+                            JOIN Companies c ON rp.CompanyId = c.Id
                            WHERE 
                                rp.ProductId = (SELECT ProductId FROM RegisteredProducts WHERE Id = @registeredProductId)
                                AND
-                               rp.CompanyId = (SELECT CompanyId FROM RegisteredProducts WHERE Id != @registeredProductId)
+                               rp.CompanyId <> (SELECT CompanyId FROM RegisteredProducts WHERE Id = @registeredProductId)
                            """;
 
         await using SqlConnection connection = (SqlConnection)context.Database.GetDbConnection();
@@ -53,18 +55,19 @@ public class AuctionSaleProductService(ApplicationDbContext context) : IAuctionS
         }
         await using SqlCommand command = new SqlCommand(sql, connection);
         command.Parameters.AddWithValue("@registeredProductId", registeredProductId);
-        List<AuctionSaleProductResponse> result = new List<AuctionSaleProductResponse>();
+        List<AuctionSaleProductCompanyResponse> result = new List<AuctionSaleProductCompanyResponse>();
 
         await using SqlDataReader? reader = await command.ExecuteReaderAsync();
         while (await reader.ReadAsync())
         {
-            result.Add(new AuctionSaleProductResponse
+            result.Add(new AuctionSaleProductCompanyResponse
             {
                 Name = reader.GetString(0),
                 Picture = reader.GetString(1),
-                Quantity = reader.GetInt32(2),
-                Price = reader.GetDecimal(3),
-                Date = reader.GetDateTime(4)
+                CompanyName = reader.GetString(2),
+                Quantity = reader.GetInt32(3),
+                Price = reader.GetDecimal(4),
+                Date = reader.GetDateTime(5)
             });
         }
         return result;
