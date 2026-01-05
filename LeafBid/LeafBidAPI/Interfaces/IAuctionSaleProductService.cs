@@ -40,7 +40,25 @@ public interface IAuctionSaleProductService
     /// </exception>
     Task<AuctionSaleProduct> UpdateAuctionSaleProduct(int id, UpdateAuctionSaleProductDto auctionSaleProductData);
     
-    Task<List<AuctionSaleProductResponse>> GetAuctionSaleProductsByCompanyId(int companyId);
+    /// <summary>
+    /// Get auction sale products history for a registered product excluding company products.
+    /// </summary>
+    /// <param name="registeredProductId">The registered product ID.</param>
+    /// <returns>A list of recent auction sales for the specified registered product excluding company products.</returns>
+    Task<List<AuctionSaleProductResponse>> GetAuctionSaleProductsHistoryNotCompany(int registeredProductId);
+    
+    /// <summary>
+    /// Get auction sale products history for a registered product from the same company.
+    /// </summary>
+    /// <param name="registeredProductId">The registered product ID.</param>
+    /// <returns>A list of recent auction sales for the specified registered product from the same company.</returns>
+    Task<List<AuctionSaleProductResponse>> GetAuctionSaleProductsHistoryCompany(int registeredProductId);
+    
+    /// <summary>
+    /// Get auction sale products by user ID.
+    /// </summary>
+    /// <param name="userId">The user ID.</param>
+    /// <returns>A list of auction sale products associated with the specified user ID.</returns>
     
     Task<List<AuctionSaleProductResponse>> GetAuctionSaleProductsByUserId(string userId);
 }

@@ -51,7 +51,7 @@ public class AuctionSaleProductFactory(
             int alreadySold = dbContext.AuctionSaleProducts
                 .Where(asp =>
                     asp.AuctionSaleId == auctionSale.Id &&
-                    asp.ProductId == productId
+                    asp.RegisteredProductId == productId
                 )
                 .Sum(asp => (int?)asp.Quantity) ?? 0;
 
@@ -85,7 +85,7 @@ public class AuctionSaleProductFactory(
 
         return new Faker<AuctionSaleProduct>()
             .RuleFor(asp => asp.AuctionSaleId, auctionSale.Id)
-            .RuleFor(asp => asp.ProductId, usedProductId)
+            .RuleFor(asp => asp.RegisteredProductId, usedProductId)
             .RuleFor(asp => asp.Quantity, f => f.Random.Int(1, remainingQuantityFinal))
             .RuleFor(asp => asp.Price, f =>
             {

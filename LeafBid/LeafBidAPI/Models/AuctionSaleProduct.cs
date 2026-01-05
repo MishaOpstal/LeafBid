@@ -27,7 +27,7 @@ public class AuctionSaleProduct
     public required int RegisteredProductId { get; set; }
     
     [JsonIgnore]
-    public Product? RegisteredProduct { get; set; }
+    public RegisteredProduct? RegisteredProduct { get; set; }
     
     /// <summary>
     /// Quantity of the product in the auction sale.
