@@ -87,7 +87,28 @@ public class AuctionSaleProductController(IUserService userService, IAuctionSale
 
         return Ok(updated);
     }
-    
+    /// <summary>
+    /// Get auction sale products history for a registered product.
+    /// </summary>
+    /// <param name="id">The registered product ID.</param>
+    /// <returns>>A list of recent auction sales for the specified registered product.</returns>
+    [HttpGet("history/{id:int}")]
+    [Authorize]
+    [ProducesResponseType(typeof(AuctionSaleProduct), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> GetAuctionSaleProductsHistory(int id)
+    {
+        try
+        {
+            List<AuctionSaleProductHistoryResponse> products = await auctionSaleProductService.GetAuctionSaleProductsHistory(id);
+            return Ok(products);
+        }
+        catch (NotFoundException e)
+        {
+            return NotFound(e.Message);
+        }
+                
+    }
     /// <summary>
     /// Get auction sale products history for a registered product excluding company sales.
     /// </summary>
