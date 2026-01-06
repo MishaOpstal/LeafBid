@@ -13,9 +13,10 @@ import React, { useState } from "react";
 import SelectableButtonGroup from "@/components/input/SelectableButtonGroup";
 import DateSelect from "@/components/input/DateSelect";
 import {isUserInRole} from "@/app/auth/utils/isUserInRole";
+import {Roles, parseRole} from "@/enums/Roles";
 
 // Check if user has a Provider role
-if (!isUserInRole("Provider") && !isUserInRole("Admin")) {
+if (!isUserInRole(parseRole(Roles.Provider)) && !isUserInRole(parseRole(Roles.Admin))) {
     // Redirect to dashboard
     window.location.href = "/";
 }
