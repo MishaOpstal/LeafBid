@@ -68,7 +68,7 @@ export default function Home() {
                                 <DashboardPanel loading={true} title="Laden..."/>
                                 <DashboardPanel loading={true} title="Laden..."/></>
                         ) : auctions.length === 0 ? (
-                            <p>Geen veilingen gevonden. kom later terug.</p>
+                            <p>Geen veilingen gevonden. Kom later terug.</p>
                         ) : (
                             auctions.map((auction) => {
                                 const product = auction.products?.[0];

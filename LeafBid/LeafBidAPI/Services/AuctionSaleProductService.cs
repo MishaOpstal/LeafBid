@@ -3,7 +3,9 @@ using LeafBidAPI.DTOs.AuctionSaleProduct;
 using LeafBidAPI.Exceptions;
 using LeafBidAPI.Interfaces;
 using LeafBidAPI.Models;
+using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
+using LeafBidAPI.Enums;
 
 namespace LeafBidAPI.Services;
 
@@ -27,17 +29,126 @@ public class AuctionSaleProductService(ApplicationDbContext context) : IAuctionS
         return auctionSaleProduct;
     }
     
-    public async Task<List<AuctionSaleProductResponse>> GetAuctionSaleProductsByUserId(string userId)
+public async Task<AuctionSaleProductHistoryResponse> GetAuctionSaleProductsHistory(
+    int registeredProductId,
+    HistoryEnum scope,
+    bool includeCompanyName,
+    int? limit = 10
+)
+{
+    await using SqlConnection connection = (SqlConnection)context.Database.GetDbConnection();
+    if (connection.State != System.Data.ConnectionState.Open)
+        await connection.OpenAsync();
+
+    // Haal productId en companyId op
+    int productId, companyId;
+    const string productQuery = """
+        SELECT ProductId, CompanyId
+        FROM RegisteredProducts
+        WHERE Id = @registeredProductId
+        """;
+    
+    await using (SqlCommand productCmd = new SqlCommand(productQuery, connection))
+    {
+        productCmd.Parameters.AddWithValue("@registeredProductId", registeredProductId);
+        await using var reader = await productCmd.ExecuteReaderAsync();
+        if (!await reader.ReadAsync())
+            throw new InvalidOperationException("Registered product not found.");
+
+        productId = reader.GetInt32(0);
+        companyId = reader.GetInt32(1);
+    }
+
+    // Bepaal filter op basis van scope
+    string companyFilter = scope switch
+    {
+        HistoryEnum.All => "",
+        HistoryEnum.OnlyCompany => "AND rp.CompanyId = @companyId",
+        HistoryEnum.ExcludeCompany => "AND rp.CompanyId <> @companyId",
+        _ => throw new ArgumentOutOfRangeException(nameof(scope), "Invalid history scope")
+    };
+
+    // Bereken gemiddelde prijs
+    const string avgPriceQueryTemplate = """
+        SELECT AVG(asp.Price)
+        FROM AuctionSaleProducts asp
+        JOIN RegisteredProducts rp ON asp.RegisteredProductId = rp.Id
+        WHERE rp.ProductId = @productId
+        {0}
+        """;
+
+    string avgPriceQuery = string.Format(avgPriceQueryTemplate, companyFilter);
+    decimal averagePrice = 0;
+
+    await using (var avgCmd = new SqlCommand(avgPriceQuery, connection))
+    {
+        avgCmd.Parameters.AddWithValue("@productId", productId);
+        if (scope != HistoryEnum.All)
+            avgCmd.Parameters.AddWithValue("@companyId", companyId);
+
+        var result = await avgCmd.ExecuteScalarAsync();
+        if (result != DBNull.Value)
+            averagePrice = Convert.ToDecimal(result);
+    }
+
+    // Haal recente verkopen op
+    string topClause = limit.HasValue ? $"TOP {limit}" : "";
+    string historyQuery = $"""
+        SELECT {topClause} 
+            p.Name, p.Picture, asp.Quantity, asp.Price, a.Date
+            {(includeCompanyName ? ", c.Name AS CompanyName" : "")}
+        FROM AuctionSaleProducts asp
+        JOIN AuctionSales a ON asp.AuctionSaleId = a.Id
+        JOIN RegisteredProducts rp ON asp.RegisteredProductId = rp.Id
+        JOIN Products p ON rp.ProductId = p.Id
+        {(includeCompanyName ? "JOIN Companies c ON rp.CompanyId = c.Id" : "")}
+        WHERE rp.ProductId = @productId
+        {companyFilter}
+        ORDER BY a.Date DESC
+        """;
+
+    var recentSales = new List<AuctionSaleProductResponse>();
+    await using (var cmd = new SqlCommand(historyQuery, connection))
+    {
+        cmd.Parameters.AddWithValue("@productId", productId);
+        if (scope != HistoryEnum.All)
+            cmd.Parameters.AddWithValue("@companyId", companyId);
+
+        await using var reader = await cmd.ExecuteReaderAsync();
+        while (await reader.ReadAsync())
+        {
+            recentSales.Add(new AuctionSaleProductResponse
+            {
+                Name = reader.GetString(0),
+                Picture = reader.GetString(1),
+                Quantity = reader.GetInt32(2),
+                Price = reader.GetDecimal(3),
+                Date = reader.GetDateTime(4),
+                CompanyName = includeCompanyName && !reader.IsDBNull(5) ? reader.GetString(5) : null
+            });
+        }
+    }
+
+    return new AuctionSaleProductHistoryResponse
+    {
+        AvgPrice = averagePrice,
+        RecentSales = recentSales
+    };
+}
+
+
+public async Task<List<AuctionSaleProductResponse>> GetAuctionSaleProductsByUserId(string userId)
     {
         List<AuctionSaleProduct> list = await context.AuctionSaleProducts
             .Where(asp => asp.AuctionSale != null && asp.AuctionSale.UserId == userId)
-            .Include(auctionSaleProduct => auctionSaleProduct.Product)
+            .Include(auctionSaleProduct => auctionSaleProduct.RegisteredProduct)
+            .ThenInclude(rp => rp!.Product)
             .Include(auctionSaleProduct => auctionSaleProduct.AuctionSale)
             .ToListAsync();
         List<AuctionSaleProductResponse> responseList = list.Select(asp => new AuctionSaleProductResponse
         {
-            Name = asp.Product?.Name ?? "Unknown Product",
-            Picture = asp.Product?.Picture ?? string.Empty,
+            Name = asp.RegisteredProduct?.Product?.Name ?? "Unknown Product",
+            Picture = asp.RegisteredProduct?.Product?.Picture ?? string.Empty,
             Price = asp.Price,
             Quantity = asp.Quantity,
             Date = asp.AuctionSale?.Date ?? DateTime.MinValue
@@ -52,7 +163,7 @@ public class AuctionSaleProductService(ApplicationDbContext context) : IAuctionS
         AuctionSaleProduct auctionSaleProduct = new()
         {
             AuctionSaleId = auctionSaleProductData.AuctionSaleId,
-            ProductId = auctionSaleProductData.ProductId,
+            RegisteredProductId = auctionSaleProductData.ProductId,
             Quantity = auctionSaleProductData.Quantity,
             Price = auctionSaleProductData.Price
         };
@@ -76,7 +187,7 @@ public class AuctionSaleProductService(ApplicationDbContext context) : IAuctionS
         }
 
         auctionSaleProducts.AuctionSaleId = auctionSaleProductData.AuctionSaleId;
-        auctionSaleProducts.ProductId = auctionSaleProductData.ProductId;
+        auctionSaleProducts.RegisteredProductId = auctionSaleProductData.ProductId;
         auctionSaleProducts.Quantity = auctionSaleProductData.Quantity;
         auctionSaleProducts.Price = auctionSaleProductData.Price;
 
