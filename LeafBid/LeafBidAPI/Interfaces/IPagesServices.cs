@@ -7,7 +7,7 @@ namespace LeafBidAPI.Interfaces;
 public interface IPagesServices
 {
     /// <summary>
-    /// Get the closest upcoming auction and its products for a given clock location.
+    /// Get the current ongoing auctions for each clocklocation.
     /// </summary>
     /// <param name="clockLocation">The clock location for which to retrieve the auction and products.</param>
     /// <returns>
@@ -18,7 +18,7 @@ public interface IPagesServices
     /// Thrown when no auction is found for the specified clock location,
     /// or when no products are found for the located auction.
     /// </exception>
-    Task<GetAuctionWithProductsDto> GetAuctionWithProducts(ClockLocationEnum clockLocation);
+    Task<List<GetAuctionWithProductsDto>> GetAuctionWithProducts(ClockLocationEnum clockLocation);
 
     /// <summary>
     /// Get a specific auction and its products by auction ID.
@@ -35,7 +35,7 @@ public interface IPagesServices
     Task<GetAuctionWithProductsDto> GetAuctionWithProductsById(int auctionId);
 
     /// <summary>
-    /// Get the  active auction per clock location.
+    /// Get the  active auctions.
     /// </summary>
     /// <returns>A DTO containing the active auction and its products for each clock location.</returns>
     /// <exception cref="NotFoundException">Thrown when no active auction is found for any clock location.</exception>
