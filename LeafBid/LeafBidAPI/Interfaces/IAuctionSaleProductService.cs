@@ -51,7 +51,7 @@ public interface IAuctionSaleProductService
     /// </summary>
     /// <param name="registeredProductId">The registered product ID.</param>
     /// <returns>A list of recent auction sales for the specified registered product excluding company products.</returns>
-    Task<List<AuctionSaleProductResponse>> GetAuctionSaleProductsHistoryNotCompany(int registeredProductId);
+    Task<List<AuctionSaleProductHistoryResponse>> GetAuctionSaleProductsHistoryNotCompany(int registeredProductId);
     
     /// <summary>
     /// Get auction sale products by user ID.
@@ -65,6 +65,6 @@ public interface IAuctionSaleProductService
     /// </summary>
     /// <param name="registeredProductId">The registered product ID.</param>
     /// <returns>A list of recent auction sales for the specified registered product from the same company.</returns>
-    Task<List<AuctionSaleProductResponse>> GetAuctionSaleProductsHistoryCompany(int registeredProductId);
+    Task<List<AuctionSaleProductHistoryResponse>> GetAuctionSaleProductsHistoryCompany(int registeredProductId);
     
 }

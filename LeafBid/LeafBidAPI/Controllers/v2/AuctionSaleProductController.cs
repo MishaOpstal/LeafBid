@@ -123,7 +123,7 @@ public class AuctionSaleProductController(IUserService userService, IAuctionSale
     {
         try
         {
-            List<AuctionSaleProductResponse> products = await auctionSaleProductService.GetAuctionSaleProductsHistoryCompany(id);
+            List<AuctionSaleProductHistoryResponse> products = await auctionSaleProductService.GetAuctionSaleProductsHistoryCompany(id);
             return Ok(products);
         }
         catch (NotFoundException e)
@@ -146,7 +146,7 @@ public class AuctionSaleProductController(IUserService userService, IAuctionSale
     {
         try
         {
-            List<AuctionSaleProductResponse> products = await auctionSaleProductService.GetAuctionSaleProductsHistoryNotCompany(id);
+            List<AuctionSaleProductHistoryResponse> products = await auctionSaleProductService.GetAuctionSaleProductsHistoryNotCompany(id);
             return Ok(products);
         }
         catch (NotFoundException e)
