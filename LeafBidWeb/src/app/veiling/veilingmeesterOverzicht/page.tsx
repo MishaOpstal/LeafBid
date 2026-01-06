@@ -2,11 +2,40 @@
 
 import styles from "@/app/page.module.css";
 import Header from "@/components/header/header";
+import ActionButtons from "@/components/smallButton/smallButton";
 import DashboardPanel from "@/components/dashboardPanel/dashboardpanel";
 import { useState, useEffect } from "react";
-import { Auction } from "@/types/Auction/Auction";
-import { ClockLocation, parseClockLocation } from "@/enums/ClockLocation";
-import Link from "next/link";
+
+type Auction = {
+    id: number;
+    startDate: string;
+    clockLocationEnum: number;
+    auctioneerId: number;
+    products: Product[];
+};
+
+type Product = {
+    id: number;
+    name: string;
+    description: string;
+    minPrice: string;
+    maxPrice: string;
+    weight: number;
+    picture: string;
+    species: string;
+    region: string;
+    potSize: number;
+    stemLength: number;
+    stock: number;
+    harvestedAt: string;
+    providerId: number;
+    auctionId: number;
+};
+
+type PageResponse = {
+    auction: Auction;
+    products: Product[];
+};
 
 export default function VeilingmeesterOverzicht() {
     const [auctions, setAuctions] = useState<Auction[]>([]);
@@ -67,6 +96,7 @@ export default function VeilingmeesterOverzicht() {
         <>
             <Header />
 
+            <Header returnOption={true} />
             <main className={styles.main}>
                 <div className={styles.page}>
                     <h1 className={styles.huidigeVeilingen}>Veilingmeester Dashboard</h1>

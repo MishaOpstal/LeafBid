@@ -39,4 +39,6 @@ public interface IAuctionSaleProductService
     /// Thrown when no auction sale product is found with the specified ID.
     /// </exception>
     Task<AuctionSaleProduct> UpdateAuctionSaleProduct(int id, UpdateAuctionSaleProductDto auctionSaleProductData);
+    
+    Task<List<AuctionSaleProductResponse>> GetAuctionSaleProductsByUserId(string userId);
 }

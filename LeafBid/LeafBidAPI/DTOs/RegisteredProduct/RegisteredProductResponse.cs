@@ -1,11 +1,12 @@
 ﻿using Toolbelt.ComponentModel.DataAnnotations.Schema.V5;
+using LeafBidAPI.DTOs.Product;
 
 namespace LeafBidAPI.DTOs.RegisteredProduct;
 
 public class RegisteredProductResponse
 {
     public required int Id { get; set; }
-    public required Product.ProductResponse Product { get; set; }
+    public required  ProductResponse Product { get; set; }
     [Decimal(10, 2)] public required decimal MinPrice { get; set; }
     [Decimal(10, 2)] public decimal? MaxPrice { get; set; } 
     public required int Stock { get; set; }

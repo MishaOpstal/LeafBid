@@ -1,4 +1,5 @@
 ﻿using LeafBidAPI.DTOs.AuctionSaleProduct;
+using LeafBidAPI.DTOs.User;
 using LeafBidAPI.Exceptions;
 using LeafBidAPI.Interfaces;
 using LeafBidAPI.Models;
@@ -13,7 +14,7 @@ namespace LeafBidAPI.Controllers.v2;
 // [Authorize]
 [AllowAnonymous]
 [Produces("application/json")]
-public class AuctionSaleProductController(IAuctionSaleProductService auctionSaleProductService) : ControllerBase
+public class AuctionSaleProductController(IUserService userService, IAuctionSaleProductService auctionSaleProductService) : ControllerBase
 {
     /// <summary>
     /// Get all auction sale products.
@@ -85,5 +86,28 @@ public class AuctionSaleProductController(IAuctionSaleProductService auctionSale
             await auctionSaleProductService.UpdateAuctionSaleProduct(id, updatedAuctionSaleProduct);
 
         return Ok(updated);
+    }
+    
+    [HttpGet("me")]
+    [Authorize(Roles = "Buyer")]
+    [ProducesResponseType(typeof(AuctionSaleProductResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<AuctionSaleProductResponse>> LoggedInUser()
+    {
+        try
+        {
+            LoggedInUserResponse me = await userService.GetLoggedInUser(User);
+            if (me.UserData == null)
+            {
+                return Unauthorized("User data not found");
+            }
+            //grab auction sale product for the user
+            List<AuctionSaleProductResponse> products = await auctionSaleProductService.GetAuctionSaleProductsByUserId(me.UserData.Id);
+            return Ok(products);
+        }
+        catch (NotFoundException e)
+        {
+            return NotFound(e.Message);
+        }
     }
 }
