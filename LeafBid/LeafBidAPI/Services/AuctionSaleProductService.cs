@@ -44,10 +44,10 @@ public class AuctionSaleProductService(ApplicationDbContext context) : IAuctionS
                            SELECT TOP 10
                                p.Name,
                                p.Picture,
-                                 c.Name AS CompanyName,
                                asp.Quantity,
                                asp.Price,
-                               a.Date
+                               a.Date,
+                               c.Name AS CompanyName
                            FROM AuctionSaleProducts asp
                            JOIN AuctionSales a ON asp.AuctionSaleId = a.Id
                            JOIN RegisteredProducts rp ON asp.RegisteredProductId = rp.Id
@@ -80,19 +80,19 @@ public class AuctionSaleProductService(ApplicationDbContext context) : IAuctionS
         
         await using SqlCommand command = new SqlCommand(sqlHistory, connection);
         command.Parameters.AddWithValue("@registeredProductId", registeredProductId);
-        List<AuctionSaleProductCompanyResponse> result = [];
+        List<AuctionSaleProductResponse> result = [];
         
         await using SqlDataReader? reader = await command.ExecuteReaderAsync();
         while (await reader.ReadAsync())
         {
-            result.Add(new AuctionSaleProductCompanyResponse
+            result.Add(new AuctionSaleProductResponse
             {
                 Name = reader.GetString(0),
                 Picture = reader.GetString(1),
-                CompanyName = reader.GetString(2),
-                Quantity = reader.GetInt32(3),
-                Price = reader.GetDecimal(4),
-                Date = reader.GetDateTime(5)
+                Quantity = reader.GetInt32(2),
+                Price = reader.GetDecimal(3),
+                Date = reader.GetDateTime(4),
+                CompanyName = reader.GetString(5)
             });
         }
         
@@ -106,16 +106,16 @@ public class AuctionSaleProductService(ApplicationDbContext context) : IAuctionS
         ];
          return responseList;
     }
-    public async Task<List<AuctionSaleProductCompanyResponse>> GetAuctionSaleProductsHistoryNotCompany(int registeredProductId)
+    public async Task<List<AuctionSaleProductResponse>> GetAuctionSaleProductsHistoryNotCompany(int registeredProductId)
     {
         const string sql = """
                            SELECT 
                                p.Name,
                                p.Picture,
-                                 c.Name AS CompanyName,
                                asp.Quantity,
                                asp.Price,
-                               a.Date
+                               a.Date,
+                               c.Name AS CompanyName
                            FROM AuctionSaleProducts asp
                            JOIN AuctionSales a ON asp.AuctionSaleId = a.Id
                            JOIN RegisteredProducts rp ON asp.RegisteredProductId = rp.Id
@@ -134,19 +134,19 @@ public class AuctionSaleProductService(ApplicationDbContext context) : IAuctionS
         }
         await using SqlCommand command = new SqlCommand(sql, connection);
         command.Parameters.AddWithValue("@registeredProductId", registeredProductId);
-        List<AuctionSaleProductCompanyResponse> result = [];
+        List<AuctionSaleProductResponse> result = [];
         
         await using SqlDataReader? reader = await command.ExecuteReaderAsync();
         while (await reader.ReadAsync())
         {
-            result.Add(new AuctionSaleProductCompanyResponse
+            result.Add(new AuctionSaleProductResponse
             {
                 Name = reader.GetString(0),
                 Picture = reader.GetString(1),
-                CompanyName = reader.GetString(2),
-                Quantity = reader.GetInt32(3),
-                Price = reader.GetDecimal(4),
-                Date = reader.GetDateTime(5)
+                Quantity = reader.GetInt32(2),
+                Price = reader.GetDecimal(3),
+                Date = reader.GetDateTime(4),
+                CompanyName = reader.GetString(5)
             });
         }
         return result;

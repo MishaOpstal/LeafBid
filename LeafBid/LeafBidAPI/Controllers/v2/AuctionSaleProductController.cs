@@ -109,29 +109,7 @@ public class AuctionSaleProductController(IUserService userService, IAuctionSale
         }
                 
     }
-    /// <summary>
-    /// Get auction sale products history for a registered product excluding company sales.
-    /// </summary>
-    /// <param name="id">The registered product ID.</param>
-    /// <returns>>A list of recent auction sales for the specified registered product excluding company sales.</returns>
-    [HttpGet("history/{id:int}/not-company")]
-    [Authorize]
-    [ProducesResponseType(typeof(AuctionSaleProduct), StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<IActionResult> GetAuctionSaleProductsHistoryNotCompany(int id)
-    {
-        try
-        {
-            List<AuctionSaleProductCompanyResponse> products = await auctionSaleProductService.GetAuctionSaleProductsHistoryNotCompany(id);
-            return Ok(products);
-        }
-        catch (NotFoundException e)
-        {
-            return NotFound(e.Message);
-        }
-                
-    }
-    
+        
     /// <summary>
     /// Get auction sale products history for a registered product including company sales.
     /// </summary>
@@ -146,6 +124,29 @@ public class AuctionSaleProductController(IUserService userService, IAuctionSale
         try
         {
             List<AuctionSaleProductResponse> products = await auctionSaleProductService.GetAuctionSaleProductsHistoryCompany(id);
+            return Ok(products);
+        }
+        catch (NotFoundException e)
+        {
+            return NotFound(e.Message);
+        }
+                
+    }
+    
+    /// <summary>
+    /// Get auction sale products history for a registered product excluding company sales.
+    /// </summary>
+    /// <param name="id">The registered product ID.</param>
+    /// <returns>>A list of recent auction sales for the specified registered product excluding company sales.</returns>
+    [HttpGet("history/{id:int}/not-company")]
+    [Authorize]
+    [ProducesResponseType(typeof(AuctionSaleProduct), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> GetAuctionSaleProductsHistoryNotCompany(int id)
+    {
+        try
+        {
+            List<AuctionSaleProductResponse> products = await auctionSaleProductService.GetAuctionSaleProductsHistoryNotCompany(id);
             return Ok(products);
         }
         catch (NotFoundException e)
