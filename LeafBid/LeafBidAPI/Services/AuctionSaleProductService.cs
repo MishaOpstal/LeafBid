@@ -5,6 +5,7 @@ using LeafBidAPI.Interfaces;
 using LeafBidAPI.Models;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
+using LeafBidAPI.Enums;
 
 namespace LeafBidAPI.Services;
 
@@ -28,239 +29,112 @@ public class AuctionSaleProductService(ApplicationDbContext context) : IAuctionS
         return auctionSaleProduct;
     }
     
-        public async Task<List<AuctionSaleProductHistoryResponse>> GetAuctionSaleProductsHistory(int registeredProductId)
+public async Task<AuctionSaleProductHistoryResponse> GetAuctionSaleProductsHistory(
+    int registeredProductId,
+    HistoryEnum scope,
+    bool includeCompanyName,
+    int? limit = 10
+)
+{
+    await using SqlConnection connection = (SqlConnection)context.Database.GetDbConnection();
+    if (connection.State != System.Data.ConnectionState.Open)
+        await connection.OpenAsync();
+
+    // Haal productId en companyId op
+    int productId, companyId;
+    const string productQuery = """
+        SELECT ProductId, CompanyId
+        FROM RegisteredProducts
+        WHERE Id = @registeredProductId
+        """;
+    
+    await using (SqlCommand productCmd = new SqlCommand(productQuery, connection))
     {
-        const string sqlAvgPrice = """
-                           SELECT 
-                               AVG(asp.Price) AS AveragePrice
-                           FROM AuctionSaleProducts asp
-                           JOIN AuctionSales a ON asp.AuctionSaleId = a.Id
-                           JOIN RegisteredProducts rp ON asp.RegisteredProductId = rp.Id
-                           WHERE 
-                               rp.ProductId = (SELECT ProductId FROM RegisteredProducts WHERE Id = @registeredProductId)
-                           """;
-        
-        const string sqlHistory = """
-                           SELECT TOP 10
-                               p.Name,
-                               p.Picture,
-                               asp.Quantity,
-                               asp.Price,
-                               a.Date,
-                               c.Name AS CompanyName
-                           FROM AuctionSaleProducts asp
-                           JOIN AuctionSales a ON asp.AuctionSaleId = a.Id
-                           JOIN RegisteredProducts rp ON asp.RegisteredProductId = rp.Id
-                           JOIN Products p ON rp.ProductId = p.Id
-                            JOIN Companies c ON rp.CompanyId = c.Id
-                           WHERE 
-                               rp.ProductId = (SELECT ProductId FROM RegisteredProducts WHERE Id = @registeredProductId)
-                               ORDER BY a.Date DESC
-                           """;
+        productCmd.Parameters.AddWithValue("@registeredProductId", registeredProductId);
+        await using var reader = await productCmd.ExecuteReaderAsync();
+        if (!await reader.ReadAsync())
+            throw new InvalidOperationException("Registered product not found.");
 
-        await using SqlConnection connection = (SqlConnection)context.Database.GetDbConnection();
-        if (connection.State != System.Data.ConnectionState.Open)
-        {
-            await connection.OpenAsync();
-        }
-        
-        await using SqlCommand avgPriceCommand = new SqlCommand(sqlAvgPrice, connection);
-        avgPriceCommand.Parameters.AddWithValue("@registeredProductId", registeredProductId);
-        decimal averagePrice = 0;
-        await using SqlDataReader? avgPriceReader = await avgPriceCommand.ExecuteReaderAsync();
-        while (await avgPriceReader.ReadAsync())
-        {
-            if (!avgPriceReader.IsDBNull(0))
-            {
-                averagePrice = avgPriceReader.GetDecimal(0);
-            }
-        }
-        avgPriceReader.Close();
+        productId = reader.GetInt32(0);
+        companyId = reader.GetInt32(1);
+    }
 
-        
-        await using SqlCommand command = new SqlCommand(sqlHistory, connection);
-        command.Parameters.AddWithValue("@registeredProductId", registeredProductId);
-        List<AuctionSaleProductResponse> result = [];
-        
-        await using SqlDataReader? reader = await command.ExecuteReaderAsync();
+    // Bepaal filter op basis van scope
+    string companyFilter = scope switch
+    {
+        HistoryEnum.All => "",
+        HistoryEnum.OnlyCompany => "AND rp.CompanyId = @companyId",
+        HistoryEnum.ExcludeCompany => "AND rp.CompanyId <> @companyId",
+        _ => throw new ArgumentOutOfRangeException(nameof(scope), "Invalid history scope")
+    };
+
+    // Bereken gemiddelde prijs
+    const string avgPriceQueryTemplate = """
+        SELECT AVG(asp.Price)
+        FROM AuctionSaleProducts asp
+        JOIN RegisteredProducts rp ON asp.RegisteredProductId = rp.Id
+        WHERE rp.ProductId = @productId
+        {0}
+        """;
+
+    string avgPriceQuery = string.Format(avgPriceQueryTemplate, companyFilter);
+    decimal averagePrice = 0;
+
+    await using (var avgCmd = new SqlCommand(avgPriceQuery, connection))
+    {
+        avgCmd.Parameters.AddWithValue("@productId", productId);
+        if (scope != HistoryEnum.All)
+            avgCmd.Parameters.AddWithValue("@companyId", companyId);
+
+        var result = await avgCmd.ExecuteScalarAsync();
+        if (result != DBNull.Value)
+            averagePrice = Convert.ToDecimal(result);
+    }
+
+    // Haal recente verkopen op
+    string topClause = limit.HasValue ? $"TOP {limit}" : "";
+    string historyQuery = $"""
+        SELECT {topClause} 
+            p.Name, p.Picture, asp.Quantity, asp.Price, a.Date
+            {(includeCompanyName ? ", c.Name AS CompanyName" : "")}
+        FROM AuctionSaleProducts asp
+        JOIN AuctionSales a ON asp.AuctionSaleId = a.Id
+        JOIN RegisteredProducts rp ON asp.RegisteredProductId = rp.Id
+        JOIN Products p ON rp.ProductId = p.Id
+        {(includeCompanyName ? "JOIN Companies c ON rp.CompanyId = c.Id" : "")}
+        WHERE rp.ProductId = @productId
+        {companyFilter}
+        ORDER BY a.Date DESC
+        """;
+
+    var recentSales = new List<AuctionSaleProductResponse>();
+    await using (var cmd = new SqlCommand(historyQuery, connection))
+    {
+        cmd.Parameters.AddWithValue("@productId", productId);
+        if (scope != HistoryEnum.All)
+            cmd.Parameters.AddWithValue("@companyId", companyId);
+
+        await using var reader = await cmd.ExecuteReaderAsync();
         while (await reader.ReadAsync())
         {
-            result.Add(new AuctionSaleProductResponse
+            recentSales.Add(new AuctionSaleProductResponse
             {
                 Name = reader.GetString(0),
                 Picture = reader.GetString(1),
                 Quantity = reader.GetInt32(2),
                 Price = reader.GetDecimal(3),
                 Date = reader.GetDateTime(4),
-                CompanyName = reader.GetString(5)
+                CompanyName = includeCompanyName && !reader.IsDBNull(5) ? reader.GetString(5) : null
             });
         }
-        
-        List<AuctionSaleProductHistoryResponse> responseList =
-        [
-            new AuctionSaleProductHistoryResponse
-            {
-                AvgPrice = averagePrice,
-                RecentSales = result
-            }
-        ];
-         return responseList;
     }
-    public async Task<List<AuctionSaleProductHistoryResponse>> GetAuctionSaleProductsHistoryNotCompany(int registeredProductId)
+
+    return new AuctionSaleProductHistoryResponse
     {
-        const string sqlAvgPrice = """
-                                   SELECT 
-                                       AVG(asp.Price) AS AveragePrice
-                                   FROM AuctionSaleProducts asp
-                                   JOIN AuctionSales a ON asp.AuctionSaleId = a.Id
-                                   JOIN RegisteredProducts rp ON asp.RegisteredProductId = rp.Id
-                                   WHERE 
-                                       rp.ProductId = (SELECT ProductId FROM RegisteredProducts WHERE Id = @registeredProductId)
-                                       AND
-                                        rp.CompanyId <> (SELECT CompanyId FROM RegisteredProducts WHERE Id = @registeredProductId)
-                                   """;
-        const string sql = """
-                           SELECT 
-                               p.Name,
-                               p.Picture,
-                               asp.Quantity,
-                               asp.Price,
-                               a.Date,
-                               c.Name AS CompanyName
-                           FROM AuctionSaleProducts asp
-                           JOIN AuctionSales a ON asp.AuctionSaleId = a.Id
-                           JOIN RegisteredProducts rp ON asp.RegisteredProductId = rp.Id
-                           JOIN Products p ON rp.ProductId = p.Id
-                            JOIN Companies c ON rp.CompanyId = c.Id
-                           WHERE 
-                               rp.ProductId = (SELECT ProductId FROM RegisteredProducts WHERE Id = @registeredProductId)
-                               AND
-                               rp.CompanyId <> (SELECT CompanyId FROM RegisteredProducts WHERE Id = @registeredProductId)
-                           """;
-
-        await using SqlConnection connection = (SqlConnection)context.Database.GetDbConnection();
-        if (connection.State != System.Data.ConnectionState.Open)
-        {
-            await connection.OpenAsync();
-        }
-        
-        await using SqlCommand avgPriceCommand = new SqlCommand(sqlAvgPrice, connection);
-        avgPriceCommand.Parameters.AddWithValue("@registeredProductId", registeredProductId);
-        decimal averagePrice = 0;
-        await using SqlDataReader? avgPriceReader = await avgPriceCommand.ExecuteReaderAsync();
-        while (await avgPriceReader.ReadAsync())
-        {
-            if (!avgPriceReader.IsDBNull(0))
-            {
-                averagePrice = avgPriceReader.GetDecimal(0);
-            }
-        }
-        avgPriceReader.Close();
-        
-        await using SqlCommand command = new SqlCommand(sql, connection);
-        command.Parameters.AddWithValue("@registeredProductId", registeredProductId);
-        List<AuctionSaleProductResponse> result = [];
-        
-        await using SqlDataReader? reader = await command.ExecuteReaderAsync();
-        while (await reader.ReadAsync())
-        {
-            result.Add(new AuctionSaleProductResponse
-            {
-                Name = reader.GetString(0),
-                Picture = reader.GetString(1),
-                Quantity = reader.GetInt32(2),
-                Price = reader.GetDecimal(3),
-                Date = reader.GetDateTime(4),
-                CompanyName = reader.GetString(5)
-            });
-        }
-        List<AuctionSaleProductHistoryResponse> responseList =
-        [
-            new AuctionSaleProductHistoryResponse
-            {
-                AvgPrice = averagePrice,
-                RecentSales = result
-            }
-        ];
-         return responseList;
-    }
-    public async Task<List<AuctionSaleProductHistoryResponse>> GetAuctionSaleProductsHistoryCompany(int registeredProductId)
-    {
-        const string sqlAvgPrice = """
-                                   SELECT 
-                                       AVG(asp.Price) AS AveragePrice
-                                   FROM AuctionSaleProducts asp
-                                   JOIN AuctionSales a ON asp.AuctionSaleId = a.Id
-                                   JOIN RegisteredProducts rp ON asp.RegisteredProductId = rp.Id
-                                   WHERE 
-                                       rp.ProductId = (SELECT ProductId FROM RegisteredProducts WHERE Id = @registeredProductId)
-                                       AND
-                                        rp.CompanyId = (SELECT CompanyId FROM RegisteredProducts WHERE Id = @registeredProductId)
-                                   """;
-        const string sql = """
-                           SELECT 
-                               p.Name,
-                               p.Picture,
-                               asp.Quantity,
-                               asp.Price,
-                               a.Date
-                           FROM AuctionSaleProducts asp
-                           JOIN AuctionSales a ON asp.AuctionSaleId = a.Id
-                           JOIN RegisteredProducts rp ON asp.RegisteredProductId = rp.Id
-                           JOIN Products p ON rp.ProductId = p.Id
-                           WHERE 
-                               rp.ProductId = (SELECT ProductId FROM RegisteredProducts WHERE Id = @registeredProductId)
-                               AND
-                               rp.CompanyId = (SELECT CompanyId FROM RegisteredProducts WHERE Id = @registeredProductId)
-                           """;
-
-        await using SqlConnection connection = (SqlConnection)context.Database.GetDbConnection();
-        if (connection.State != System.Data.ConnectionState.Open)
-        {
-            await connection.OpenAsync();
-        }
-        
-        await using SqlCommand avgPriceCommand = new SqlCommand(sqlAvgPrice, connection);
-        avgPriceCommand.Parameters.AddWithValue("@registeredProductId", registeredProductId);
-        decimal averagePrice = 0;
-        await using SqlDataReader? avgPriceReader = await avgPriceCommand.ExecuteReaderAsync();
-        while (await avgPriceReader.ReadAsync())
-        {
-            if (!avgPriceReader.IsDBNull(0))
-            {
-                averagePrice = avgPriceReader.GetDecimal(0);
-            }
-        }
-        avgPriceReader.Close();
-
-        await using SqlCommand command = new SqlCommand(sql, connection);
-        command.Parameters.AddWithValue("@registeredProductId", registeredProductId);
-        List<AuctionSaleProductResponse> result = new List<AuctionSaleProductResponse>();
-
-        await using SqlDataReader? reader = await command.ExecuteReaderAsync();
-        while (await reader.ReadAsync())
-        {
-            result.Add(new AuctionSaleProductResponse
-            {
-                Name = reader.GetString(0),
-                Picture = reader.GetString(1),
-                Quantity = reader.GetInt32(2),
-                Price = reader.GetDecimal(3),
-                Date = reader.GetDateTime(4)
-            });
-        }
-
-        List<AuctionSaleProductHistoryResponse> responseList =
-        [
-            new AuctionSaleProductHistoryResponse
-            {
-                AvgPrice = averagePrice,
-                RecentSales = result
-            }
-        ];
-         return responseList;
-    }
-
+        AvgPrice = averagePrice,
+        RecentSales = recentSales
+    };
+}
 
 
 public async Task<List<AuctionSaleProductResponse>> GetAuctionSaleProductsByUserId(string userId)

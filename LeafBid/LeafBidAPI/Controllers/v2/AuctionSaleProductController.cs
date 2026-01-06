@@ -1,5 +1,6 @@
 ﻿using LeafBidAPI.DTOs.AuctionSaleProduct;
 using LeafBidAPI.DTOs.User;
+using LeafBidAPI.Enums;
 using LeafBidAPI.Exceptions;
 using LeafBidAPI.Interfaces;
 using LeafBidAPI.Models;
@@ -100,7 +101,8 @@ public class AuctionSaleProductController(IUserService userService, IAuctionSale
     {
         try
         {
-            List<AuctionSaleProductHistoryResponse> products = await auctionSaleProductService.GetAuctionSaleProductsHistory(id);
+            AuctionSaleProductHistoryResponse products =
+                await auctionSaleProductService.GetAuctionSaleProductsHistory(id, HistoryEnum.All, true);
             return Ok(products);
         }
         catch (NotFoundException e)
@@ -123,7 +125,8 @@ public class AuctionSaleProductController(IUserService userService, IAuctionSale
     {
         try
         {
-            List<AuctionSaleProductHistoryResponse> products = await auctionSaleProductService.GetAuctionSaleProductsHistoryCompany(id);
+            AuctionSaleProductHistoryResponse products =
+                await auctionSaleProductService.GetAuctionSaleProductsHistory(id, HistoryEnum.OnlyCompany, false);
             return Ok(products);
         }
         catch (NotFoundException e)
@@ -146,7 +149,8 @@ public class AuctionSaleProductController(IUserService userService, IAuctionSale
     {
         try
         {
-            List<AuctionSaleProductHistoryResponse> products = await auctionSaleProductService.GetAuctionSaleProductsHistoryNotCompany(id);
+            AuctionSaleProductHistoryResponse products =
+                await auctionSaleProductService.GetAuctionSaleProductsHistory(id, HistoryEnum.ExcludeCompany, true);
             return Ok(products);
         }
         catch (NotFoundException e)

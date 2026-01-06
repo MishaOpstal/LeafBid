@@ -1,4 +1,5 @@
 using LeafBidAPI.DTOs.AuctionSaleProduct;
+using LeafBidAPI.Enums;
 using LeafBidAPI.Exceptions;
 using LeafBidAPI.Models;
 
@@ -39,19 +40,20 @@ public interface IAuctionSaleProductService
     /// Thrown when no auction sale product is found with the specified ID.
     /// </exception>
     Task<AuctionSaleProduct> UpdateAuctionSaleProduct(int id, UpdateAuctionSaleProductDto auctionSaleProductData);
-    
+
     /// <summary>
     /// Get auction sale products history for a registered product.
     /// </summary>
     /// <param name="registeredProductId">The registered product ID.</param>
+    /// <param name="scope">The scope of the history to retrieve (All, OnlyCompany, ExcludeCompany).</param>
+    /// <param name="includeCompanyName">Whether to include the company name in the response.</param>
+    /// <param name="limit">The maximum number of records to retrieve. Default is 10.</param>
     /// <returns>A list of recent auction sales for the specified registered product.</returns>
-    Task<List<AuctionSaleProductHistoryResponse>> GetAuctionSaleProductsHistory(int registeredProductId);
-    /// <summary>
-    /// Get auction sale products history for a registered product excluding company products.
-    /// </summary>
-    /// <param name="registeredProductId">The registered product ID.</param>
-    /// <returns>A list of recent auction sales for the specified registered product excluding company products.</returns>
-    Task<List<AuctionSaleProductHistoryResponse>> GetAuctionSaleProductsHistoryNotCompany(int registeredProductId);
+    Task<AuctionSaleProductHistoryResponse> GetAuctionSaleProductsHistory(
+        int registeredProductId,
+    HistoryEnum scope,
+    bool includeCompanyName,
+    int? limit = 10);
     
     /// <summary>
     /// Get auction sale products by user ID.
@@ -59,12 +61,5 @@ public interface IAuctionSaleProductService
     /// <param name="userId">The user ID.</param>
     /// <returns>A list of auction sale products associated with the specified user ID.</returns>
     Task<List<AuctionSaleProductResponse>> GetAuctionSaleProductsByUserId(string userId);
-    
-    /// <summary>
-    /// Get auction sale products history for a registered product from the same company.
-    /// </summary>
-    /// <param name="registeredProductId">The registered product ID.</param>
-    /// <returns>A list of recent auction sales for the specified registered product from the same company.</returns>
-    Task<List<AuctionSaleProductHistoryResponse>> GetAuctionSaleProductsHistoryCompany(int registeredProductId);
     
 }
