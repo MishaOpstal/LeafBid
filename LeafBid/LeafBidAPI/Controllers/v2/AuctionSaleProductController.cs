@@ -92,7 +92,7 @@ public class AuctionSaleProductController(IUserService userService, IAuctionSale
     /// Get auction sale products history for a registered product.
     /// </summary>
     /// <param name="id">The registered product ID.</param>
-    /// <returns>>A list of recent auction sales for the specified registered product.</returns>
+    /// <returns>A list of recent auction sales for the specified registered product.</returns>
     [HttpGet("history/{id:int}")]
     [Authorize]
     [ProducesResponseType(typeof(AuctionSaleProduct), StatusCodes.Status200OK)]
@@ -116,7 +116,7 @@ public class AuctionSaleProductController(IUserService userService, IAuctionSale
     /// Get auction sale products history for a registered product including company sales.
     /// </summary>
     /// <param name="id">The registered product ID.</param>
-    /// <returns>>A list of recent auction sales for the specified registered product including company sales.</returns>
+    /// <returns>A list of recent auction sales for the specified registered product including company sales.</returns>
     [HttpGet("history/{id:int}/company")]
     [Authorize]
     [ProducesResponseType(typeof(AuctionSaleProduct), StatusCodes.Status200OK)]
@@ -140,7 +140,7 @@ public class AuctionSaleProductController(IUserService userService, IAuctionSale
     /// Get auction sale products history for a registered product excluding company sales.
     /// </summary>
     /// <param name="id">The registered product ID.</param>
-    /// <returns>>A list of recent auction sales for the specified registered product excluding company sales.</returns>
+    /// <returns>A list of recent auction sales for the specified registered product excluding company sales.</returns>
     [HttpGet("history/{id:int}/not-company")]
     [Authorize]
     [ProducesResponseType(typeof(AuctionSaleProduct), StatusCodes.Status200OK)]
