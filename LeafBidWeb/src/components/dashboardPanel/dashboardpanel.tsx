@@ -36,10 +36,12 @@ const DashboardPanel: React.FC<DashboardPanelProps> = ({title, kloklocatie, imag
                 {/* Image on the left, small width */}
                 <Card.Img
                     alt={`Foto van ${title}`}
-                    src={imageSrc || "/images/PIPIPOTATO.png"}
-                    className="rounded"
-                    style={{ width: "60px", height: "60px", objectFit: "cover" }}
+                    className={`${s.image}`}
+                    variant="left"
+                    src={imageSrc || "/images/grey.png"}
+                    style={{ width: "100px", height: "100px", objectFit: "cover" }}
                 />
+
 
                 <Card.Body className="d-flex justify-content-between align-items-center py-2">
                     {/* Left side: title + time inline */}
@@ -47,12 +49,15 @@ const DashboardPanel: React.FC<DashboardPanelProps> = ({title, kloklocatie, imag
                         {loading ? (
                             <>
                                 {/*loading compact card*/}
-                                <Placeholder as={Card.Title} animation="glow">
-                                    <Placeholder xs={4} />
-                                </Placeholder>
-                                <Placeholder as="small" animation="glow">
-                                    <Placeholder xs={3} />
-                                </Placeholder>
+                                <div style={{ width: "120px" }}>
+                                    <Placeholder as={Card.Title} animation="glow">
+                                        <Placeholder xs={8} />
+                                    </Placeholder>
+                                    <Placeholder as="small" animation="glow">
+                                        <Placeholder xs={6} />
+                                    </Placeholder>
+                                </div>
+
                             </>
                         ) : (
                             // standard compact card
