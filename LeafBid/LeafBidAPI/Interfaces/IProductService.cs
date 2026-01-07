@@ -14,10 +14,10 @@ public interface IProductService
     Task<List<Product>> GetProducts();
 
     /// <summary>
-    /// Get all products that are not currently assigned to an auction.
+    /// Get all registered products that are not currently assigned to an auction.
     /// </summary>
-    /// <returns>A list of available products.</returns>
-    Task<List<Product>> GetAvailableProducts();
+    /// <returns>A list of available registered products.</returns>
+    Task<List<RegisteredProduct>> GetAvailableRegisteredProducts();
 
     /// <summary>
     /// Get a product by ID, including its provider user.

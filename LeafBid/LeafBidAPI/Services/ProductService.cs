@@ -1,6 +1,7 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using LeafBidAPI.Data;
+using LeafBidAPI.DTOs.Company;
 using LeafBidAPI.DTOs.Product;
 using LeafBidAPI.DTOs.RegisteredProduct;
 using LeafBidAPI.Exceptions;
@@ -25,13 +26,15 @@ public class ProductService(
         return await context.Products.ToListAsync();
     }
     
-    public async Task<List<Product>> GetAvailableProducts()
+    public async Task<List<RegisteredProduct>> GetAvailableRegisteredProducts()
     {
-        List<Product> products = await context.Products
-            .Where(p => !context.AuctionProducts.Any(ap => ap.RegisteredProduct != null && ap.RegisteredProduct.ProductId == p.Id))
+        List<RegisteredProduct> registeredProducts = await context.RegisteredProducts
+            .Include(rp => rp.Product)
+            .Include(rp => rp.Company)
+            .Where(rp => !context.AuctionProducts.Any(ap => ap.RegisteredProductId == rp.Id))
             .ToListAsync();
 
-        return products;
+        return registeredProducts;
     }
     
     public async Task<Product> GetProductById(int id)
@@ -233,12 +236,24 @@ public class ProductService(
 
     public RegisteredProductResponse CreateRegisteredProductResponse(RegisteredProduct registeredProduct)
     {
-        if (registeredProduct.Product == null)
-        {
-            throw new NotFoundException("Product not found");
-        }
+        // if (registeredProduct.Product == null)
+        // {
+        //     throw new NotFoundException("Product not found");
+        // }
 
-        ProductResponse productResponse = CreateProductResponse(registeredProduct.Product);
+        ProductResponse? productResponse = registeredProduct.Product != null ? CreateProductResponse(registeredProduct.Product) : null;
+        CompanyResponse? companyResponse = registeredProduct.Company != null ? new CompanyResponse
+            {
+                Id = registeredProduct.Company.Id,
+                Name = registeredProduct.Company.Name,
+                Street = registeredProduct.Company.Street,
+                City = registeredProduct.Company.City,
+                HouseNumber = registeredProduct.Company.HouseNumber,
+                HouseNumberSuffix = registeredProduct.Company.HouseNumberSuffix ?? "",
+                PostalCode = registeredProduct.Company.PostalCode,
+                CountryCode = registeredProduct.Company.CountryCode,
+            }
+            : null;
         RegisteredProductResponse registeredProductResponse = new()
         {
             Id = registeredProduct.Id,
@@ -250,7 +265,8 @@ public class ProductService(
             HarvestedAt = registeredProduct.HarvestedAt,
             PotSize = registeredProduct.PotSize ?? null,
             StemLength = registeredProduct.StemLength ?? null,
-            ProviderUserName = registeredProduct.User?.UserName ?? "Unknown"
+            ProviderUserName = registeredProduct.User?.UserName ?? "Unknown",
+            Company = companyResponse!,
         };
 
         return registeredProductResponse;

@@ -5,31 +5,32 @@ import ToevoegenLayout from "@/app/layouts/toevoegen/layout";
 
 import Form from "react-bootstrap/Form";
 import OrderedMultiSelect from "@/components/input/OrderedMultiSelect";
-import { Product } from "@/types/Product/Product";
-import { Locatie } from "@/types/Auction/Locatie";
+import {Locatie} from "@/types/Auction/Locatie";
 import React, {useEffect, useState} from "react";
 import DateSelect from "@/components/input/DateSelect";
 import SearchableDropdown from "@/components/input/SearchableDropdown";
 import Button from "@/components/input/Button";
 import ProductPriceTable from "@/components/input/ProductPriceTable";
-import { Auction } from "@/types/Auction/Auction";
+import {Auction} from "@/types/Auction/Auction";
+import {RegisteredProduct} from "@/types/Product/RegisteredProducts";
 
 const locaties: Locatie[] = [
-    { locatieId: 1, locatieNaam: "Aalsmeer" },
-    { locatieId: 2, locatieNaam: "Rijnsburg" },
-    { locatieId: 3, locatieNaam: "Naaldwijk" },
-    { locatieId: 4, locatieNaam: "Eelde" },
+    {locatieId: 1, locatieNaam: "Aalsmeer"},
+    {locatieId: 2, locatieNaam: "Rijnsburg"},
+    {locatieId: 3, locatieNaam: "Naaldwijk"},
+    {locatieId: 4, locatieNaam: "Eelde"},
 ];
 
 export default function Home() {
     const [auctionData, setAuctionData] = useState<Auction>({
         startDate: "",
         clockLocationEnum: 0,
-        products: [] as Product[],
+        registeredProducts: [] as RegisteredProduct[],
         userId: "8a57bc69-eeaa-42d1-930e-8270419f0a82",
+        isLive: false,
     });
 
-    const [products, setProducts] = useState<Product[]>([]);
+    const [registeredProducts, setRegisteredProducts] = useState<RegisteredProduct[]>([]);
     const [errors, setErrors] = useState<Record<string, string>>({});
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [message, setMessage] = useState("");
@@ -42,8 +43,8 @@ export default function Home() {
                     credentials: "include",
                 });
                 if (!res.ok) throw new Error("Failed to fetch products");
-                const data: Product[] = await res.json();
-                setProducts(data);
+                const data: RegisteredProduct[] = await res.json();
+                setRegisteredProducts(data);
             } catch (error) {
                 console.error("Error fetching products:", error);
             }
@@ -56,7 +57,7 @@ export default function Home() {
         if (!auctionData.startDate) newErrors.startDate = "Startdatum en tijd is verplicht.";
         if (!auctionData.clockLocationEnum || auctionData.clockLocationEnum === 0)
             newErrors.location = "Locatie is verplicht.";
-        if (!auctionData.products || auctionData.products.length === 0)
+        if (!auctionData.registeredProducts || auctionData.registeredProducts.length === 0)
             newErrors.products = "Minimaal één product is verplicht.";
 
         setErrors(newErrors);
@@ -64,7 +65,7 @@ export default function Home() {
     };
 
     const handleDateSelect = (date: string | null) => {
-        setAuctionData((prev) => ({ ...prev, startDate: date ?? "" }));
+        setAuctionData((prev) => ({...prev, startDate: date ?? ""}));
     };
 
     const handleLocatieSelect = (loc: Locatie) => {
@@ -74,12 +75,12 @@ export default function Home() {
         }));
     };
 
-    const handleProductsSelect = (selected: Product[]) => {
-        setAuctionData((prev) => ({ ...prev, products: selected }));
+    const handleProductsSelect = (selected: RegisteredProduct[]) => {
+        setAuctionData((prev) => ({...prev, registeredProducts: selected}));
     };
 
-    const handlePriceUpdate = (updated: Product[]) => {
-        setAuctionData((prev) => ({ ...prev, products: updated }));
+    const handlePriceUpdate = (updated: RegisteredProduct[]) => {
+        setAuctionData((prev) => ({...prev, registeredProducts: updated}));
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -92,7 +93,7 @@ export default function Home() {
             // Submit auctionData directly
             const response = await fetch("http://localhost:5001/api/v2/Auction", {
                 method: "POST",
-                headers: { "Content-Type": "application/json" },
+                headers: {"Content-Type": "application/json"},
                 body: JSON.stringify(auctionData),
                 credentials: "include",
             });
@@ -106,8 +107,9 @@ export default function Home() {
             setAuctionData({
                 startDate: "",
                 clockLocationEnum: 0,
-                products: [],
+                registeredProducts: [],
                 userId: "8a57bc69-eeaa-42d1-930e-8270419f0a82",
+                isLive: false,
             });
             setErrors({});
         } catch (err) {
@@ -146,7 +148,7 @@ export default function Home() {
                         {errors.location && <div className={s.error}>{errors.location}</div>}
 
                         <ProductPriceTable
-                            products={auctionData.products}
+                            registeredProducts={auctionData.registeredProducts}
                             onChange={handlePriceUpdate}
                             height={300}
                         />
@@ -156,8 +158,8 @@ export default function Home() {
                     <section className={s.section}>
                         <h3 className={s.h3}>Gekoppelde Producten</h3>
                         <OrderedMultiSelect
-                            items={[...products].sort((a, b) => a.name.localeCompare(b.name))} //dit soorteert alfabetisch
-                            value={auctionData.products}
+                            items={[...registeredProducts].sort((a, b) => a.product.name.localeCompare(b.product.name))} //dit soorteert alfabetisch
+                            value={auctionData.registeredProducts}
                             onChange={handleProductsSelect}
                             showBadges={false}
                         />

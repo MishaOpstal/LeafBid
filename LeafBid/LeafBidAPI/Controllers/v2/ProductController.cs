@@ -36,14 +36,14 @@ public class ProductController(IProductService productService) : ControllerBase
     /// </summary>
     /// <returns>A list of available products.</returns>
     [HttpGet("available")]
-    [ProducesResponseType(typeof(List<ProductResponse>), StatusCodes.Status200OK)]
-    public async Task<ActionResult<List<ProductResponse>>> GetAvailableProducts()
+    [ProducesResponseType(typeof(List<RegisteredProductResponse>), StatusCodes.Status200OK)]
+    public async Task<ActionResult<List<RegisteredProductResponse>>> GetAvailableRegisteredProducts()
     {
-        List<Product> products = await productService.GetAvailableProducts();
-        List<ProductResponse> productResponses = products
-            .Select(productService.CreateProductResponse)
+        List<RegisteredProduct> registeredProducts = await productService.GetAvailableRegisteredProducts();
+        List<RegisteredProductResponse> registeredProductResponses = registeredProducts
+            .Select(productService.CreateRegisteredProductResponse)
             .ToList();
-        return Ok(productResponses);
+        return Ok(registeredProductResponses);
     }
 
     /// <summary>

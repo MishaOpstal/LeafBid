@@ -1,10 +1,11 @@
 import {Product} from "@/types/Product/Product";
+import {RegisteredProduct} from "@/types/Product/RegisteredProducts";
 
 export interface Auction {
     id?: number;
     startDate: string;
     clockLocationEnum: number;
-    products: Product[]; // product(s) zitten hier in
+    registeredProducts: RegisteredProduct[]; // product(s) zitten hier in
     userId: string;
     isLive: boolean;
 }
