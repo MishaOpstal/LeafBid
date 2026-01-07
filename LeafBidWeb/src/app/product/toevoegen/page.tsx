@@ -2,12 +2,9 @@
 
 import s from "@/app/layouts/toevoegen/page.module.css";
 import ToevoegenLayout from "@/app/layouts/toevoegen/layout";
-
 import Form from "react-bootstrap/Form";
 import TextInput from "@/components/input/TextInput";
 import NumberInput from "@/components/input/NumberInput";
-import FileInput from "@/components/input/FileInput";
-import TextAreaInput from "@/components/input/TextAreaInput";
 import Button from "@/components/input/Button";
 import React, { useState } from "react";
 import SelectableButtonGroup from "@/components/input/SelectableButtonGroup";
@@ -22,19 +19,15 @@ if (!isUserInRole("Provider") && !isUserInRole("Admin")) {
 
 export default function ProductForm() {
     const [formData, setFormData] = useState({
-        name: "", //required
         minPrice: "", //required
         weight: "", //required
-        species: "", //required
         region: "", //required
         potSize: "", //either required or stemLength
         stemLength: "", //either required or potSize
         measurementType: "Pot grootte", //Pot Size or Stem Length toggle
         stock: "", //required
         harvestedAt: "", //required
-        userId: "1", //required
-        description: "", //optional
-        picture: null as File | null, //optional
+        productId: "", //required
     });
 
     const [errors, setErrors] = useState<Record<string, string>>({});
@@ -43,7 +36,7 @@ export default function ProductForm() {
 
     const validate = (): boolean => {
         const newErrors: Record<string, string> = {};
-        if (!formData.name) newErrors.name = "Product naam is verplicht.";
+        if (!formData.productId) newErrors.productId = "Product productId is verplicht.";
         setErrors(newErrors);
         return Object.keys(newErrors).length === 0;
     };
@@ -88,23 +81,15 @@ export default function ProductForm() {
         setIsSubmitting(true);
 
         try {
-            let pictureBase64: string | null = null;
 
-            if (formData.picture) {
-                pictureBase64 = await fileToBase64(formData.picture);
-            }
 
             const userData = localStorage.getItem("userData");
             const userId = userData ? JSON.parse(userData).id : null;
 
             const payload = {
-                name: formData.name,
-                description: formData.description,
                 minPrice: parseFloat(formData.minPrice),
                 weight: parseFloat(formData.weight),
-                species: formData.species,
                 region: formData.region,
-                picture: pictureBase64, // Base64 string or null
                 potSize:
                     formData.measurementType === "Pot grootte"
                         ? parseFloat(formData.potSize)
@@ -131,19 +116,15 @@ export default function ProductForm() {
 
             setMessage("Product succesvol toegevoegd!");
             setFormData({
-                name: "",
                 minPrice: "",
                 weight: "",
-                species: "",
                 region: "",
-                picture: null,
                 potSize: "",
                 stemLength: "",
                 measurementType: "Pot grootte",
                 stock: "",
                 harvestedAt: "",
-                userId: userId,
-                description: "",
+                productId: "",
             });
         } catch (error) {
             console.error(error);
@@ -158,11 +139,12 @@ export default function ProductForm() {
             <Form className={s.form} onSubmit={submitForm}>
                 <h1>Product Toevoegen</h1>
 
-                <TextInput
-                    label="Product Naam"
-                    name="name"
-                    placeholder="naam"
-                    value={formData.name}
+                <NumberInput
+                    label="Product id"
+                    name="productId"
+                    placeholder="product id"
+                    step={1}
+                    value={formData.productId}
                     onChange={handleChange}
                 />
 
@@ -193,14 +175,6 @@ export default function ProductForm() {
                     value={formData.weight}
                     onChange={handleChange}
                     postfix="kg"
-                />
-
-                <TextInput
-                    label="Soort"
-                    name="species"
-                    placeholder="soort"
-                    value={formData.species}
-                    onChange={handleChange}
                 />
 
                 <TextInput
@@ -249,16 +223,6 @@ export default function ProductForm() {
                         postfix="cm"
                     />
                 )}
-
-                <FileInput label="Plaatje" name="picture" onChange={handleFileChange} />
-
-                <TextAreaInput
-                    label="Product Informatie"
-                    name="description"
-                    placeholder="product informatie"
-                    value={formData.description}
-                    onChange={handleChange}
-                />
 
                 <Button
                     variant="primary"
