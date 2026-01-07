@@ -70,7 +70,7 @@ export default function ProductForm() {
         setFormData((prev) => ({ ...prev, [name]: value }));
     };
 
-    const handleProductSelect = (product: any) => {
+    const handleProductSelect = (product: Product) => {
         setFormData((prev) => ({ ...prev, productId: product.id.toString() }));
         // Also update localStorage if that's where you intend to persist it for the submitForm call
         localStorage.setItem("productId", product.id.toString());

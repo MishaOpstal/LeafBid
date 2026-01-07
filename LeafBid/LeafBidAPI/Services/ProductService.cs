@@ -123,16 +123,13 @@ public class ProductService(
         Product? product = await context.Products
             .FirstOrDefaultAsync(p => p.Id == productId);
         
-        
-        
         if (product == null)
         {
             throw new NotFoundException("Product not found");
         }
         
         User? user = await userManager.FindByIdAsync(userId);
-            
-            
+        
         if (user == null)
         {
             throw new NotFoundException("User not found");
