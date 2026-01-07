@@ -156,6 +156,77 @@ public async Task<List<AuctionSaleProductResponse>> GetAuctionSaleProductsByUser
         return responseList;
     }
 
+    public async Task<List<AuctionSaleProductResponse>> GetAuctionSaleProductsByCompanyId(int companyId)
+    {
+        var responseList = await context.AuctionSaleProducts
+            .Where(asp => asp.RegisteredProduct != null && asp.RegisteredProduct.CompanyId == companyId)
+            .GroupBy(asp => new
+            {
+                asp.RegisteredProductId,
+                asp.AuctionSale.AuctionId,
+                ProductName = asp.RegisteredProduct.Product.Name,
+                ProductPicture = asp.RegisteredProduct.Product.Picture
+            })
+            .Select(g => new AuctionSaleProductResponse
+            {
+                Name = g.Key.ProductName ?? "Unknown Product",
+                Picture = g.Key.ProductPicture ?? string.Empty,
+                Price = g.Sum(x => x.Price),
+                Quantity = g.Sum(x => x.Quantity),
+                Date = g.Max(x => x.AuctionSale.Date)
+            })
+            .ToListAsync();
+
+        return responseList;
+    }
+    
+    
+    public async Task<SaleChartResponse> GetSaleChartDataByCompany(int companyId)
+    {
+        var data = await context.AuctionSaleProducts
+            .Where(asp => asp.RegisteredProduct.CompanyId == companyId)
+            .Include(asp => asp.RegisteredProduct)
+            .ThenInclude(rp => rp.Product)
+            .Include(asp => asp.AuctionSale)
+            .ToListAsync();
+        
+        var currentMonthData = data
+            .Where(asp => asp.AuctionSale.Date.Month == DateTime.Now.Month 
+                          && asp.AuctionSale.Date.Year == DateTime.Now.Year)
+            .GroupBy(asp => new 
+            { 
+                asp.RegisteredProduct.Product.Id, 
+                asp.RegisteredProduct.Product.Name 
+            })
+            .Select(g => new SaleChartDataPoint
+            {
+                ProductName = g.Key.Name,
+                Price = g.Sum(x => x.Price)
+            })
+            .ToList();
+
+        var allTimeData = data
+            .GroupBy(asp => new 
+            { 
+                asp.RegisteredProduct.Product.Id, 
+                asp.RegisteredProduct.Product.Name 
+            })
+            .Select(g => new SaleChartDataPoint
+            {
+                ProductName = g.Key.Name,
+                Price = g.Sum(x => x.Price)
+            })
+            .ToList();
+
+
+        return new SaleChartResponse
+        {
+            CurrentMonthData = currentMonthData,
+            AllTimeData = allTimeData
+        };
+    }
+
+
     
     public async Task<AuctionSaleProduct> CreateAuctionSaleProduct(
         CreateAuctionSaleProductDto auctionSaleProductData)
