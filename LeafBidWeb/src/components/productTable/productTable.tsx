@@ -28,7 +28,17 @@ export default function ProductTable({ userRoles }: Props) {
     useEffect(() => {
         const fetchProducts = async () => {
             try {
-                const res = await fetch("http://localhost:5001/api/v2/AuctionSaleProduct/me", {
+                let url = "";
+                if (userRoles == Roles.Buyer) {
+                    url = "http://localhost:5001/api/v2/AuctionSaleProduct/me";
+                } else if (userRoles == Roles.Provider) {
+                    url = "http://localhost:5001/api/v2/AuctionSaleProduct/company";
+                } else {
+                    console.error("Invalid user role");
+                    return;
+                }
+                console.log(url);
+                const res = await fetch(url, {
                     method: "GET",
                     credentials: "include",
                 });
