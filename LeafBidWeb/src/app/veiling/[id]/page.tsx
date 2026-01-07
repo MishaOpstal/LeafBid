@@ -74,6 +74,18 @@ export default function AuctionPage() {
     }
 
     const currentProduct = products[0];
+    //
+    // if (!currentProduct) {
+    //     return (
+    //         <>
+    //             <Header returnOption={true}/>
+    //             <main className={s.main}>
+    //                 <h2>Geen product beschikbaar</h2>
+    //             </main>
+    //         </>
+    //     );
+    // }
+
     const nextProducts = products.slice(1);
 
     const maxPrice = currentProduct.maxPrice;

@@ -46,7 +46,7 @@ export default function Home() {
             <Header/>
             <main className={styles.main}>
                 <div className={styles.page}>
-                    <h1 className={styles.huidigeVeilingen}>Veilingen Dashboard</h1>
+                    <h1 className={styles.huidigeVeilingen}>Huidige veilingen</h1>
 
                     <div className={styles.panels}>
                         {loading ? (

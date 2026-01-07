@@ -116,4 +116,21 @@ public class AuctionService(
 
         return registeredProducts!;
     }
+
+    public async Task<Auction> UpdateIsLive(int auctionId, bool isLive)
+    {
+        Auction? auction = await context.Auctions
+            .Where(a => a.Id == auctionId)
+            .FirstOrDefaultAsync();
+
+        if (auction == null)
+        {
+            throw new NotFoundException("Auction not found");
+        }
+
+        auction.IsLive = isLive;
+
+        await context.SaveChangesAsync();
+        return auction;
+    }
 }

@@ -119,4 +119,24 @@ public class AuctionController(IAuctionService auctionService, IProductService p
             return NotFound(e.Message);
         }
     }
+    
+    [HttpPut("isLive")]
+    [Authorize(Roles = "Auctioneer")]
+    [ProducesResponseType(typeof(Auction), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<UpdateIsLiveDto>> UpdateIsLive(
+        [FromQuery] int auctionId,
+        [FromQuery] bool isLive)
+    {
+        try
+        {
+            var result = await auctionService.UpdateIsLive(auctionId, isLive);
+            return Ok(result);
+        }
+        catch (NotFoundException e)
+        {
+            return NotFound(e.Message);
+        }
+    }
+
 }

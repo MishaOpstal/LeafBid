@@ -60,4 +60,15 @@ public interface IAuctionService
     /// Thrown when no registered products are found for the specified auction.
     /// </exception>
     Task<List<RegisteredProduct>> GetRegisteredProductsByAuctionId(int auctionId);
+
+    /// <summary>
+    /// Edit the IsLive value to true or false for a given auction id
+    /// </summary>
+    /// <param name="auctionId">The auction ID.</param>
+    /// <param name="isLive">IsLive value of an auction</param>
+    /// <returns>the updated auction</returns>
+    /// <exception cref="NotFoundException">
+    /// Thrown when auctionid can't be found
+    /// </exception>
+    Task<Auction> UpdateIsLive(int auctionId, bool isLive);
 }

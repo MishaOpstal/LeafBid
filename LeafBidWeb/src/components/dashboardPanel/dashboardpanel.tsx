@@ -17,6 +17,11 @@ type DashboardPanelProps = {
     loading?: boolean;
     compact?: boolean;
     children?: React.ReactNode;
+    isLive?: boolean;
+    activeClockLocations?: string[];
+    onStartAuction?: () => void;
+    onStopAuction?: () => void;
+    onError?: (msg: string) => void;
 };
 
 const enum Kloklocaties {
@@ -28,7 +33,7 @@ const enum Kloklocaties {
 
 
 
-const DashboardPanel: React.FC<DashboardPanelProps> = ({title, kloklocatie, imageSrc, resterendeTijd, huidigePrijs, aankomendProductNaam, aankomendProductStartprijs, children, loading = false, compact = false,}) => {
+const DashboardPanel: React.FC<DashboardPanelProps> = ({title, kloklocatie, imageSrc, resterendeTijd, huidigePrijs, aankomendProductNaam, aankomendProductStartprijs, children, loading = false, compact = false, isLive, activeClockLocations, onStartAuction, onStopAuction, onError}) => {
 // compacte kaart
     if (compact) {
         return (
@@ -73,9 +78,39 @@ const DashboardPanel: React.FC<DashboardPanelProps> = ({title, kloklocatie, imag
                         {loading ? (
                             <Placeholder.Button variant="secondary" xs={2} />
                         ) : (
-                            children
+                            <>
+                                {children}
+
+                                {!isLive ? (
+                                    <Button
+                                        variant="success"
+                                        size="sm"
+                                        onClick={() => {
+                                            const alreadyActive = activeClockLocations?.includes(kloklocatie ?? "");
+
+                                            if (alreadyActive) {
+                                                onError?.(`Er draait al een veiling op ${kloklocatie}.`);
+                                                return;
+                                            }
+
+                                            onStartAuction?.();
+                                        }}
+                                    >
+                                        Start
+                                    </Button>
+                                ) : (
+                                    <Button
+                                        variant="danger"
+                                        size="sm"
+                                        onClick={() => onStopAuction?.()}
+                                    >
+                                        Stop
+                                    </Button>
+                                )}
+                            </>
                         )}
                     </div>
+
                 </Card.Body>
             </Card>
         );

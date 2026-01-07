@@ -44,6 +44,13 @@ export default function VeilingmeesterOverzicht() {
 
     const now = new Date();
 
+    const activeClockLocations = auctions
+        .filter(a => a.auction.isLive)
+        .map(a => parseClockLocation(a.auction.clockLocationEnum));
+
+
+
+
     const currentAuctions = auctions.filter(a => a.auction.isLive);
 
     const upcomingAuctions = auctions.filter(
@@ -53,6 +60,31 @@ export default function VeilingmeesterOverzicht() {
     const pastAuctions = auctions.filter(
         a => !a.auction.isLive && new Date(a.auction.startDate) <= now
     );
+
+    async function startAuction(id: number | undefined) {
+        if (!id) return;
+
+        await fetch(`http://localhost:5001/api/v2/auction/isLive?auctionId=${id}&isLive=true`, {
+            method: "PUT",
+            credentials: "include"
+        });
+
+        window.location.reload();
+    }
+
+
+
+    async function stopAuction(id: number | undefined) {
+        if (!id) return;
+
+        await fetch(`http://localhost:5001/api/v2/auction/isLive?auctionId=${id}&isLive=false`, {
+            method: "PUT",
+            credentials: "include"
+        });
+
+        window.location.reload();
+    }
+
 
 
     return (
@@ -88,6 +120,14 @@ export default function VeilingmeesterOverzicht() {
                                             kloklocatie={parseClockLocation(auction.clockLocationEnum)}
                                             imageSrc={product?.picture}
                                             resterendeTijd={new Date(auction.startDate).toLocaleString()}
+
+                                            isLive={auction.isLive}
+                                            activeClockLocations={activeClockLocations}
+
+                                            onStartAuction={() => startAuction(auction.id)}
+                                            onStopAuction={() => stopAuction(auction.id)}
+
+                                            onError={(msg) => alert(msg)}
                                         />
                                     </Link>
                                 );
@@ -119,8 +159,17 @@ export default function VeilingmeesterOverzicht() {
                                             kloklocatie={parseClockLocation(auction.clockLocationEnum)}
                                             imageSrc={product?.picture}
                                             resterendeTijd={new Date(auction.startDate).toLocaleString()}
+
+                                            isLive={auction.isLive}
+                                            activeClockLocations={activeClockLocations}
+
+                                            onStartAuction={() => startAuction(auction.id)}
+                                            onStopAuction={() => stopAuction(auction.id)}
+
+                                            onError={(msg) => alert(msg)}
                                         />
                                     </Link>
+
                                 );
                             })
                         )}
@@ -147,8 +196,17 @@ export default function VeilingmeesterOverzicht() {
                                             kloklocatie={parseClockLocation(auction.clockLocationEnum)}
                                             imageSrc={product?.picture}
                                             resterendeTijd={new Date(auction.startDate).toLocaleString()}
+
+                                            isLive={auction.isLive}
+                                            activeClockLocations={activeClockLocations}
+
+                                            onStartAuction={() => startAuction(auction.id)}
+                                            onStopAuction={() => stopAuction(auction.id)}
+
+                                            onError={(msg) => alert(msg)}
                                         />
                                     </Link>
+
                                 );
                             })
                         )}
