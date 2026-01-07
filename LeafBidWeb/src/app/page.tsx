@@ -5,13 +5,8 @@ import DashboardPanel from "@/components/dashboardPanel/dashboardpanel";
 import {useState, useEffect} from "react";
 import {ClockLocation, parseClockLocation} from "@/enums/ClockLocation";
 
-type Product = {
-    id: number;
-    name: string;
-    description: string;
-    picture: string;
-    species: string;
-};
+import { Product } from "@/types/Product/Product";
+import { Auction } from "@/types/Auction/Auction";
 
 type RegisteredProduct = {
     id: number;
@@ -24,14 +19,6 @@ type RegisteredProduct = {
     potSize: number | null;
     stemLength: number;
     providerUserName: string;
-};
-
-type Auction = {
-    id: number;
-    startDate: string;
-    clockLocationEnum: ClockLocation;
-    isLive: boolean;
-    userId: string;
 };
 
 type AuctionPage = {

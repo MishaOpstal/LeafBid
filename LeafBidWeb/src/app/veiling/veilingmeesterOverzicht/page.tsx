@@ -7,14 +7,8 @@ import { useState, useEffect } from "react";
 import { ClockLocation, parseClockLocation } from "@/enums/ClockLocation";
 import Link from "next/link";
 
-
-type Product = {
-    id: number;
-    name: string;
-    description: string;
-    picture: string;
-    species: string;
-};
+import { Auction } from "@/types/Auction/Auction";
+import { Product } from "@/types/Product/Product";
 
 type RegisteredProduct = {
     id: number;
@@ -27,14 +21,6 @@ type RegisteredProduct = {
     potSize: number | null;
     stemLength: number;
     providerUserName: string;
-};
-
-type Auction = {
-    id: number;
-    startDate: string;
-    clockLocationEnum: number;
-    isLive: boolean;
-    userId: string;
 };
 
 type AuctionPage = {
