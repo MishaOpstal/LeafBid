@@ -6,11 +6,15 @@ import Form from "react-bootstrap/Form";
 import TextInput from "@/components/input/TextInput";
 import NumberInput from "@/components/input/NumberInput";
 import Button from "@/components/input/Button";
-import React, { useState } from "react";
+import React, {useEffect, useState} from "react";
 import SelectableButtonGroup from "@/components/input/SelectableButtonGroup";
+import SearchableDropdown from "@/components/input/SearchableDropdown";
 import DateSelect from "@/components/input/DateSelect";
 import {isUserInRole} from "@/app/auth/utils/isUserInRole";
 import {Roles, parseRole} from "@/enums/Roles";
+import {RegisteredProduct} from "@/types/Product/RegisteredProducts";
+import {Product} from "@/types/Product/Product";
+import {create} from "node:domain";
 
 // Check if user has a Provider role
 if (!isUserInRole(parseRole(Roles.Provider)) && !isUserInRole(parseRole(Roles.Admin))) {
@@ -31,9 +35,28 @@ export default function ProductForm() {
         productId: "", //required
     });
 
+    const ProductId = localStorage.getItem("productId") ?? "";
+
+    const [products, setProducts] = useState<Product[]>([]);
     const [errors, setErrors] = useState<Record<string, string>>({});
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [message, setMessage] = useState("");
+
+    useEffect(() => {
+        (async () => {
+            try {
+                const res = await fetch("http://localhost:5001/api/v2/Product/available", {
+                    method: "GET",
+                    credentials: "include",
+                });
+                if (!res.ok) throw new Error("Failed to fetch products");
+                const data: Product[] = await res.json();
+                setProducts(data);
+            } catch (error) {
+                console.error("Error fetching products:", error);
+            }
+        })();
+    }, []);
 
     const validate = (): boolean => {
         const newErrors: Record<string, string> = {};
@@ -47,32 +70,16 @@ export default function ProductForm() {
         setFormData((prev) => ({ ...prev, [name]: value }));
     };
 
+    const handleProductSelect = (product: Product) => {
+        setFormData((prev) => ({ ...prev, productId: product.id.toString() }));
+        // Also update localStorage if that's where you intend to persist it for the submitForm call
+        localStorage.setItem("productId", product.id.toString());
+    };
+
     const handleDateSelect = (date: string | null) => {
         setFormData((prev) => ({ ...prev, harvestedAt: date ?? "" }));
     };
 
-    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const file = e.target.files?.[0] ?? null;
-        if (file && !file.type.startsWith("image/")) {
-            setErrors((prev) => ({
-                ...prev,
-                picture: "Alleen afbeeldingsbestanden zijn toegestaan.",
-            }));
-            return;
-        }
-        setFormData((prev) => ({ ...prev, picture: file }));
-    };
-
-    const fileToBase64 = (file: File): Promise<string> =>
-        new Promise((resolve, reject) => {
-            const reader = new FileReader();
-            reader.onload = () => {
-                if (typeof reader.result === "string") resolve(reader.result);
-                else reject("Bestand kon niet worden geconverteerd naar Base64.");
-            };
-            reader.onerror = () => reject("Fout bij het lezen van bestand.");
-            reader.readAsDataURL(file);
-        });
 
     const submitForm = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -104,7 +111,8 @@ export default function ProductForm() {
                 userId: userId,
             };
 
-            const response = await fetch("http://localhost:5001/api/v2/Product", {
+
+            const response = await fetch(`http://localhost:5001/api/v2/Product/registeredCreate/${ProductId}`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 credentials: "include",
@@ -140,13 +148,13 @@ export default function ProductForm() {
             <Form className={s.form} onSubmit={submitForm}>
                 <h1>Product Toevoegen</h1>
 
-                <NumberInput
+                <SearchableDropdown
                     label="Product id"
-                    name="productId"
-                    placeholder="product id"
-                    step={1}
-                    value={formData.productId}
-                    onChange={handleChange}
+                    items={[...products].sort((a, b) => a.name.localeCompare(b.name))}
+                    displayKey="name"
+                    valueKey="id"
+                    onSelect={handleProductSelect}
+                    placeholder="Selecteer product"
                 />
 
                 <NumberInput
