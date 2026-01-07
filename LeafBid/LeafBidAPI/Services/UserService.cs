@@ -206,11 +206,12 @@ public class UserService(
             UserName = user.UserName ?? string.Empty,
             Email = user.Email ?? string.Empty,
             EmailConfirmed = user.EmailConfirmed,
+            CompanyId = user.CompanyId,
             LockoutEnabled = user.LockoutEnabled,
             LockoutEnd = user.LockoutEnd,
             NormalizedEmail = user.NormalizedEmail ?? string.Empty,
             NormalizedUserName = user.NormalizedUserName ?? string.Empty,
-            Roles = roles
+            Roles = roles,
         };
 
         return userResponse;
