@@ -236,10 +236,6 @@ public class ProductService(
 
     public RegisteredProductResponse CreateRegisteredProductResponse(RegisteredProduct registeredProduct)
     {
-        // if (registeredProduct.Product == null)
-        // {
-        //     throw new NotFoundException("Product not found");
-        // }
 
         ProductResponse? productResponse = registeredProduct.Product != null ? CreateProductResponse(registeredProduct.Product) : null;
         CompanyResponse? companyResponse = registeredProduct.Company != null ? new CompanyResponse
