@@ -7,7 +7,6 @@ import { useState, useEffect } from "react";
 import { ClockLocation, parseClockLocation } from "@/enums/ClockLocation";
 import Link from "next/link";
 
-// ---------------------- TYPES ----------------------
 
 type Product = {
     id: number;
@@ -43,7 +42,6 @@ type AuctionPage = {
     registeredProducts: RegisteredProduct[];
 };
 
-// ---------------------- COMPONENT ----------------------
 
 export default function VeilingmeesterOverzicht() {
     const [auctions, setAuctions] = useState<AuctionPage[]>([]);
@@ -76,7 +74,6 @@ export default function VeilingmeesterOverzicht() {
         fetchAuctions();
     }, []);
 
-    // ---------------------- CATEGORIZATION ----------------------
 
     const now = new Date();
 
@@ -90,7 +87,6 @@ export default function VeilingmeesterOverzicht() {
         a => !a.auction.isLive && new Date(a.auction.startDate) <= now
     );
 
-    // ---------------------- RENDER ----------------------
 
     return (
         <>
@@ -100,7 +96,6 @@ export default function VeilingmeesterOverzicht() {
                 <div className={styles.page}>
                     <h1 className={styles.huidigeVeilingen}>Veilingmeester Dashboard</h1>
 
-                    {/* ---------------------- HUIDIGE VEILINGEN ---------------------- */}
                     <h2 className={styles.sectionTitle}>Huidige veilingen</h2>
                     <div className={styles.panels}>
                         {loading ? (
@@ -133,7 +128,6 @@ export default function VeilingmeesterOverzicht() {
                         )}
                     </div>
 
-                    {/* ---------------------- AANKOMENDE VEILINGEN ---------------------- */}
                     <h2 className={styles.sectionTitle}>Aankomende veilingen</h2>
                     <div className={styles.panels}>
                         {loading ? (
@@ -165,7 +159,6 @@ export default function VeilingmeesterOverzicht() {
                         )}
                     </div>
 
-                    {/* ---------------------- AFGELOPEN VEILINGEN ---------------------- */}
                     <h2 className={styles.sectionTitle}>Afgelopen veilingen</h2>
                     <div className={styles.panels}>
                         {loading ? (
