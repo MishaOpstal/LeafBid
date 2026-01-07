@@ -121,7 +121,7 @@ export default function ProductForm() {
     return (
         <ToevoegenLayout>
             <Form className={s.form} onSubmit={submitForm}>
-                <h1>Product Toevoegen</h1>
+                <h1>Product soort maken</h1>
 
                 <TextInput
                     label="Product Naam"
