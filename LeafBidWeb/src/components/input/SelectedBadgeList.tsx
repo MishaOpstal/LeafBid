@@ -2,10 +2,11 @@ import React from "react";
 import { Badge } from "react-bootstrap";
 import { Product } from "@/types/Product/Product";
 import s from "./SelectedBadgeList.module.css";
+import {RegisteredProduct} from "@/types/Product/RegisteredProducts";
 
 interface SelectedBadgeListProps {
-    items: Product[];
-    onRemove: (product: Product) => void;
+    items: RegisteredProduct[];
+    onRemove: (registeredproduct: RegisteredProduct) => void;
 }
 
 /**
@@ -16,16 +17,16 @@ const SelectedBadgeList: React.FC<SelectedBadgeListProps> = ({ items, onRemove }
 
     return (
         <div className={`mb-3 d-flex flex-wrap gap-2 ${s.badgeContainer}`}>
-            {items.map((p, i) => (
+            {items.map((rp, i) => (
                 <Badge
-                    key={p.id}
+                    key={rp.id}
                     bg="secondary"
                     pill
                     className={s.selectedBadge}
-                    title={`Click to remove ${p.name}`}
-                    onClick={() => onRemove(p)}
+                    title={`Click to remove ${rp.product.name}`}
+                    onClick={() => onRemove(rp)}
                 >
-                    {i + 1}. {p.name}
+                    {i + 1}. {rp.product.name}
                 </Badge>
             ))}
         </div>
