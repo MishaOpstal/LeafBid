@@ -4,6 +4,7 @@ import Header from "@/components/header/header";
 import DashboardPanel from "@/components/dashboardPanel/dashboardpanel";
 import {useState, useEffect} from "react";
 import {ClockLocation, parseClockLocation} from "@/enums/ClockLocation";
+import History from "@/components/Popup/history";
 
 import { AuctionPage } from "@/types/Auction/AuctionPage";
 
@@ -80,6 +81,13 @@ export default function Home() {
                         )}
                     </div>
                 </div>
+                <History
+                    RegisteredProductID={21}
+                    Name={"Test Product"}
+                    Picture={"https://placehold.co/1200x1200/cccccc/9c9c9c.png?text=Industrial%20Soft"}
+                    companyName={"Test Company"}
+                />
+
             </main>
         </>
     );
