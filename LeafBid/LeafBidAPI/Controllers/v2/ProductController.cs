@@ -1,5 +1,6 @@
 ﻿using LeafBidAPI.DTOs.Product;
 using LeafBidAPI.DTOs.RegisteredProduct;
+using LeafBidAPI.DTOs.User;
 using LeafBidAPI.Exceptions;
 using LeafBidAPI.Interfaces;
 using LeafBidAPI.Models;
@@ -14,7 +15,7 @@ namespace LeafBidAPI.Controllers.v2;
 // [Authorize]
 [AllowAnonymous]
 [Produces("application/json")]
-public class ProductController(IProductService productService) : ControllerBase
+public class ProductController(IProductService productService, IUserService userService) : ControllerBase
 {
     /// <summary>
     /// Get all products.
@@ -104,20 +105,27 @@ public class ProductController(IProductService productService) : ControllerBase
     /// Create a new registered product.
     /// </summary>
     /// <param name="productData">The product data.</param>
-    /// <param name="productId"></param>
-    /// <param name="userId"></param>
+    /// <param name="productId">The id of the Product</param>
+    /// <param name="userId">The id of the User</param>
+    /// <param name="companyId">The id of the Company</param>
     /// <returns>The created product.</returns>
     /// <exception cref="NotFoundException">Thrown when the main product cannot be found.</exception>
-    [HttpPost("/registeredCreate/{ProductId:int}")]
+    [HttpPost("registeredCreate/{ProductId:int}")]
     [Authorize(Roles = "Provider")]
     [ProducesResponseType(typeof(RegisteredProductResponse), StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     public async Task<ActionResult<RegisteredProductResponse>> CreateRegisteredProduct(
-        [FromBody] CreateRegisteredProductEndpointDto productData, int productId, string userId)
+        [FromBody] CreateRegisteredProductEndpointDto productData, [FromRoute] int productId)
     {
         try
         {
-            RegisteredProduct registeredProduct = await productService.CreateProductDeliveryGuy(productData, productId, userId);
+            LoggedInUserResponse me = await userService.GetLoggedInUser(User);
+            
+            RegisteredProduct registeredProduct = await productService.CreateRegisteredProduct(productData, productId, me.UserData.Id, me.UserData.CompanyId.Value);
+            
+            
             RegisteredProductResponse registeredProductResponse = productService.CreateRegisteredProductResponse(registeredProduct);
             return CreatedAtAction(
                 actionName: nameof(GetProductById),
@@ -133,6 +141,14 @@ public class ProductController(IProductService productService) : ControllerBase
         {
             Console.WriteLine(e);
             throw;
+        }
+        catch (UnauthorizedException e)
+        {
+            return Unauthorized(e.Message);
+        }
+        catch (BadRequestException e)
+        {
+            return BadRequest(e.Message);
         }
 
     }

@@ -59,8 +59,8 @@ public interface IProductService
     /// <exception cref="Exception">
     /// Thrown when product cannot be created
     /// </exception>
-    Task<RegisteredProduct> CreateProductDeliveryGuy(CreateRegisteredProductEndpointDto registeredProductData,
-        int productId, string userId);
+    Task<RegisteredProduct> CreateRegisteredProduct(CreateRegisteredProductEndpointDto registeredProductData,
+        int productId, string userId, int companyId);
 
 
     /// <summary>

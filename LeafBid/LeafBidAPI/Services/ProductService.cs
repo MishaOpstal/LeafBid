@@ -118,15 +118,21 @@ public class ProductService(
         return product;
     }
 
-    public async Task<RegisteredProduct> CreateProductDeliveryGuy(CreateRegisteredProductEndpointDto registeredProductData, int productId, string userId)
+    public async Task<RegisteredProduct> CreateRegisteredProduct(CreateRegisteredProductEndpointDto registeredProductData, int productId, string userId, int companyId)
     {
-        Product? product = await context.Products.FirstOrDefaultAsync(p => p.Id == productId);
+        Product? product = await context.Products
+            .FirstOrDefaultAsync(p => p.Id == productId);
+        
+        
+        
         if (product == null)
         {
             throw new NotFoundException("Product not found");
         }
         
         User? user = await userManager.FindByIdAsync(userId);
+            
+            
         if (user == null)
         {
             throw new NotFoundException("User not found");
@@ -146,7 +152,7 @@ public class ProductService(
             HarvestedAt = registeredProductData.HarvestedAt,
             StemLength = registeredProductData.StemLength,
             PotSize = registeredProductData.PotSize,
-            CompanyId = user.CompanyId.Value,
+            CompanyId = companyId,
             UserId = userId
         };
 
