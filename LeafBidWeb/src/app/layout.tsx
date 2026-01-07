@@ -70,7 +70,7 @@ export default function RootLayout({
         <link href="https://fonts.googleapis.com/css2?family=Nunito:ital,wght@0,200..1000;1,200..1000&display=swap"
               rel="stylesheet"/>
     </head>
-    <body className={`${geistSans.variable} ${geistMono.variable}`}>
+    <body className={`${geistSans.variable} ${geistMono.variable}`} suppressHydrationWarning={true}>
     {children}
     </body>
     </html>
