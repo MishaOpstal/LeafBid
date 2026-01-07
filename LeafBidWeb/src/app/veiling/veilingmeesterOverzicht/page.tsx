@@ -7,26 +7,7 @@ import { useState, useEffect } from "react";
 import { ClockLocation, parseClockLocation } from "@/enums/ClockLocation";
 import Link from "next/link";
 
-import { Auction } from "@/types/Auction/Auction";
-import { Product } from "@/types/Product/Product";
-
-type RegisteredProduct = {
-    id: number;
-    product: Product;
-    minPrice: number;
-    maxPrice: number;
-    stock: number;
-    region: string;
-    harvestedAt: string;
-    potSize: number | null;
-    stemLength: number;
-    providerUserName: string;
-};
-
-type AuctionPage = {
-    auction: Auction;
-    registeredProducts: RegisteredProduct[];
-};
+import { AuctionPage } from "@/types/Auction/AuctionPage";
 
 
 export default function VeilingmeesterOverzicht() {
