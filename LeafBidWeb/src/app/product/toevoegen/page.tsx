@@ -2,12 +2,9 @@
 
 import s from "@/app/layouts/toevoegen/page.module.css";
 import ToevoegenLayout from "@/app/layouts/toevoegen/layout";
-
 import Form from "react-bootstrap/Form";
 import TextInput from "@/components/input/TextInput";
 import NumberInput from "@/components/input/NumberInput";
-import FileInput from "@/components/input/FileInput";
-import TextAreaInput from "@/components/input/TextAreaInput";
 import Button from "@/components/input/Button";
 import React, { useState } from "react";
 import SelectableButtonGroup from "@/components/input/SelectableButtonGroup";
@@ -30,9 +27,7 @@ export default function ProductForm() {
         measurementType: "Pot grootte", //Pot Size or Stem Length toggle
         stock: "", //required
         harvestedAt: "", //required
-        userId: "1", //required
         productId: "", //required
-        companyId: "", //required
     });
 
     const [errors, setErrors] = useState<Record<string, string>>({});
@@ -129,8 +124,6 @@ export default function ProductForm() {
                 measurementType: "Pot grootte",
                 stock: "",
                 harvestedAt: "",
-                userId: userId,
-                companyId: "",
                 productId: "",
             });
         } catch (error) {
@@ -152,15 +145,6 @@ export default function ProductForm() {
                     placeholder="product id"
                     step={1}
                     value={formData.productId}
-                    onChange={handleChange}
-                />
-
-                <NumberInput
-                    label="Company id"
-                    name="companyId"
-                    placeholder="Company id"
-                    step={1}
-                    value={formData.stock}
                     onChange={handleChange}
                 />
 
