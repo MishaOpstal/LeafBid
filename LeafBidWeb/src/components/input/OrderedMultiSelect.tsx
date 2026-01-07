@@ -2,13 +2,13 @@ import React, { useMemo, useState, useEffect } from "react";
 import { ListGroup, Form, Badge, Button, Spinner } from "react-bootstrap";
 import SearchBar from "./SearchBar";
 import SelectedBadgeList from "./SelectedBadgeList";
-import { Product } from "@/types/Product/Product";
 import s from "./OrderedMultiSelect.module.css";
+import {RegisteredProduct} from "@/types/Product/RegisteredProducts";
 
 interface OrderedMultiSelectProps {
-    items?: Product[];
-    value?: Product[]; // controlled selection
-    onChange?: (selected: Product[]) => void;
+    items?: RegisteredProduct[];
+    value?: RegisteredProduct[]; // controlled selection
+    onChange?: (selected: RegisteredProduct[]) => void;
     pageSize?: number;
     endpoint?: string;
     showBadges?: boolean;
@@ -28,7 +28,7 @@ const OrderedMultiSelect: React.FC<OrderedMultiSelectProps> = ({
                                                                }) => {
     const [query, setQuery] = useState("");
     const [page, setPage] = useState(1);
-    const [remoteItems, setRemoteItems] = useState<Product[]>([]);
+    const [remoteItems, setRemoteItems] = useState<RegisteredProduct[]>([]);
     const [totalPages, setTotalPages] = useState(1);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
@@ -73,7 +73,7 @@ const OrderedMultiSelect: React.FC<OrderedMultiSelectProps> = ({
 
         const q = query.toLowerCase();
         const filtered = q
-            ? items.filter((p) => p.name.toLowerCase().includes(q))
+            ? items.filter((rp) => rp.product.name.toLowerCase().includes(q))
             : items;
 
         setTotalPages(Math.max(1, Math.ceil(filtered.length / pageSize)));
@@ -89,12 +89,12 @@ const OrderedMultiSelect: React.FC<OrderedMultiSelectProps> = ({
         return filled;
     }, [filteredItems, pageSize]);
 
-    const handleToggle = (product: Product) => {
+    const handleToggle = (registeredProduct: RegisteredProduct) => {
         if (!onChange) return;
-        const exists = value.some((p) => p.id === product.id);
+        const exists = value.some((rp) => rp.id === registeredProduct.id);
         const updated = exists
-            ? value.filter((p) => p.id !== product.id)
-            : [...value, product];
+            ? value.filter((rp) => rp.id !== registeredProduct.id)
+            : [...value, registeredProduct];
         onChange(updated);
     };
 
@@ -123,32 +123,33 @@ const OrderedMultiSelect: React.FC<OrderedMultiSelectProps> = ({
                 ) : error ? (
                     <ListGroup.Item className="text-danger text-center">{error}</ListGroup.Item>
                 ) : (
-                    displayItems.map((product, idx) =>
-                        product ? (
+                    displayItems.map((registeredProduct, idx) =>
+                        registeredProduct ? (
                             <ListGroup.Item
-                                key={product.id}
+                                key={registeredProduct.id}
                                 action
                                 onClick={(e) => {
                                     e.preventDefault();
-                                    handleToggle(product);
+                                    handleToggle(registeredProduct);
                                 }}
                                 className={`d-flex align-items-center justify-content-between ${
-                                    value.some((p) => p.id === product.id)
+                                    value.some((p) => p.id === registeredProduct.id)
                                         ? "active"
                                         : ""
                                 } ${s.listItem}`}
                             >
                                 <div className={s.productRow}>
-                                    <strong className={s.productName}>{product.name}</strong>
+                                    <strong className={s.productName}>{registeredProduct.product.name}</strong>
+                                    <span>{registeredProduct.company.name}</span>
                                     <span className={s.quantity}>
-                                        Qty: {product.stock ?? "N/A"}
+                                        Qty: {registeredProduct.stock ?? "N/A"}
                                     </span>
                                 </div>
 
-                                {value.some((p) => p.id === product.id) && (
+                                {value.some((p) => p.id === registeredProduct.id) && (
                                     <Badge bg="secondary" pill className={s.badge}>
                                         {value.findIndex(
-                                            (p) => p.id === product.id
+                                            (p) => p.id === registeredProduct.id
                                         ) + 1}
                                     </Badge>
                                 )}
