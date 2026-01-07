@@ -20,15 +20,16 @@ const locaties: Locatie[] = [
     {locatieId: 3, locatieNaam: "Naaldwijk"},
     {locatieId: 4, locatieNaam: "Eelde"},
 ];
-
+const createEmptyAuction = (userId = "8a57bc69-eeaa-42d1-930e-8270419f0a82"): Auction => ({
+    startDate: "",
+    clockLocationEnum: 0,
+    registeredProducts: [] as RegisteredProduct[],
+    userId,
+    isLive: false,
+});
 export default function Home() {
-    const [auctionData, setAuctionData] = useState<Auction>({
-        startDate: "",
-        clockLocationEnum: 0,
-        registeredProducts: [] as RegisteredProduct[],
-        userId: "8a57bc69-eeaa-42d1-930e-8270419f0a82",
-        isLive: false,
-    });
+    const [auctionData, setAuctionData] = useState<Auction>(() => createEmptyAuction());
+
 
     const [registeredProducts, setRegisteredProducts] = useState<RegisteredProduct[]>([]);
     const [errors, setErrors] = useState<Record<string, string>>({});
@@ -84,6 +85,7 @@ export default function Home() {
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
+        setAuctionData(createEmptyAuction());
         e.preventDefault();
         setMessage("");
         if (!validate()) return;
@@ -104,13 +106,6 @@ export default function Home() {
             }
 
             setMessage("Veiling succesvol aangemaakt!");
-            setAuctionData({
-                startDate: "",
-                clockLocationEnum: 0,
-                registeredProducts: [],
-                userId: "8a57bc69-eeaa-42d1-930e-8270419f0a82",
-                isLive: false,
-            });
             setErrors({});
         } catch (err) {
             console.error(err);
