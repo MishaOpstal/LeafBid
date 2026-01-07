@@ -3,6 +3,7 @@ using LeafBidAPI.Data;
 using LeafBidAPI.Data.extensions;
 using LeafBidAPI.Data.seeders;
 using LeafBidAPI.Filters;
+using LeafBidAPI.Hubs;
 using LeafBidAPI.Interfaces;
 using LeafBidAPI.Models;
 using LeafBidAPI.Services;
@@ -51,12 +52,14 @@ public class Program
         builder.Services.AddScoped<IRoleService, RoleService>();
         builder.Services.AddScoped<IUserService, UserService>();
         builder.Services.AddScoped<IPagesServices, PagesServices>();
+        builder.Services.AddHostedService<AuctionStatusWorker>();
 
         builder.Services.AddDbContext<ApplicationDbContext>(options =>
             options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
         builder.Services.AddAuthorization();
         builder.Services.AddControllers();
         builder.Services.AddRouting();
+        builder.Services.AddSignalR();
         builder.Services.AddHttpClient();
 
         builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("EmailSettings"));
@@ -193,6 +196,7 @@ public class Program
 
         // app.MapIdentityApi<User>();
         app.MapControllers();
+        app.MapHub<AuctionHub>("/auctionHub");
         app.UseStaticFiles();
 
         // Check for seed commands

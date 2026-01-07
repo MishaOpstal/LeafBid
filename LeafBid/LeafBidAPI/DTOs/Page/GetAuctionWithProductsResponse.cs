@@ -8,4 +8,6 @@ public class GetAuctionWithProductsResponse
     public required Auction Auction { get; set; }
 
     public required List<RegisteredProductResponse> RegisteredProducts { get; set; }
+
+    public DateTime ServerTime { get; set; }
 }

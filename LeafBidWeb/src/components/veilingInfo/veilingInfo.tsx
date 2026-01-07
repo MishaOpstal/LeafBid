@@ -1,13 +1,56 @@
 ﻿import s from '@/components/veilingInfo/velinginfo.module.css';
-import {parseDate, RegisteredProduct} from "@/types/Product/RegisteredProducts";
-import {Image} from "react-bootstrap";
+import {parseDate, parsePrice, RegisteredProduct} from "@/types/Product/RegisteredProducts";
+import { Image } from "react-bootstrap";
 import Button from "@/components/input/Button";
-import {resolveImageSrc} from "@/utils/image";
+import NumberInput from "@/components/input/NumberInput";
+import { resolveImageSrc } from "@/utils/image";
+import { useEffect, useState } from "react";
 
-export default function BigInfoVeld({registeredProduct}: { registeredProduct: RegisteredProduct }) {
+export default function BigInfoVeld({ registeredProduct, currentPricePerUnit, onBuy, isPaused, isLive }: { registeredProduct: RegisteredProduct, currentPricePerUnit: number, onBuy: (amount: number) => Promise<void>, isPaused?: boolean, isLive?: boolean }) {
+    const [amount, setAmount] = useState<number>(1);
+    const [isBuying, setIsBuying] = useState(false);
+
+    useEffect(() => {
+        setAmount(1);
+    }, [registeredProduct]);
+
+    const maxStock = Math.max(0, registeredProduct.stock ?? 0);
+
+    const clamp = (value: number): number => {
+        if (maxStock <= 0) return 0;
+        if (value < 1) return 1;
+        if (value > maxStock) return maxStock;
+        return value;
+    };
+
+    const handleAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const raw = e.target.value;
+
+        if (raw === "") {
+            setAmount(0);
+            return;
+        }
+
+        const parsed = Number(raw);
+        if (Number.isNaN(parsed)) return;
+
+        setAmount(clamp(parsed));
+    };
+
+    const canBuy = maxStock > 0 && amount >= 1 && amount <= maxStock && !isBuying && !isPaused;
+
+    const handleBuy = async () => {
+        if (!canBuy) return;
+        setIsBuying(true);
+        try {
+            await onBuy(amount);
+        } finally {
+            setIsBuying(false);
+        }
+    };
+
     return (
-        <div
-            className={`d-flex flex-column  ${s.wrapper}`}>
+        <div className={`d-flex flex-column ${s.wrapper}`}>
             <div className="d-flex flex-row gap-4">
                 <Image
                     src={resolveImageSrc(registeredProduct.product.picture)}
@@ -15,8 +58,10 @@ export default function BigInfoVeld({registeredProduct}: { registeredProduct: Re
                     className={`mb-3 ${s.plaatje}`}
                 />
                 <div className={`d-flex flex-row gap-1 ${s.infoBox}`}>
-                    <p>{registeredProduct.product.description}</p></div>
+                    <p>{registeredProduct.product.description}</p>
+                </div>
             </div>
+
             <div className={`d-flex flex-column gap-3 p-3 ${s.tekstcontainer}`}>
                 <h2>{registeredProduct.product.name}</h2>
                 <p>Aantal: {registeredProduct.stock}</p>
@@ -24,7 +69,29 @@ export default function BigInfoVeld({registeredProduct}: { registeredProduct: Re
                 <p>Leverancier: {registeredProduct.providerUserName}</p>
                 <p>Regio Oorsprong: {registeredProduct.region}</p>
             </div>
-            <Button label="Koop Product" variant="primary" type="button" className={s.knop}/>
+
+            <div className="d-flex flex-column gap-2">
+                <NumberInput
+                    label="Aantal te kopen"
+                    name="amount"
+                    value={amount === 0 ? "" : amount}
+                    step={1}
+                    onChange={handleAmountChange}
+                    postfix={maxStock > 0 ? `/ ${maxStock}` : undefined}
+                    disabled={isPaused}
+                />
+
+                <div>
+                    <Button
+                        label={isBuying ? "Bezig met kopen..." : isPaused ? (isLive ? "Veiling gepauzeerd" : "Wachten op start") : `Koop voor ${parsePrice(currentPricePerUnit * amount)}`}
+                        variant="primary"
+                        type="button"
+                        className={s.knop}
+                        disabled={!canBuy}
+                        onClick={handleBuy}
+                    />
+                </div>
+            </div>
         </div>
     );
 }

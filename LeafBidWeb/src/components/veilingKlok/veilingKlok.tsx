@@ -1,94 +1,143 @@
-﻿// typescript
-import React, { useState, useEffect, useRef } from 'react';
+﻿import React, { useEffect, useMemo, useRef, useState } from 'react';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { parsePrice } from '@/types/Product/RegisteredProducts';
 import s from './veilingKlok.module.css';
 
 interface AuctionTimerProps {
     onFinished?: () => void;
+    onPriceChange?: (price: number) => void;
     maxPrice: number;
     minPrice: number;
+    isPaused?: boolean;
+    startDate?: string | Date;
+    timeOffset?: number; // Server time - Client time
+
+    // Option B controls
+    minDurationSeconds?: number;          // default: 30
+    useMaxDuration?: boolean;             // default: false
+    maxDurationSeconds?: number;          // default: 300 (only used when useMaxDuration=true)
 }
 
-const AuctionTimer: React.FC<AuctionTimerProps> = ({ onFinished, maxPrice, minPrice }) => {
-    const round2 = (v: number) => Math.round(v * 100) / 100;
-    const start = round2(Number(maxPrice || 0));
-    const min = round2(Number(minPrice || 0));
+const AuctionTimer: React.FC<AuctionTimerProps> = ({
+                                                       onFinished,
+                                                       onPriceChange,
+                                                       maxPrice,
+                                                       minPrice,
+                                                       isPaused = false,
+                                                       startDate,
+                                                       timeOffset = 0,
+                                                       minDurationSeconds = 30,
+                                                       useMaxDuration = false,
+                                                       maxDurationSeconds = 300,
+                                                   }) => {
+    const startCents: number = Math.round(Number(maxPrice || 0) * 100);
+    const minCents: number = Math.round(Number(minPrice || 0) * 100);
 
-    // displayed price (0.01 steps)
-    const [currentPrice, setCurrentPrice] = useState<number>(start);
-    // smooth progress used for the bar (updated each tick)
-    const [percentage, setPercentage] = useState<number>(() => (start > min ? 100 : 0));
+    const [currentCents, setCurrentCents] = useState<number>(startCents);
+    const [percentage, setPercentage] = useState<number>(100);
 
-    const rawRef = useRef<number>(start); // internal precise price (smooth)
-    const displayedRef = useRef<number>(start); // last shown price
+    const rawCentsRef = useRef<number>(startCents);
     const lastTsRef = useRef<number | null>(null);
     const intervalRef = useRef<number | null>(null);
 
-    const formatTime = (totalSeconds: number) => {
-        const s = Math.max(0, Math.floor(totalSeconds));
-        const m = Math.floor(s / 60);
-        const rest = s % 60;
-        return `${m}:${rest.toString().padStart(2, '0')}`;
-    };
+    const onFinishedRef = useRef<(() => void) | undefined>(onFinished);
+    const onPriceChangeRef = useRef<((price: number) => void) | undefined>(onPriceChange);
 
     useEffect(() => {
-        // cleanup any previous interval
+        onFinishedRef.current = onFinished;
+    }, [onFinished]);
+
+    useEffect(() => {
+        onPriceChangeRef.current = onPriceChange;
+    }, [onPriceChange]);
+
+    const formatTime = (totalSeconds: number) => {
+        const seconds: number = Math.max(0, Math.floor(totalSeconds));
+        const minutes: number = Math.floor(seconds / 60);
+        const rest: number = seconds % 60;
+        return `${minutes}:${rest.toString().padStart(2, '0')}`;
+    };
+
+    const rangeCents: number = Math.max(0, startCents - minCents);
+
+    const decreaseCentsPerSecond: number = useMemo(() => {
+        if (rangeCents <= 0) return 0;
+        const baseDecreaseCentsPerSecond: number = startCents * 0.05;
+        if (baseDecreaseCentsPerSecond <= 0) return 0;
+        const impliedSeconds: number = rangeCents / baseDecreaseCentsPerSecond;
+        let durationSeconds: number = Math.max(minDurationSeconds, impliedSeconds);
+        if (useMaxDuration) {
+            durationSeconds = Math.min(durationSeconds, maxDurationSeconds);
+        }
+        return rangeCents / durationSeconds;
+    }, [rangeCents, startCents, minDurationSeconds, useMaxDuration, maxDurationSeconds]);
+
+    // Notify parent of price changes
+    useEffect(() => {
+        onPriceChangeRef.current?.(currentCents / 100);
+    }, [currentCents]);
+
+    useEffect(() => {
+        // Cleanup previous interval if any
         if (intervalRef.current !== null) {
             clearInterval(intervalRef.current);
             intervalRef.current = null;
         }
-        rawRef.current = start;
-        displayedRef.current = start;
-        setCurrentPrice(start);
-        lastTsRef.current = null;
-        setPercentage(start > min ? 100 : 0);
 
-        if (start <= min) {
-            setCurrentPrice(round2(min));
-            if (onFinished) onFinished();
+        const syncWithTime = () => {
+            const now = Date.now() + timeOffset;
+            const startTs = startDate ? new Date(startDate).getTime() : now;
+            const deltaSec = (now - startTs) / 1000;
+
+            if (deltaSec < 0) {
+                // We are in pause
+                rawCentsRef.current = startCents;
+                setCurrentCents(startCents);
+                setPercentage(100);
+                lastTsRef.current = null;
+                return false; // Not finished
+            }
+
+            const nextRaw = startCents - decreaseCentsPerSecond * deltaSec;
+            rawCentsRef.current = Math.max(minCents, nextRaw);
+
+            const rawPct = startCents > minCents
+                ? ((rawCentsRef.current - minCents) / (startCents - minCents)) * 100
+                : 0;
+
+            const clampedPct = Number.isFinite(rawPct) ? Math.max(0, Math.min(100, rawPct)) : 0;
+            setPercentage(clampedPct);
+
+            const nextDisplayed = Math.max(minCents, Math.ceil(rawCentsRef.current));
+            setCurrentCents(nextDisplayed);
+
+            if (nextDisplayed <= minCents) {
+                setPercentage(0);
+                onFinishedRef.current?.();
+                return true; // Finished
+            }
+            
+            lastTsRef.current = now;
+            return false;
+        };
+
+        // Initial sync
+        const isFinished = syncWithTime();
+        if (isFinished || startCents <= minCents || decreaseCentsPerSecond <= 0) {
             return;
         }
 
-        const decreasePerSecond = start * 0.05; // currency units per second
-        if (decreasePerSecond <= 0) return;
+        if (isPaused) {
+            // If externally paused and NOT just waiting for startDate, 
+            // we might want to return. But for now, let's just let it run.
+        }
 
-        const centStep = 0.01;
-        const tickMs = 50; // consistent short interval (works whether mouse is over page or not)
-
+        const tickMs: number = 50;
         intervalRef.current = window.setInterval(() => {
-            const now = performance.now();
-            if (lastTsRef.current == null) lastTsRef.current = now;
-            const deltaSec = (now - lastTsRef.current) / 1000;
-            lastTsRef.current = now;
-
-            // decrease raw price smoothly
-            rawRef.current = Math.max(min, rawRef.current - decreasePerSecond * deltaSec);
-
-            // update smooth percentage from raw value
-            const rawPct = start > min ? ((rawRef.current - min) / (start - min)) * 100 : 0;
-            const clamped = Number.isFinite(rawPct) ? Math.max(0, Math.min(100, rawPct)) : 0;
-            setPercentage(clamped);
-
-            // If raw has dropped enough, step the displayed price by integer cents
-            const deltaDisplayed = displayedRef.current - rawRef.current;
-            const centsToRemove = Math.floor(deltaDisplayed / centStep);
-            if (centsToRemove > 0) {
-                const newDisplayed = round2(displayedRef.current - centsToRemove * centStep);
-                displayedRef.current = newDisplayed;
-                // ensure we don't go below min
-                if (newDisplayed <= min) {
-                    setCurrentPrice(round2(min));
-                    setPercentage(0);
-                    if (intervalRef.current !== null) {
-                        clearInterval(intervalRef.current);
-                        intervalRef.current = null;
-                    }
-                    if (onFinished) onFinished();
-                    return;
-                } else {
-                    setCurrentPrice(newDisplayed);
-                }
+            const finished = syncWithTime();
+            if (finished && intervalRef.current !== null) {
+                clearInterval(intervalRef.current);
+                intervalRef.current = null;
             }
         }, tickMs);
 
@@ -98,22 +147,22 @@ const AuctionTimer: React.FC<AuctionTimerProps> = ({ onFinished, maxPrice, minPr
                 intervalRef.current = null;
             }
         };
-    }, [start, min, onFinished]);
+    }, [startCents, minCents, isPaused, decreaseCentsPerSecond, startDate, timeOffset]);
 
-    const remainingSeconds =
-        start > min && start * 0.05 > 0 ? (currentPrice - min) / (start * 0.05) : 0;
+    const currentPrice: number = currentCents / 100;
+
+    const remainingSeconds: number =
+        decreaseCentsPerSecond > 0 ? (currentCents - minCents) / decreaseCentsPerSecond : 0;
 
     return (
-        <section className="container mt-4" aria-label={"Veiling klok"}>
+        <section className="container mt-4" aria-label="Veiling klok">
             <h2>{parsePrice(Number(currentPrice.toFixed(2)))} </h2>
 
-            <section className={`progress ${s.progress}`} >
+            <section className={`progress ${s.progress}`}>
                 <section
                     className={`progress-bar progress-bar-animated ${s.balkAnimatie}`}
                     role="progressbar"
-                    style={{
-                        width: `${percentage}%`,
-                    }}
+                    style={{ width: `${percentage}%` }}
                     aria-valuenow={Math.round(percentage * 100) / 100}
                     aria-valuemin={0}
                     aria-valuemax={100}
@@ -123,9 +172,7 @@ const AuctionTimer: React.FC<AuctionTimerProps> = ({ onFinished, maxPrice, minPr
                 </section>
             </section>
 
-            <section className="mt-2">
-                {currentPrice <= min && 'De veiling is gesloten!'}
-            </section>
+            <section className="mt-2"></section>
         </section>
     );
 };

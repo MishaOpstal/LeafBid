@@ -5,11 +5,12 @@ import DashboardPanel from "@/components/dashboardPanel/dashboardpanel";
 import {useState, useEffect} from "react";
 import {ClockLocation, parseClockLocation} from "@/enums/ClockLocation";
 
-import { AuctionResult } from "@/types/Auction/AuctionResult";
+import { AuctionPageResult } from "@/types/Auction/AuctionPageResult";
 import {resolveImageSrc} from "@/utils/image";
+import { setServerTimeOffset } from "@/utils/time";
 
 export default function Home() {
-    const [auctions, setAuctions] = useState<AuctionResult[]>([]);
+    const [auctions, setAuctions] = useState<AuctionPageResult[]>([]);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
@@ -24,14 +25,18 @@ export default function Home() {
 
                 if (!res.ok) return;
 
-                const data: AuctionResult[] = await res.json();
+                const data: AuctionPageResult[] = await res.json();
 
                 const live = data.filter((page) => page.auction.isLive);
 
                 // One live auction per clock location
-                const uniqueByClock = Object.values(ClockLocation) .filter((v): v is number => typeof v === "number") .map((clockId) => live.find((p) => p.auction.clockLocationEnum === clockId) ) .filter((p): p is AuctionResult => Boolean(p));
+                const uniqueByClock = Object.values(ClockLocation) .filter((v): v is number => typeof v === "number") .map((clockId) => live.find((p) => p.auction.clockLocationEnum === clockId) ) .filter((p): p is AuctionPageResult => Boolean(p));
 
                 setAuctions(uniqueByClock);
+                
+                if (data.length > 0) {
+                    setServerTimeOffset(data[0].serverTime);
+                }
             } catch (err) {
                 console.error("Failed to load auctions:", err);
             } finally {

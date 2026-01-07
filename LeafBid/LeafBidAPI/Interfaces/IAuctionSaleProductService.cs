@@ -61,5 +61,20 @@ public interface IAuctionSaleProductService
     /// <param name="userId">The user ID.</param>
     /// <returns>A list of auction sale products associated with the specified user ID.</returns>
     Task<List<AuctionSaleProductResponse>> GetAuctionSaleProductsByUserId(string userId);
-    
+
+    /// <summary>
+    /// Buys a product from an auction.
+    /// </summary>
+    /// <param name="buyData">The data for the purchase.</param>
+    /// <param name="userId">The ID of the user making the purchase.</param>
+    /// <returns>The updated RegisteredProduct and the new auction start date.</returns>
+    Task<AuctionEventResponse> BuyProduct(BuyProductDto buyData, string userId);
+
+    /// <summary>
+    /// Expires a product from an auction (sets stock to 0).
+    /// </summary>
+    /// <param name="registeredProductId">The ID of the registered product to expire.</param>
+    /// <param name="auctionId">The ID of the auction.</param>
+    /// <returns>The updated RegisteredProduct and the new auction start date.</returns>
+    Task<AuctionEventResponse> ExpireProduct(int registeredProductId, int auctionId);
 }

@@ -2,10 +2,12 @@
 using LeafBidAPI.DTOs.User;
 using LeafBidAPI.Enums;
 using LeafBidAPI.Exceptions;
+using LeafBidAPI.Hubs;
 using LeafBidAPI.Interfaces;
 using LeafBidAPI.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
 
 namespace LeafBidAPI.Controllers.v2;
 
@@ -15,7 +17,10 @@ namespace LeafBidAPI.Controllers.v2;
 // [Authorize]
 [AllowAnonymous]
 [Produces("application/json")]
-public class AuctionSaleProductController(IUserService userService, IAuctionSaleProductService auctionSaleProductService) : ControllerBase
+public class AuctionSaleProductController(
+    IUserService userService,
+    IAuctionSaleProductService auctionSaleProductService,
+    IHubContext<AuctionHub> hubContext) : ControllerBase
 {
     /// <summary>
     /// Get all auction sale products.
@@ -180,6 +185,85 @@ public class AuctionSaleProductController(IUserService userService, IAuctionSale
             //grab auction sale product for the user
             List<AuctionSaleProductResponse> products = await auctionSaleProductService.GetAuctionSaleProductsByUserId(me.UserData.Id);
             return Ok(products);
+        }
+        catch (NotFoundException e)
+        {
+            return NotFound(e.Message);
+        }
+    }
+
+    /// <summary>
+    /// Buys a product from an auction.
+    /// </summary>
+    /// <param name="buyData">The purchase data.</param>
+    /// <returns>The updated registered product.</returns>
+    [HttpPost("buy")]
+    [Authorize(Roles = "Buyer")]
+    [ProducesResponseType(typeof(RegisteredProduct), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<RegisteredProduct>> BuyProduct([FromBody] BuyProductDto buyData)
+    {
+        try
+        {
+            LoggedInUserResponse me = await userService.GetLoggedInUser(User);
+            if (me.UserData == null)
+            {
+                return Unauthorized("User data not found");
+            }
+
+            AuctionEventResponse result = await auctionSaleProductService.BuyProduct(buyData, me.UserData.Id);
+
+            if (result.IsSuccess)
+            {
+                // Notify all clients in the auction group
+                await hubContext.Clients.Group(buyData.AuctionId.ToString()).SendAsync("ProductBought", new
+                {
+                    registeredProductId = result.RegisteredProduct.Id,
+                    stock = result.RegisteredProduct.Stock,
+                    quantityBought = buyData.Quantity,
+                    newStartDate = result.NewStartDate
+                });
+            }
+
+            return Ok(result.RegisteredProduct);
+        }
+        catch (NotFoundException e)
+        {
+            return NotFound(e.Message);
+        }
+        catch (InvalidOperationException e)
+        {
+            return BadRequest(e.Message);
+        }
+    }
+
+    /// <summary>
+    /// Expires a product from an auction (sets stock to 0).
+    /// </summary>
+    /// <param name="registeredProductId">The registered product ID.</param>
+    /// <param name="auctionId">The auction ID.</param>
+    /// <returns>The updated registered product.</returns>
+    [HttpPost("expire/{registeredProductId:int}")]
+    [AllowAnonymous]
+    public async Task<IActionResult> ExpireProduct(int registeredProductId, [FromQuery] int auctionId)
+    {
+        try
+        {
+            AuctionEventResponse result = await auctionSaleProductService.ExpireProduct(registeredProductId, auctionId);
+
+            if (result.IsSuccess)
+            {
+                // Notify all clients in the auction group
+                await hubContext.Clients.Group(auctionId.ToString()).SendAsync("ProductExpired", new
+                {
+                    registeredProductId = result.RegisteredProduct.Id,
+                    newStartDate = result.NewStartDate
+                });
+                return Ok(result.RegisteredProduct);
+            }
+
+            return BadRequest("Product not yet expired or already handled.");
         }
         catch (NotFoundException e)
         {

@@ -102,7 +102,7 @@ public class AuctionService(
     public async Task<List<RegisteredProduct>> GetRegisteredProductsByAuctionId(int auctionId)
     {
         List<RegisteredProduct?> registeredProducts = await context.AuctionProducts
-            .Where(ap => ap.AuctionId == auctionId)
+            .Where(ap => ap.AuctionId == auctionId && ap.RegisteredProduct!.Stock > 0)
             .OrderBy(ap => ap.ServeOrder)
             .Include(ap => ap.RegisteredProduct)
             .ThenInclude(rp => rp!.Product)

@@ -7,11 +7,12 @@ import { useState, useEffect } from "react";
 import { ClockLocation, parseClockLocation } from "@/enums/ClockLocation";
 import Link from "next/link";
 
-import { AuctionResult } from "@/types/Auction/AuctionResult";
+import { AuctionPageResult } from "@/types/Auction/AuctionPageResult";
+import { getServerNow, setServerTimeOffset } from "@/utils/time";
 
 
 export default function VeilingmeesterOverzicht() {
-    const [auctions, setAuctions] = useState<AuctionResult[]>([]);
+    const [auctions, setAuctions] = useState<AuctionPageResult[]>([]);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
@@ -29,8 +30,12 @@ export default function VeilingmeesterOverzicht() {
                     return;
                 }
 
-                const data: AuctionResult[] = await res.json();
+                const data: AuctionPageResult[] = await res.json();
                 setAuctions(data);
+                
+                if (data.length > 0) {
+                    setServerTimeOffset(data[0].serverTime);
+                }
             } catch (err) {
                 console.error("Failed to load auctions:", err);
             } finally {
@@ -42,7 +47,7 @@ export default function VeilingmeesterOverzicht() {
     }, []);
 
 
-    const now = new Date();
+    const now = getServerNow();
 
     const currentAuctions = auctions.filter(a => a.auction.isLive);
 

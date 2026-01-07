@@ -7,6 +7,7 @@ using LeafBidAPI.Interfaces;
 using LeafBidAPI.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using LeafBidAPI.Helpers;
 
 namespace LeafBidAPI.Services;
 
@@ -44,7 +45,8 @@ public class PagesServices(
             responses.Add(new GetAuctionWithProductsResponse
             {
                 Auction = auction,
-                RegisteredProducts = productResponses
+                RegisteredProducts = productResponses,
+                ServerTime = TimeHelper.GetAmsterdamTime()
             });
         }
 
@@ -78,7 +80,8 @@ public class PagesServices(
         return new GetAuctionWithProductsResponse
         {
             Auction = auction,
-            RegisteredProducts = productResponses
+            RegisteredProducts = productResponses,
+            ServerTime = TimeHelper.GetAmsterdamTime()
         };
     }
 
@@ -110,7 +113,8 @@ public class PagesServices(
             responses.Add(new GetAuctionWithProductsResponse
             {
                 Auction = auction,
-                RegisteredProducts = productResponses
+                RegisteredProducts = productResponses,
+                ServerTime = TimeHelper.GetAmsterdamTime()
             });
         }
 
@@ -122,7 +126,7 @@ public class PagesServices(
     private async Task<List<RegisteredProduct>> GetRegisteredProductsForAuction(int auctionId)
     {
         return await context.AuctionProducts
-            .Where(ap => ap.AuctionId == auctionId)
+            .Where(ap => ap.AuctionId == auctionId && ap.RegisteredProduct!.Stock > 0)
             .Include(ap => ap.RegisteredProduct)
             .ThenInclude(rp => rp!.Product)
             .Include(ap => ap.RegisteredProduct)
