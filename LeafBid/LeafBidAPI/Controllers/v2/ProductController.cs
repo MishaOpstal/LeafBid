@@ -101,6 +101,43 @@ public class ProductController(IProductService productService) : ControllerBase
     }
 
     /// <summary>
+    /// Create a new registered product.
+    /// </summary>
+    /// <param name="productData">The product data.</param>
+    /// <param name="productId"></param>
+    /// <param name="userId"></param>
+    /// <returns>The created product.</returns>
+    /// <exception cref="NotFoundException">Thrown when the main product cannot be found.</exception>
+    [HttpPost("/registeredCreate/{ProductId:int}")]
+    [Authorize(Roles = "Provider")]
+    [ProducesResponseType(typeof(RegisteredProductResponse), StatusCodes.Status201Created)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<RegisteredProductResponse>> CreateRegisteredProduct(
+        [FromBody] CreateRegisteredProductEndpointDto productData, int productId, string userId)
+    {
+        try
+        {
+            RegisteredProduct registeredProduct = await productService.CreateProductDeliveryGuy(productData, productId, userId);
+            RegisteredProductResponse registeredProductResponse = productService.CreateRegisteredProductResponse(registeredProduct);
+            return CreatedAtAction(
+                actionName: nameof(GetProductById),
+                routeValues: new
+                {
+                    id = registeredProductResponse.Id,
+                    version = "2.0"
+                },
+                value: registeredProductResponse
+            );
+        }
+        catch (NotFoundException e)
+        {
+            Console.WriteLine(e);
+            throw;
+        }
+
+    }
+
+    /// <summary>
     /// Update an existing product.
     /// </summary>
     /// <param name="id">The product ID.</param>

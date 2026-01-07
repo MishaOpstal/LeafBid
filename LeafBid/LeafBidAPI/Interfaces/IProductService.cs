@@ -49,6 +49,19 @@ public interface IProductService
     /// </exception>
     Task<Product> CreateProduct(CreateProductDto productData);
 
+    /// <summary>
+    /// Create a new registered product, for the supplier.
+    /// </summary>
+    /// <param name="registeredProductData"></param>
+    /// <param name="productId"></param>
+    /// <param name="userId"></param>
+    /// <returns>The created product for the supplier.</returns>
+    /// <exception cref="Exception">
+    /// Thrown when product cannot be created
+    /// </exception>
+    Task<RegisteredProduct> CreateProductDeliveryGuy(CreateRegisteredProductEndpointDto registeredProductData,
+        int productId, string userId);
+
 
     /// <summary>
     /// Add a user created product (this includes data that can differ per user)

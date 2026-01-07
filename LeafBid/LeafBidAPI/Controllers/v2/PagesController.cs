@@ -19,7 +19,7 @@ namespace LeafBidAPI.Controllers.v2;
 public class PagesController(IPagesServices pagesServices) : ControllerBase
 {
     /// <summary>
-    /// Get the closest upcoming auction and its products for a given clock location.
+    /// Get the auction of today and its products for a given clock location.
     /// </summary>
     /// <param name="clockLocationEnum">The clock location for which to retrieve the closest auction.</param>
     /// <returns>
@@ -34,7 +34,7 @@ public class PagesController(IPagesServices pagesServices) : ControllerBase
     {
         try
         {
-            GetAuctionWithProductsDto auction = await pagesServices.GetAuctionWithProducts(clockLocationEnum);
+            List<GetAuctionWithProductsDto> auction = await pagesServices.GetAuctionWithProducts(clockLocationEnum);
             return Ok(auction);
         }
         catch (NotFoundException e)
@@ -58,6 +58,26 @@ public class PagesController(IPagesServices pagesServices) : ControllerBase
         try
         {
             GetAuctionWithProductsDto result = await pagesServices.GetAuctionWithProductsById(auctionId);
+            return Ok(result);
+        }
+        catch (NotFoundException e)
+        {
+            return NotFound(e.Message);
+        }
+    }
+
+    /// <summary>
+    /// returns all the auctions per clock location
+    /// </summary>
+    /// <returns>A DTO containing the active auction and its products for the specified clock location.</returns>
+    [HttpGet]
+    [ProducesResponseType(typeof(GetAuctionWithProductsDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<GetAuctionWithProductsDto>> GetActiveAuctionWithProducts()
+    {
+        try
+        {
+            List<GetAuctionWithProductsDto> result = await pagesServices.GetAuctionPerActiveClockLocation();
             return Ok(result);
         }
         catch (NotFoundException e)

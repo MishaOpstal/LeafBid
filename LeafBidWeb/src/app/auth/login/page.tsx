@@ -12,8 +12,12 @@ import LoginFailedException, {isLoginFailedException} from "@/exceptions/Auth/Lo
 import ValidationFailedException, {isValidationFailedException} from "@/exceptions/ValidationFailedException";
 import {Login} from "@/types/User/Login";
 import TextInput from "@/components/input/TextInput";
+import {toggleTheme} from "@/components/header/theme";
 
 export default function LoginPage() {
+    toggleTheme();
+
+
     const router = useRouter();
     const handleSubmit = async (e: React.FormEvent) => {
         try {
