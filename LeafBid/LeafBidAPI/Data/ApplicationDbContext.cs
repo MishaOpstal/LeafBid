@@ -1,4 +1,5 @@
-﻿using LeafBidAPI.Models;
+﻿using LeafBidAPI.DTOs.AuctionSaleProduct;
+using LeafBidAPI.Models;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Toolbelt.ComponentModel.DataAnnotations;
@@ -58,11 +59,11 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
             .HasForeignKey(sp => sp.AuctionSaleId)
             .OnDelete(DeleteBehavior.Restrict);
 
-        // AuctionSaleProduct -> Product
+        // AuctionSaleProduct -> RegisteredProduct
         modelBuilder.Entity<AuctionSaleProduct>()
-            .HasOne(sp => sp.Product)
+            .HasOne(asp => asp.RegisteredProduct)
             .WithMany()
-            .HasForeignKey(sp => sp.ProductId)
+            .HasForeignKey(asp => asp.RegisteredProductId)
             .OnDelete(DeleteBehavior.Restrict);
 
         // Auction -> User (auctioneer)
@@ -92,7 +93,5 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
             .WithOne(u => u.Company)
             .HasForeignKey(u => u.CompanyId)
             .OnDelete(DeleteBehavior.Restrict);
-            
-
     }
 }

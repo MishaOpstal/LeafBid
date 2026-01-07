@@ -57,7 +57,7 @@ export default function Home() {
                                 <DashboardPanel loading title="Laden..." />
                             </>
                         ) : auctions.length === 0 ? (
-                            <p>Geen live veilingen gevonden.</p>
+                            <p>Geen veilingen gevonden. Kom later terug.</p>
                         ) : (
                             auctions.map((page) => {
                                 const auction = page.auction;

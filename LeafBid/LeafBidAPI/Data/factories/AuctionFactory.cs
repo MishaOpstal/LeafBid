@@ -16,16 +16,6 @@ public class AuctionFactory(
     
     protected override Faker<Auction> BuildRules()
     {
-        Faker faker = new();
-        DateTime auctionDate = faker.Date.Between(faker.Date.Past(8, DateTime.UtcNow), faker.Date.Future());
-
-        if (_auctionSales.Count == 0)
-        {
-            auctionDate = faker.Date.Past(8, DateTime.UtcNow);
-        }
-        
-        bool futureDate = auctionDate > DateTime.UtcNow;
-        
         // If no providers are found, abort.
         if (_users.Count == 0)
         {
@@ -39,11 +29,13 @@ public class AuctionFactory(
             )
             .RuleFor(
                 a => a.StartDate,
-                auctionDate
+                f => _auctionSales.Count == 0
+                    ? f.Date.Past(8, DateTime.UtcNow)
+                    : f.Date.Between(f.Date.Past(8, DateTime.UtcNow), f.Date.Future())
             )
             .RuleFor(
                 a => a.IsLive,
-                futureDate
+                (f, a) => a.StartDate >= DateTime.UtcNow
             )
             .RuleFor(
                 a => a.ClockLocationEnum,
