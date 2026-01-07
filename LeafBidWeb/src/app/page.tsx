@@ -5,10 +5,11 @@ import DashboardPanel from "@/components/dashboardPanel/dashboardpanel";
 import {useState, useEffect} from "react";
 import {ClockLocation, parseClockLocation} from "@/enums/ClockLocation";
 
-import { AuctionPage } from "@/types/Auction/AuctionPage";
+import { AuctionResult } from "@/types/Auction/AuctionResult";
+import {resolveImageSrc} from "@/utils/image";
 
 export default function Home() {
-    const [auctions, setAuctions] = useState<AuctionPage[]>([]);
+    const [auctions, setAuctions] = useState<AuctionResult[]>([]);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
@@ -23,12 +24,12 @@ export default function Home() {
 
                 if (!res.ok) return;
 
-                const data: AuctionPage[] = await res.json();
+                const data: AuctionResult[] = await res.json();
 
                 const live = data.filter((page) => page.auction.isLive);
 
                 // One live auction per clock location
-                const uniqueByClock = Object.values(ClockLocation) .filter((v): v is number => typeof v === "number") .map((clockId) => live.find((p) => p.auction.clockLocationEnum === clockId) ) .filter((p): p is AuctionPage => Boolean(p));
+                const uniqueByClock = Object.values(ClockLocation) .filter((v): v is number => typeof v === "number") .map((clockId) => live.find((p) => p.auction.clockLocationEnum === clockId) ) .filter((p): p is AuctionResult => Boolean(p));
 
                 setAuctions(uniqueByClock);
             } catch (err) {
@@ -41,6 +42,12 @@ export default function Home() {
         fetchAuctions();
     }, []);
 
+    useEffect(() => {
+        const ids = auctions.map(a => a.auction.id);
+        const duplicates = ids.filter((id, idx) => ids.indexOf(id) !== idx);
+        if (duplicates.length > 0) console.warn("Duplicate auction ids:", duplicates);
+    }, [auctions]);
+
     return (
         <>
             <Header/>
@@ -51,10 +58,9 @@ export default function Home() {
                     <div className={styles.panels}>
                         {loading ? (
                             <>
-                                <DashboardPanel loading title="Laden..." />
-                                <DashboardPanel loading title="Laden..." />
-                                <DashboardPanel loading title="Laden..." />
-                                <DashboardPanel loading title="Laden..." />
+                                {Array.from({ length: 4 }).map((_, i) => (
+                                    <DashboardPanel key={i} loading={true} title="Laden..." />
+                                ))}
                             </>
                         ) : auctions.length === 0 ? (
                             <p>Geen veilingen gevonden. Kom later terug.</p>
@@ -63,16 +69,19 @@ export default function Home() {
                                 const auction = page.auction;
                                 const reg = page.registeredProducts[0];
                                 const product = reg?.product;
+                                const nextProduct = page.registeredProducts[1];
 
                                 return (
-                                    <a key={auction.id} href={`/veiling/${auction.id}`}>
+                                    <a key={`${auction.clockLocationEnum}-${auction.id}`} href={`/veiling/${auction.id}`}>
                                         <DashboardPanel
                                             loading={false}
                                             title={product?.name ?? `Veiling #${auction.id}`}
                                             kloklocatie={parseClockLocation(auction.clockLocationEnum)}
-                                            imageSrc={product?.picture}
+                                            imageSrc={resolveImageSrc(product?.picture)}
                                             resterendeTijd={new Date(auction.startDate).toLocaleString()}
                                             huidigePrijs={reg?.minPrice}
+                                            aankomendProductNaam={nextProduct?.product.name || "Geen product"}
+                                            aankomendProductStartprijs={nextProduct?.minPrice}
                                         />
                                     </a>
                                 );

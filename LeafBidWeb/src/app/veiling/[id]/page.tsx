@@ -5,8 +5,7 @@ import BigInfoVeld from "@/components/veilingInfo/veilingInfo";
 import Header from "@/components/header/header";
 import AuctionTimer from '@/components/veilingKlok/veilingKlok';
 import s from "./page.module.css";
-import { Product } from "@/types/Product/Product";
-import { Auction } from "@/types/Auction/Auction";
+import { AuctionResult } from "@/types/Auction/AuctionResult";
 
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -15,8 +14,7 @@ export default function AuctionPage() {
     const params = useParams();
     const id = Number(params.id);
 
-    const [auction, setAuction] = useState<Auction | null>(null);
-    const [products, setProducts] = useState<Product[]>([]);
+    const [auction, setAuction] = useState<AuctionResult | null>(null);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
@@ -28,19 +26,14 @@ export default function AuctionPage() {
                     method: "GET",
                     credentials: "include",
                 });
-                if (!res.ok) throw new Error("Failed to fetch auction");
 
-                const data = await res.json();
+                if (!res.ok) {
+                    throw new Error("Failed to fetch auction");
+                }
 
-                // Your API returns { auction, product }
-                // but now you want ALL products for this auction
-                const auctionData: Auction = {
-                    ...data.auction,
-                    products: data.products ?? [data.product]
-                };
+                const data: AuctionResult = await res.json();
 
-                setAuction(auctionData);
-                setProducts(auctionData.products);
+                setAuction(data);
             } catch (err) {
                 console.error(err);
             } finally {
@@ -62,7 +55,7 @@ export default function AuctionPage() {
         );
     }
 
-    if (!auction || products.length === 0) {
+    if (!auction || auction.registeredProducts.length === 0) {
         return (
             <>
                 <Header returnOption={true}/>
@@ -73,8 +66,8 @@ export default function AuctionPage() {
         );
     }
 
-    const currentProduct = products[0];
-    const nextProducts = products.slice(1);
+    const currentProduct = auction.registeredProducts[0];
+    const nextProducts = auction.registeredProducts.slice(1);
 
     const maxPrice = currentProduct.maxPrice;
     const minPrice = currentProduct.minPrice;
@@ -107,7 +100,7 @@ export default function AuctionPage() {
 
                     <div className={s.tekstblokken}>
                         {nextProducts.length > 0 ? (
-                            nextProducts.map((p) => <InfoVeld key={p.id} product={p}/>)
+                            nextProducts.map((rp) => <InfoVeld key={rp.id} registeredProduct={rp}/>)
                         ) : (
                             <p>Geen volgende producten</p>
                         )}
@@ -116,7 +109,7 @@ export default function AuctionPage() {
 
                 <div className={s.infoblok}>
                     <h3 className="fw-bold mb-2">Huidig Product:</h3>
-                    <BigInfoVeld product={currentProduct}/>
+                    <BigInfoVeld registeredProduct={currentProduct}/>
                 </div>
             </main>
         </>

@@ -3,7 +3,7 @@
 namespace LeafBidAPI.DTOs.Page;
 using Models;
 
-public class GetAuctionWithProductsDto
+public class GetAuctionWithProductsResponse
 {
     public required Auction Auction { get; set; }
 

@@ -17,8 +17,9 @@ import {toggleTheme} from "@/components/header/theme";
 export default function LoginPage() {
     toggleTheme();
 
-
     const router = useRouter();
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
     const handleSubmit = async (e: React.FormEvent) => {
         try {
             await submitForm(e);
@@ -78,9 +79,13 @@ export default function LoginPage() {
 
     const validate = (): boolean => {
         const newErrors: Record<string, string> = {};
+
         if (!loginData.email) {
             newErrors.email = "Email is verplicht.";
+        } else if (!emailRegex.test(loginData.email)) {
+            newErrors.email = "Voer een geldig e-mailadres in.";
         }
+
         if (!loginData.password) {
             newErrors.password = "Wachtwoord is verplicht.";
         }
@@ -108,12 +113,16 @@ export default function LoginPage() {
 
                 <Form noValidate className={s.form}>
                     {/* Email */}
-                    <TextInput label={"email"} name={"email"} placeholder={"E-mail"} value={loginData.email}
-                               onChange={(e) => {
-                                   // Make sure there are only letters, digits, @ and . in the email
-                                   e.target.value = e.target.value.replace(/[^a-zA-Z0-9@.]/g, '');
-                                   setLoginData({...loginData, email: e.target.value})
-                               }}/>
+                    <TextInput
+                        label={"email"}
+                        name={"email"}
+                        placeholder={"E-mail"}
+                        value={loginData.email}
+                        onChange={(e) => {
+                            const value = e.target.value.replace(/\s/g, '');
+                            setLoginData({ ...loginData, email: value });
+                        }}
+                    />
 
                     {/* Password */}
                     <TextInput label={"password"} name={"password"} placeholder={"Password"}

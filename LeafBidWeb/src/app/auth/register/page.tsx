@@ -43,6 +43,8 @@ fetchRoles().catch(error => {
 
 export default function RegisterPage() {
     const router = useRouter();
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
     const handleSubmit = async (e: React.FormEvent) => {
         try {
             await submitForm(e);
@@ -101,6 +103,8 @@ export default function RegisterPage() {
         }
         if (!registerData.email) {
             newErrors.email = "Email is verplicht.";
+        } else if (!emailRegex.test(registerData.email)) {
+            newErrors.email = "Voer een geldig e-mailadres in.";
         }
         if (!registerData.password) {
             newErrors.password = "Wachtwoord is verplicht.";
@@ -143,12 +147,16 @@ export default function RegisterPage() {
                                }}/>
 
                     {/* Email */}
-                    <TextInput label={"email"} name={"email"} placeholder={"E-mail"} value={registerData.email}
-                               onChange={(e) => {
-                                   // Make sure there are only letters, digits, @ and . in the email
-                                   e.target.value = e.target.value.replace(/[^a-zA-Z0-9@.]/g, '');
-                                   setRegisterData({...registerData, email: e.target.value})
-                               }}/>
+                    <TextInput
+                        label={"email"}
+                        name={"email"}
+                        placeholder={"E-mail"}
+                        value={registerData.email}
+                        onChange={(e) => {
+                            const value = e.target.value.replace(/\s/g, '');
+                            setRegisterData({ ...registerData, email: value });
+                        }}
+                    />
 
                     {/* Password */}
                     <div className={s.passwordRow}>

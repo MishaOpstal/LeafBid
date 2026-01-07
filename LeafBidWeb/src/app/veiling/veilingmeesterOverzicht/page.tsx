@@ -7,11 +7,11 @@ import { useState, useEffect } from "react";
 import { ClockLocation, parseClockLocation } from "@/enums/ClockLocation";
 import Link from "next/link";
 
-import { AuctionPage } from "@/types/Auction/AuctionPage";
+import { AuctionResult } from "@/types/Auction/AuctionResult";
 
 
 export default function VeilingmeesterOverzicht() {
-    const [auctions, setAuctions] = useState<AuctionPage[]>([]);
+    const [auctions, setAuctions] = useState<AuctionResult[]>([]);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
@@ -29,7 +29,7 @@ export default function VeilingmeesterOverzicht() {
                     return;
                 }
 
-                const data: AuctionPage[] = await res.json();
+                const data: AuctionResult[] = await res.json();
                 setAuctions(data);
             } catch (err) {
                 console.error("Failed to load auctions:", err);

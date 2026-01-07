@@ -3,7 +3,7 @@
 import React from 'react';
 import { Card, Row, Col, Image, Button } from 'react-bootstrap';
 import Placeholder from "react-bootstrap/Placeholder";
-import {parsePrice} from "@/types/Product/Product";
+import {parsePrice} from "@/types/Product/RegisteredProducts";
 import s from "./dashboardPanel.module.css";
 
 type DashboardPanelProps = {

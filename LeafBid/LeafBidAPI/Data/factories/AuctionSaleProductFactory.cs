@@ -46,12 +46,12 @@ public class AuctionSaleProductFactory(
                 continue;
             }
 
-            int productId = registeredProduct.ProductId;
+            int registeredProductId = registeredProduct.Id;
 
             int alreadySold = dbContext.AuctionSaleProducts
                 .Where(asp =>
                     asp.AuctionSaleId == auctionSale.Id &&
-                    asp.RegisteredProductId == productId
+                    asp.RegisteredProductId == registeredProductId
                 )
                 .Sum(asp => (int?)asp.Quantity) ?? 0;
 
@@ -69,7 +69,7 @@ public class AuctionSaleProductFactory(
                 (minPrice, maxPrice) = (maxPrice, minPrice);
             }
 
-            viable.Add((productId, remainingQuantity, minPrice, maxPrice));
+            viable.Add((registeredProductId, remainingQuantity, minPrice, maxPrice));
         }
 
         if (viable.Count == 0)
@@ -80,12 +80,12 @@ public class AuctionSaleProductFactory(
             );
         }
 
-        (int usedProductId, int remainingQuantityFinal, decimal minPriceFinal, decimal maxPriceFinal)
+        (int usedRegisteredProductId, int remainingQuantityFinal, decimal minPriceFinal, decimal maxPriceFinal)
             = faker.Random.ListItem(viable);
 
         return new Faker<AuctionSaleProduct>()
             .RuleFor(asp => asp.AuctionSaleId, auctionSale.Id)
-            .RuleFor(asp => asp.RegisteredProductId, usedProductId)
+            .RuleFor(asp => asp.RegisteredProductId, usedRegisteredProductId)
             .RuleFor(asp => asp.Quantity, f => f.Random.Int(1, remainingQuantityFinal))
             .RuleFor(asp => asp.Price, f =>
             {

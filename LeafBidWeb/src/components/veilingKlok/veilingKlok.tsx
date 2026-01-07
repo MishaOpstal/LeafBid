@@ -1,7 +1,7 @@
 ﻿// typescript
 import React, { useState, useEffect, useRef } from 'react';
 import 'bootstrap/dist/css/bootstrap.min.css';
-import { parsePrice } from '@/types/Product/Product';
+import { parsePrice } from '@/types/Product/RegisteredProducts';
 import s from './veilingKlok.module.css';
 
 interface AuctionTimerProps {

@@ -57,7 +57,7 @@ public class PagesServiceTest
         PagesServices pagesServices = new PagesServices(context, _userManagerMock.Object);
 
         // Act 
-        var result = await pagesServices.GetAuctionPerActiveClockLocation();
+        var result = await pagesServices.GetAuctionsWithProductsPerClockLocation();
 
         // Assert
         Assert.NotEmpty(result);
@@ -106,7 +106,7 @@ public class PagesServiceTest
         PagesServices pagesServices = new PagesServices(context, _userManagerMock.Object);
 
         // Act 
-        var result = await pagesServices.GetAuctionPerActiveClockLocation();
+        var result = await pagesServices.GetAuctionsWithProductsPerClockLocation();
 
         // Assert
         Assert.NotEmpty(result);
