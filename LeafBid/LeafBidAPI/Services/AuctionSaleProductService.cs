@@ -201,7 +201,7 @@ public async Task<List<AuctionSaleProductResponse>> GetAuctionSaleProductsByUser
             .Select(g => new SaleChartDataPoint
             {
                 ProductName = g.Key.Name,
-                value = g.Sum(x => x.Price)
+                Price = g.Sum(x => x.Price)
             })
             .ToList();
 
@@ -214,7 +214,7 @@ public async Task<List<AuctionSaleProductResponse>> GetAuctionSaleProductsByUser
             .Select(g => new SaleChartDataPoint
             {
                 ProductName = g.Key.Name,
-                value = g.Sum(x => x.Price)
+                Price = g.Sum(x => x.Price)
             })
             .ToList();
 

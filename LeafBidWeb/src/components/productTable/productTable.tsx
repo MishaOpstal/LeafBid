@@ -37,7 +37,6 @@ export default function ProductTable({ userRoles }: Props) {
                     console.error("Invalid user role");
                     return;
                 }
-                console.log(url);
                 const res = await fetch(url, {
                     method: "GET",
                     credentials: "include",
