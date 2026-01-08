@@ -6,8 +6,6 @@ export interface Auction {
     startDate: string;
     clockLocationEnum: number;
     registeredProducts: RegisteredProduct[]; // product(s) zitten hier in
-    userId: string;
-    isLive: boolean;
 }
 
 export function parseDate(date: Date|string): string {
