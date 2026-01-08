@@ -205,3 +205,17 @@ label{
 .btn-check:checked + .btn, .btn.active, .btn.show, .btn:first-child:active, :not(.btn-check) + .btn:active {
     background-color: var(--primary-hover) !important;
 }
+
+.dropdown-menu {
+    background-color: var(--background);
+    border: 1px solid var(--primary);
+}
+
+.dropdown-item {
+    color: var(--text);
+}
+
+.dropdown-item:focus, .dropdown-item:hover {
+    color: var(--text);
+    background-color: var(--faded);
+}

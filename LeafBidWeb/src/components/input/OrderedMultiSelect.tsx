@@ -139,8 +139,10 @@ const OrderedMultiSelect: React.FC<OrderedMultiSelectProps> = ({
                                 } ${s.listItem}`}
                             >
                                 <div className={s.productRow}>
-                                    <strong className={s.productName}>{registeredProduct.product.name}</strong>
-                                    <span>{registeredProduct.company.name}</span>
+                                    <div className={s.productInfo}>
+                                        <strong className={s.productName}>{registeredProduct.product.name}</strong>
+                                        <span className={s.companyName}>{registeredProduct.company.name}</span>
+                                    </div>
                                     <span className={s.quantity}>
                                         Qty: {registeredProduct.stock ?? "N/A"}
                                     </span>
