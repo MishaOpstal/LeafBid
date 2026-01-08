@@ -222,7 +222,7 @@ public class AuctionSaleProductController(
                     registeredProductId = result.RegisteredProduct.Id,
                     stock = result.RegisteredProduct.Stock,
                     quantityBought = buyData.Quantity,
-                    newStartDate = result.NewStartDate
+                    nextProductStartTime = result.NextProductStartTime
                 });
             }
 
@@ -258,7 +258,7 @@ public class AuctionSaleProductController(
                 await hubContext.Clients.Group(auctionId.ToString()).SendAsync("ProductExpired", new
                 {
                     registeredProductId = result.RegisteredProduct.Id,
-                    newStartDate = result.NewStartDate
+                    nextProductStartTime = result.NextProductStartTime
                 });
                 return Ok(result.RegisteredProduct);
             }

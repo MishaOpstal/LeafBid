@@ -113,7 +113,7 @@ const AuctionTimer: React.FC<AuctionTimerProps> = ({
 
             if (nextDisplayed <= minCents) {
                 setPercentage(0);
-                onFinishedRef.current?.();
+                setTimeout(() => onFinishedRef.current?.(), 0);
                 return true; // Finished
             }
             

@@ -43,6 +43,19 @@ public class AuctionStatusWorker(
         IAuctionSaleProductService auctionSaleProductService =
             scope.ServiceProvider.GetRequiredService<IAuctionSaleProductService>();
         DateTime now = TimeHelper.GetAmsterdamTime();
+        DateTime visibilityThreshold = now.AddHours(2);
+
+        // 0. Set IsVisible = true for auctions that should be visible (starting within 2 hours) and have stock
+        List<Auction> auctionsToMakeVisible = await context.Auctions
+            .Where(a => !a.IsVisible && a.StartDate <= visibilityThreshold)
+            .Where(a => context.AuctionProducts.Any(ap => ap.AuctionId == a.Id && ap.RegisteredProduct!.Stock > 0))
+            .ToListAsync();
+
+        foreach (Auction auction in auctionsToMakeVisible)
+        {
+            auction.IsVisible = true;
+            logger.LogInformation("Auction {AuctionId} is now Visible.", auction.Id);
+        }
 
         // 1. Set IsLive = true for auctions that should start and have products with stock
         List<Auction> auctionsToStart = await context.Auctions
@@ -53,6 +66,8 @@ public class AuctionStatusWorker(
         foreach (Auction auction in auctionsToStart)
         {
             auction.IsLive = true;
+            auction.IsVisible = true; // Ensure it's visible if it's live
+            auction.NextProductStartTime = auction.StartDate; // Initialize the timer
             logger.LogInformation("Auction {AuctionId} is now Live.", auction.Id);
         }
 
@@ -63,6 +78,11 @@ public class AuctionStatusWorker(
 
         foreach (Auction auction in liveAuctions)
         {
+            if (auction.NextProductStartTime == null || now < auction.NextProductStartTime)
+            {
+                continue;
+            }
+            
             RegisteredProduct? activeProduct = await context.AuctionProducts
                 .Where(ap => ap.AuctionId == auction.Id && ap.RegisteredProduct!.Stock > 0)
                 .OrderBy(ap => ap.ServeOrder)
@@ -76,7 +96,7 @@ public class AuctionStatusWorker(
             }
 
             double duration = AuctionHelper.GetProductDurationSeconds(activeProduct);
-            double elapsed = (now - auction.StartDate).TotalSeconds;
+            double elapsed = (now - auction.NextProductStartTime.Value).TotalSeconds;
 
             if (!(elapsed >= duration))
             {
@@ -94,7 +114,7 @@ public class AuctionStatusWorker(
                 await hubContext.Clients.Group(auction.Id.ToString()).SendAsync("ProductExpired", new
                 {
                     registeredProductId = result.RegisteredProduct.Id,
-                    newStartDate = result.NewStartDate
+                    nextProductStartTime = result.NextProductStartTime
                 });
             }
         }

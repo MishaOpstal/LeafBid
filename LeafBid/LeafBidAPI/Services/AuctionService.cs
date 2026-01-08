@@ -94,6 +94,8 @@ public class AuctionService(
 
         auction.StartDate = updatedAuction.StartTime;
         auction.ClockLocationEnum = updatedAuction.ClockLocationEnum;
+        auction.IsLive = false;
+        auction.IsVisible = false;
 
         await context.SaveChangesAsync();
         return auction;

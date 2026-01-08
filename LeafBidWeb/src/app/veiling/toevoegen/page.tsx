@@ -27,6 +27,8 @@ export default function Home() {
         clockLocationEnum: 0,
         products: [] as Product[],
         userId: "8a57bc69-eeaa-42d1-930e-8270419f0a82",
+        isLive: false,
+        isVisible: false,
     });
 
     const [products, setProducts] = useState<Product[]>([]);
@@ -108,6 +110,8 @@ export default function Home() {
                 clockLocationEnum: 0,
                 products: [],
                 userId: "8a57bc69-eeaa-42d1-930e-8270419f0a82",
+                isLive: false,
+                isVisible: false,
             });
             setErrors({});
         } catch (err) {

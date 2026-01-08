@@ -14,6 +14,7 @@ public class DummyAuctions
                 Id = 1,
                 StartDate = DateTime.UtcNow,
                 IsLive = false,
+                IsVisible = true,
                 UserId = "user1",
                 ClockLocationEnum = LeafBidAPI.Enums.ClockLocationEnum.Aalsmeer
             },
@@ -22,6 +23,7 @@ public class DummyAuctions
                 Id = 2,
                 StartDate = DateTime.UtcNow.AddHours(1),
                 IsLive = true,
+                IsVisible = true,
                 UserId = "user2",
                 ClockLocationEnum = LeafBidAPI.Enums.ClockLocationEnum.Eelde
             },
@@ -30,6 +32,7 @@ public class DummyAuctions
                 Id = 3,
                 StartDate = DateTime.UtcNow.AddHours(2),
                 IsLive = false,
+                IsVisible = false,
                 UserId = "user3",
                 ClockLocationEnum = LeafBidAPI.Enums.ClockLocationEnum.Rijnsburg
             },
@@ -38,6 +41,7 @@ public class DummyAuctions
                 Id = 4,
                 StartDate = DateTime.UtcNow.AddHours(3),
                 IsLive = true,
+                IsVisible = true,
                 UserId = "user4",
                 ClockLocationEnum = LeafBidAPI.Enums.ClockLocationEnum.Naaldwijk
             }

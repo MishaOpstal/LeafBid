@@ -7,10 +7,14 @@ import AuctionTimer from '@/components/veilingKlok/veilingKlok';
 import s from "./page.module.css";
 import { AuctionPageResult } from "@/types/Auction/AuctionPageResult";
 import {getServerNow, getServerOffset, setServerTimeOffset} from "@/utils/time";
+import config from "@/config";
 
 import { useParams } from "next/navigation";
 import { useCallback, useEffect, useState, useRef } from "react";
 import * as signalR from "@microsoft/signalr";
+import {Toast, ToastContainer} from "react-bootstrap";
+
+const AUCTION_PAUSE_THRESHOLD_SECONDS = 10;
 
 export default function AuctionPage() {
     const params = useParams();
@@ -27,7 +31,7 @@ export default function AuctionPage() {
         return () => clearInterval(interval);
     }, []);
 
-    const startDateTs = auction?.auction?.startDate ? new Date(auction.auction.startDate).getTime() : 0;
+    const startDateTs = auction?.auction?.nextProductStartTime ? new Date(auction.auction.nextProductStartTime).getTime() : 0;
     const isPaused = now < startDateTs;
     const pauseCountdown = Math.max(0, Math.ceil((startDateTs - now) / 1000));
 
@@ -40,7 +44,7 @@ export default function AuctionPage() {
         console.log("Auction timer finished for product:", currentProduct.id);
 
         try {
-            const res = await fetch(`http://localhost:5001/api/v2/AuctionSaleProduct/expire/${currentProduct.id}?auctionId=${id}`, {
+            const res = await fetch(`${config.apiUrl}/AuctionSaleProduct/expire/${currentProduct.id}?auctionId=${id}`, {
                 method: "POST",
                 credentials: "include",
             });
@@ -60,7 +64,7 @@ export default function AuctionPage() {
         const currentProduct = auction.registeredProducts[0];
 
         try {
-            const res = await fetch(`http://localhost:5001/api/v2/AuctionSaleProduct/buy`, {
+            const res = await fetch(`${config.apiUrl}/AuctionSaleProduct/buy`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -81,7 +85,7 @@ export default function AuctionPage() {
 
             // We don't necessarily need to update state here as SignalR will broadcast it,
             // but for immediate feedback we can.
-            // Note: The broadcast will also contain the newStartDate.
+            // Note: The broadcast will also contain the new nextProductStartTime.
         } catch (err) {
             console.error(err);
             alert(err instanceof Error ? err.message : "An error occurred");
@@ -92,50 +96,58 @@ export default function AuctionPage() {
         if (!id) return;
 
         const connection = new signalR.HubConnectionBuilder()
-            .withUrl("http://localhost:5001/auctionHub")
+            .withUrl(config.hubUrl)
             .withAutomaticReconnect()
             .build();
 
-        connection.on("ProductBought", (data: { registeredProductId: number, stock: number, quantityBought: number, newStartDate: string }) => {
-            console.log("Real-time update: Product bought", data);
-            
-            setAuction(prev => {
-                if (!prev) return null;
-                const newProducts = [...prev.registeredProducts];
+        connection.on("ProductBought", (data: { registeredProductId: number, stock: number, quantityBought: number, nextProductStartTime: string }) => {
+            try {
+                console.log("Real-time update: Product bought", data);
                 
-                if (newProducts.length > 0 && newProducts[0].id === data.registeredProductId) {
-                    if (data.stock <= 0) {
-                        newProducts.shift();
-                    } else {
-                        newProducts[0] = { ...newProducts[0], stock: data.stock };
+                setAuction(prev => {
+                    if (!prev) return null;
+                    const newProducts = [...prev.registeredProducts];
+                    
+                    if (newProducts.length > 0 && newProducts[0].id === data.registeredProductId) {
+                        if (data.stock <= 0) {
+                            newProducts.shift();
+                        } else {
+                            newProducts[0] = { ...newProducts[0], stock: data.stock };
+                        }
                     }
-                }
-                
-                return { 
-                    ...prev, 
-                    registeredProducts: newProducts,
-                    auction: { ...prev.auction, startDate: data.newStartDate }
-                };
-            });
+                    
+                    return { 
+                        ...prev, 
+                        registeredProducts: newProducts,
+                        auction: { ...prev.auction, nextProductStartTime: data.nextProductStartTime }
+                    };
+                });
+            } catch (error) {
+                console.error("Error processing ProductBought event:", error);
+            }
         });
 
-        connection.on("ProductExpired", (data: { registeredProductId: number, newStartDate: string }) => {
-            console.log("Real-time update: Product expired", data);
+        connection.on("ProductExpired", (data: { registeredProductId: number, nextProductStartTime: string }) => {
+            try {
+                console.log("Real-time update: Product expired", data);
 
-            setAuction(prev => {
-                if (!prev) return null;
-                const newProducts = [...prev.registeredProducts];
+                setAuction(prev => {
+                    if (!prev) return null;
+                    const newProducts = [...prev.registeredProducts];
 
-                if (newProducts.length > 0 && newProducts[0].id === data.registeredProductId) {
-                    newProducts.shift();
-                }
+                    if (newProducts.length > 0 && newProducts[0].id === data.registeredProductId) {
+                        newProducts.shift();
+                    }
 
-                return { 
-                    ...prev, 
-                    registeredProducts: newProducts,
-                    auction: { ...prev.auction, startDate: data.newStartDate }
-                };
-            });
+                    return { 
+                        ...prev, 
+                        registeredProducts: newProducts,
+                        auction: { ...prev.auction, nextProductStartTime: data.nextProductStartTime }
+                    };
+                });
+            } catch (error) {
+                console.error("Error processing ProductExpired event:", error);
+            }
         });
 
         connection.start()
@@ -159,7 +171,7 @@ export default function AuctionPage() {
             try {
                 setLoading(true);
 
-                const res = await fetch(`http://localhost:5001/api/v2/Pages/${id}`, {
+                const res = await fetch(`${config.apiUrl}/Pages/${id}`, {
                     method: "GET",
                     credentials: "include",
                 });
@@ -258,6 +270,11 @@ export default function AuctionPage() {
         );
     }
 
+    const isStarting = !auction.auction.isLive || pauseCountdown > AUCTION_PAUSE_THRESHOLD_SECONDS;
+    const countdownMessage = isStarting
+        ? `Veiling begint over ${formatCountdown(pauseCountdown)}`
+        : `Veiling gepauzeerd. Start opnieuw in ${pauseCountdown} seconden...`;
+
     return (
         <>
             <Header returnOption={true} />
@@ -271,14 +288,12 @@ export default function AuctionPage() {
                             maxPrice={maxPrice}
                             minPrice={minPrice}
                             isPaused={isPaused}
-                            startDate={auction.auction.startDate}
+                            startDate={auction.auction.nextProductStartTime}
                             timeOffset={getServerOffset()}
                         />
                         {isPaused && (
                             <div className="alert alert-info mt-2">
-                                {!auction.auction.isLive || pauseCountdown > 10
-                                    ? `Veiling begint over ${formatCountdown(pauseCountdown)}`
-                                    : `Veiling gepauzeerd. Start opnieuw in ${pauseCountdown} seconden...`}
+                                {countdownMessage}
                             </div>
                         )}
                     </div>
@@ -307,6 +322,17 @@ export default function AuctionPage() {
                     />
                 </div>
             </main>
+
+            <ToastContainer position="bottom-end">
+                <Toast>
+                    <Toast.Header>
+                        <img src="holder.js/20x20?text=%20" className="rounded me-2" alt="" />
+                        <strong className="me-auto">Gekocht!</strong>
+                        <small className="text-muted"></small>
+                    </Toast.Header>
+                    <Toast.Body>Bekijk de prijshistorie hier: KNOPPIE</Toast.Body>
+                </Toast>
+            </ToastContainer>
         </>
     );
 }

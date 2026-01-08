@@ -27,10 +27,17 @@ export default function Home() {
 
                 const data: AuctionPageResult[] = await res.json();
 
-                const live = data.filter((page) => page.auction.isLive);
+                const visibleOrLive = data.filter((page) => page.auction.isLive || page.auction.isVisible);
 
-                // One live auction per clock location
-                const uniqueByClock = Object.values(ClockLocation) .filter((v): v is number => typeof v === "number") .map((clockId) => live.find((p) => p.auction.clockLocationEnum === clockId) ) .filter((p): p is AuctionPageResult => Boolean(p));
+                // One live or upcoming auction per clock location
+                const uniqueByClock = Object.values(ClockLocation)
+                    .filter((v): v is number => typeof v === "number")
+                    .map((clockId) => {
+                        // Prefer live over just visible
+                        return visibleOrLive.find((p) => p.auction.clockLocationEnum === clockId && p.auction.isLive) 
+                            || visibleOrLive.find((p) => p.auction.clockLocationEnum === clockId);
+                    })
+                    .filter((p): p is AuctionPageResult => Boolean(p));
 
                 setAuctions(uniqueByClock);
                 
@@ -76,6 +83,12 @@ export default function Home() {
                                 const product = reg?.product;
                                 const nextProduct = page.registeredProducts[1];
 
+                                const isLive = auction.isLive;
+                                const startTime = new Date(auction.startDate);
+                                const timeDisplay = isLive 
+                                    ? "LIVE NU" 
+                                    : `Start: ${startTime.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}`;
+
                                 return (
                                     <a key={`${auction.clockLocationEnum}-${auction.id}`} href={`/veiling/${auction.id}`}>
                                         <DashboardPanel
@@ -83,7 +96,7 @@ export default function Home() {
                                             title={product?.name ?? `Veiling #${auction.id}`}
                                             kloklocatie={parseClockLocation(auction.clockLocationEnum)}
                                             imageSrc={resolveImageSrc(product?.picture)}
-                                            resterendeTijd={new Date(auction.startDate).toLocaleString()}
+                                            resterendeTijd={timeDisplay}
                                             huidigePrijs={reg?.minPrice}
                                             aankomendProductNaam={nextProduct?.product.name || "Geen product"}
                                             aankomendProductStartprijs={nextProduct?.minPrice}

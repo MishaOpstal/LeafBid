@@ -19,7 +19,7 @@ public class PagesServices(
     public async Task<List<GetAuctionWithProductsResponse>> GetClosestAuctionsWithProducts(ClockLocationEnum clockLocation)
     {
         List<Auction> auctions = await context.Auctions
-            .Where(a => a.ClockLocationEnum == clockLocation)
+            .Where(a => a.ClockLocationEnum == clockLocation && (a.IsVisible || a.IsLive))
             .OrderBy(a => a.StartDate)
             .ToListAsync();
 
@@ -58,7 +58,7 @@ public class PagesServices(
     public async Task<GetAuctionWithProductsResponse> GetAuctionWithProductsById(int auctionId)
     {
         Auction? auction = await context.Auctions
-            .FirstOrDefaultAsync(a => a.Id == auctionId);
+            .FirstOrDefaultAsync(a => a.Id == auctionId && (a.IsVisible || a.IsLive));
 
         if (auction == null)
         {
@@ -88,6 +88,7 @@ public class PagesServices(
     public async Task<List<GetAuctionWithProductsResponse>> GetAuctionsWithProductsPerClockLocation()
     {
         List<Auction> auctions = await context.Auctions
+            .Where(a => a.IsVisible || a.IsLive)
             .OrderBy(a => a.ClockLocationEnum)
             .ToListAsync();
 

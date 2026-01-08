@@ -206,7 +206,7 @@ public async Task<List<AuctionSaleProductResponse>> GetAuctionSaleProductsByUser
             throw new NotFoundException("Auction not found");
         }
 
-        if (TimeHelper.GetAmsterdamTime() < auction.StartDate)
+        if (auction.NextProductStartTime == null || TimeHelper.GetAmsterdamTime() < auction.NextProductStartTime)
         {
             throw new InvalidOperationException("Auction is currently paused.");
         }
@@ -240,7 +240,7 @@ public async Task<List<AuctionSaleProductResponse>> GetAuctionSaleProductsByUser
         }
 
         // Reset auction timer for the next product or same product if stock remains
-        auction.StartDate = TimeHelper.GetAmsterdamTime().AddSeconds(5);
+        auction.NextProductStartTime = TimeHelper.GetAmsterdamTime().AddSeconds(5);
 
         // Create an AuctionSale entry
         AuctionSale auctionSale = new()
@@ -269,7 +269,7 @@ public async Task<List<AuctionSaleProductResponse>> GetAuctionSaleProductsByUser
         return new AuctionEventResponse
         {
             RegisteredProduct = registeredProduct,
-            NewStartDate = auction.StartDate,
+            NextProductStartTime = auction.NextProductStartTime,
             IsSuccess = true
         };
     }
@@ -292,7 +292,7 @@ public async Task<List<AuctionSaleProductResponse>> GetAuctionSaleProductsByUser
 
         // Validate if the product should actually expire
         double duration = AuctionHelper.GetProductDurationSeconds(registeredProduct);
-        double elapsed = (TimeHelper.GetAmsterdamTime() - auction.StartDate).TotalSeconds;
+        double elapsed = (TimeHelper.GetAmsterdamTime() - (auction.NextProductStartTime ?? auction.StartDate)).TotalSeconds;
 
         // 5 second tolerance for clock drift
         if (elapsed < duration - 5)
@@ -301,7 +301,7 @@ public async Task<List<AuctionSaleProductResponse>> GetAuctionSaleProductsByUser
             return new AuctionEventResponse
             {
                 RegisteredProduct = registeredProduct,
-                NewStartDate = auction.StartDate,
+                NextProductStartTime = null,
                 IsSuccess = false
             };
         }
@@ -318,22 +318,23 @@ public async Task<List<AuctionSaleProductResponse>> GetAuctionSaleProductsByUser
         }
 
         // Reset auction timer for the next product
-        DateTime newStartDate = TimeHelper.GetAmsterdamTime().AddSeconds(5);
-        auction.StartDate = newStartDate;
+        auction.NextProductStartTime = TimeHelper.GetAmsterdamTime().AddSeconds(5);
 
         await context.SaveChangesAsync();
 
         return new AuctionEventResponse
         {
             RegisteredProduct = registeredProduct,
-            NewStartDate = newStartDate,
+            NextProductStartTime = auction.NextProductStartTime,
             IsSuccess = true
         };
     }
 
     private decimal CalculateCurrentPrice(Auction auction, RegisteredProduct product)
     {
-        double elapsedSeconds = (TimeHelper.GetAmsterdamTime() - auction.StartDate).TotalSeconds;
+        if (auction.NextProductStartTime == null) return product.MaxPrice ?? product.MinPrice;
+        
+        double elapsedSeconds = (TimeHelper.GetAmsterdamTime() - auction.NextProductStartTime.Value).TotalSeconds;
         if (elapsedSeconds <= 0) return product.MaxPrice ?? product.MinPrice;
 
         decimal startPrice = product.MaxPrice ?? product.MinPrice;

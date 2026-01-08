@@ -52,7 +52,7 @@ export default function VeilingmeesterOverzicht() {
     const currentAuctions = auctions.filter(a => a.auction.isLive);
 
     const upcomingAuctions = auctions.filter(
-        a => !a.auction.isLive && new Date(a.auction.startDate) > now
+        a => a.auction.isVisible && !a.auction.isLive && new Date(a.auction.startDate) > now
     );
 
     const pastAuctions = auctions.filter(

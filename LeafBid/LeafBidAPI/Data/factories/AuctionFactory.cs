@@ -35,7 +35,11 @@ public class AuctionFactory(
             )
             .RuleFor(
                 a => a.IsLive,
-                (f, a) => a.StartDate >= DateTime.UtcNow
+                (f, a) => a.StartDate <= DateTime.UtcNow
+            )
+            .RuleFor(
+                a => a.IsVisible,
+                (f, a) => a.StartDate <= DateTime.UtcNow.AddHours(1)
             )
             .RuleFor(
                 a => a.ClockLocationEnum,
