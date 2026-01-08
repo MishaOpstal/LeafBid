@@ -67,7 +67,7 @@ export default function Header({returnOption = false}: HeaderProps) {
         isAdmin?: boolean | null;
     }
 
-    // replace the previous determineRoles(userData: any)
+
     const determineRoles = (userData?: UserData | null) => {
         if (!userData) return {auctioneer: false, provider: false, admin: false};
 
@@ -179,7 +179,6 @@ export default function Header({returnOption = false}: HeaderProps) {
                     </Link>
                 )}
                 <div className={s.clickables}>
-                    {/*<div className={s.navLinks}>*/}
                     {(isProvider || isAdmin) && (
                         <Link href="/product/toevoegen" className={s.link}>
                             Product toevoegen
@@ -196,7 +195,6 @@ export default function Header({returnOption = false}: HeaderProps) {
                             </Link>
                         </>
                     )}
-                   {/*</div>*/}
 
                     <Link href="#" onClick={logout} className={s.link}>
                         Uitloggen
