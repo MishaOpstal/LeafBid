@@ -81,12 +81,6 @@ export default function Home() {
                         )}
                     </div>
                 </div>
-                <History
-                    RegisteredProductID={21}
-                    Name={"Test Product"}
-                    Picture={"https://placehold.co/1200x1200/cccccc/9c9c9c.png?text=Industrial%20Soft"}
-                    companyName={"Test Company"}
-                />
 
             </main>
         </>

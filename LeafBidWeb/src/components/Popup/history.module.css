@@ -1,7 +1,7 @@
 .popover::backdrop {
     background-color: rgba(0, 0, 0, 0.5);
 }
-.popover:popover-open{
+.popover:popover-open {
     display: inline-block;
     margin: 0;
     position: absolute;
@@ -16,8 +16,9 @@
     border-radius: 0.25rem;
     z-index: 100;
     width: 100%;
-    max-width: 1000px;
+    max-width: 1200px;
 }
+
 .tablesWrapper {
     display: flex;
     justify-content: space-between;
@@ -28,7 +29,7 @@
     display:flex;
     flex-direction: column;
     gap: 5px;
-    max-height: 80dvh;
+    max-height: 70dvh;
     overflow-y: auto;
 }
 
@@ -53,10 +54,13 @@
     display: block;
     height: 1.5em;
 }
-
+.productInfo{
+    display: flex;
+    align-items: center;
+    margin-bottom: 20px;
+}
 .productInfo img{
-    max-width: 100px;
-    max-height: 100px;
-    object-fit: contain;
+    width: 4em;
+    height: 4em;
     margin-right: 10px;
 }

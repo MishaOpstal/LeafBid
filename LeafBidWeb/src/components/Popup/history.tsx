@@ -90,7 +90,7 @@ export default function History(HistoryProps: HistoryProps) {
                             <tr key={index}>
                                 <td>
                                         <p>
-                                            ({item.quantity}x) - €{item.price} op {new Date(item.date).toLocaleDateString()} <br/>
+                                            €{item.price} per stuk - ({item.quantity}x voor €{(item.price * item.quantity).toFixed(2)}) op {new Date(item.date).toLocaleDateString()} <br/>
                                             <span>&nbsp;</span>
                                         </p>
 
