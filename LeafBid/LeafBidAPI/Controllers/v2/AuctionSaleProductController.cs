@@ -173,7 +173,7 @@ public class AuctionSaleProductController(
     [Authorize(Roles = "Buyer")]
     [ProducesResponseType(typeof(AuctionSaleProductResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<ActionResult<AuctionSaleProductResponse>> LoggedInUser()
+    public async Task<ActionResult<AuctionSaleProductResponse>> GetAuctionSaleProductsByUserId()
     {
         try
         {
@@ -190,6 +190,57 @@ public class AuctionSaleProductController(
         {
             return NotFound(e.Message);
         }
+    }
+    
+    /// <summary>
+    /// Get auction sale products for the logged-in user.
+    /// </summary>
+    /// <returns>A list of auction sale products for the logged-in user.</returns>
+    [HttpGet("company")]
+    [Authorize(Roles = "Provider")]
+    [ProducesResponseType(typeof(AuctionSaleProductResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<AuctionSaleProductResponse>> GetAuctionSaleProductsByCompanyId()
+    {
+        try
+        {
+            LoggedInUserResponse me = await userService.GetLoggedInUser(User);
+            if (me.UserData == null)
+            {
+                return Unauthorized("User data not found");
+            }
+            //grab auction sale product for the user
+            if (me.UserData.CompanyId == null)
+            {
+                return BadRequest("User does not belong to a company");
+            }
+            List<AuctionSaleProductResponse> products = await auctionSaleProductService.GetAuctionSaleProductsByCompanyId(me.UserData.CompanyId.Value);
+            return Ok(products);
+        }
+        catch (NotFoundException e)
+        {
+            return NotFound(e.Message);
+        }
+    }
+    [HttpGet("chart")]
+    [Authorize(Roles = "Provider")]
+    [ProducesResponseType(typeof(AuctionSaleProductResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<SaleChartResponse>> GetSaleChartData()
+    {
+        LoggedInUserResponse me = await userService.GetLoggedInUser(User);
+        if (me.UserData == null)
+        {
+            return Unauthorized("User data not found");
+        }
+
+        if (me.UserData.CompanyId == null)
+        {
+            return BadRequest("User does not belong to a company");
+        }
+        
+        SaleChartResponse chartData = await auctionSaleProductService.GetSaleChartDataByCompany(me.UserData.CompanyId.Value);
+        return Ok(chartData);
     }
 
     /// <summary>

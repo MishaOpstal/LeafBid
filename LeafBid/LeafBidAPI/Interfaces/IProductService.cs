@@ -18,6 +18,12 @@ public interface IProductService
     /// </summary>
     /// <returns>A list of available products.</returns>
     Task<List<Product>> GetAvailableProducts();
+    
+    /// <summary>
+    /// Get all registered products that are not currently assigned to an auction.
+    /// </summary>
+    /// <returns>A list of available registered products.</returns>
+    Task<List<RegisteredProduct>> GetAvailableRegisteredProducts();
 
     /// <summary>
     /// Get a product by ID, including its provider user.
@@ -59,8 +65,8 @@ public interface IProductService
     /// <exception cref="Exception">
     /// Thrown when product cannot be created
     /// </exception>
-    Task<RegisteredProduct> CreateProductDeliveryGuy(CreateRegisteredProductEndpointDto registeredProductData,
-        int productId, string userId);
+    Task<RegisteredProduct> CreateRegisteredProduct(CreateRegisteredProductEndpointDto registeredProductData,
+        int productId, string userId, int companyId);
 
 
     /// <summary>

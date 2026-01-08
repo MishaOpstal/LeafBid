@@ -1,0 +1,71 @@
+.popover::backdrop {
+    background-color: rgba(0, 0, 0, 0.5);
+}
+
+.popover:popover-open {
+    display: inline-block;
+    margin: 0;
+    position: absolute;
+    justify-content: start;
+    gap: 10px;
+    left: 50%;
+    top: 50%;
+    transform: translateX(-50%) translateY(-50%);
+    background-color: #222;
+    color: #fff;
+    padding: 0.5rem 1rem;
+    border-radius: 0.25rem;
+    z-index: 100;
+    width: 100%;
+    max-width: 1200px;
+}
+
+.tablesWrapper {
+    display: flex;
+    justify-content: space-between;
+    gap: 20px;
+    align-items: flex-start;
+}
+
+.tablesWrapper div {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    max-height: 70dvh;
+    overflow-y: auto;
+}
+
+.tablesWrapper div p {
+    margin-top: auto;
+}
+
+.historyTable {
+    flex: 1;
+    min-width: 0;
+    table-layout: fixed;
+    margin-bottom: 0;
+}
+
+.historyTable th,
+.historyTable td {
+    padding: 8px;
+    text-align: left;
+    word-wrap: break-word;
+}
+
+.historyTable tbody tr td span {
+    display: block;
+    height: 1.5em;
+}
+
+.productInfo {
+    display: flex;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.productInfo img {
+    width: 4em;
+    height: 4em;
+    margin-right: 10px;
+}

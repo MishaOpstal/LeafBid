@@ -4,6 +4,7 @@ import Header from "@/components/header/header";
 import DashboardPanel from "@/components/dashboardPanel/dashboardpanel";
 import {useState, useEffect} from "react";
 import {ClockLocation, parseClockLocation} from "@/enums/ClockLocation";
+import History from "@/components/Popup/history";
 
 import { AuctionPageResult } from "@/types/Auction/AuctionPageResult";
 import {resolveImageSrc} from "@/utils/image";
@@ -107,6 +108,7 @@ export default function Home() {
                         )}
                     </div>
                 </div>
+
             </main>
         </>
     );

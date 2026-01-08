@@ -1,8 +1,10 @@
 import { Product } from "@/types/Product/Product";
+import {Company} from "@/types/Company/Company";
 
 export interface RegisteredProduct {
-    id?: number;
-    product: Product;
+    id: number;
+    productId: number;
+    product?: Product;
     minPrice: number;
     maxPrice: number;
     stock: number;
@@ -12,6 +14,8 @@ export interface RegisteredProduct {
     stemLength?: number;
     providerUserName?: string;
     auctionId?: number;
+    companyId: number;
+    company?: Company;
 }
 
 export function parsePrice(price: number): string {

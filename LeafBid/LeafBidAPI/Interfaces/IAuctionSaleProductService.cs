@@ -61,6 +61,15 @@ public interface IAuctionSaleProductService
     /// <param name="userId">The user ID.</param>
     /// <returns>A list of auction sale products associated with the specified user ID.</returns>
     Task<List<AuctionSaleProductResponse>> GetAuctionSaleProductsByUserId(string userId);
+    
+    /// <summary>
+    /// Get auction sale products by company ID.
+    /// </summary>
+    /// <param name="companyId">The company ID.</param>
+    /// <returns>A list of auction sale products associated with the specified company ID.</returns>
+    Task<List<AuctionSaleProductResponse>> GetAuctionSaleProductsByCompanyId(int companyId);
+
+    Task<SaleChartResponse> GetSaleChartDataByCompany(int companyId);
 
     /// <summary>
     /// Buys a product from an auction.

@@ -18,6 +18,7 @@ export default function Header({returnOption = false}: HeaderProps) {
     const [theme, setTheme] = useState<"dark" | "light">("light");
     const [isAuctioneer, setIsAuctioneer] = useState(false);
     const [isProvider, setIsProvider] = useState(false);
+    const [isAdmin, setIsAdmin] = useState(false);
 
     useEffect(() => {
         setTheme(getTheme());
@@ -63,11 +64,12 @@ export default function Header({returnOption = false}: HeaderProps) {
         role?: string | null;
         isAuctioneer?: boolean | null;
         isProvider?: boolean | null;
+        isAdmin?: boolean | null;
     }
 
-// replace the previous determineRoles(userData: any)
+
     const determineRoles = (userData?: UserData | null) => {
-        if (!userData) return {auctioneer: false, provider: false};
+        if (!userData) return {auctioneer: false, provider: false, admin: false};
 
         const lower = (v?: string | null) => (typeof v === "string" ? v.toLowerCase() : "");
         const rolesArray = Array.isArray(userData.roles)
@@ -87,7 +89,12 @@ export default function Header({returnOption = false}: HeaderProps) {
             rolesArray.includes("provider") ||
             rolesArray.includes("aanvoerder");
 
-        return {auctioneer, provider};
+        const admin =
+            userData.isAdmin === true ||
+            lower(userData.role) === "admin" ||
+            rolesArray.includes("admin");
+
+        return {auctioneer, provider, admin};
     };
 
 
@@ -103,15 +110,17 @@ export default function Header({returnOption = false}: HeaderProps) {
                     // Set localStorage
                     localStorage.setItem("loggedIn", "true");
                     localStorage.setItem("userData", JSON.stringify(response.userData));
-                    const {auctioneer, provider} = determineRoles(response.userData);
+                    const {auctioneer, provider, admin} = determineRoles(response.userData);
                     setIsAuctioneer(auctioneer);
                     setIsProvider(provider);
+                    setIsAdmin(admin);
                 } else {
                     // Remove localStorage
                     localStorage.setItem("loggedIn", "false");
                     localStorage.removeItem("userData");
                     setIsAuctioneer(false);
                     setIsProvider(false);
+                    setIsAdmin(false);
                 }
             })
             .finally(() => {
@@ -133,12 +142,14 @@ export default function Header({returnOption = false}: HeaderProps) {
             if (stored) {
                 try {
                     const parsed = JSON.parse(stored);
-                    const {auctioneer, provider} = determineRoles(parsed);
+                    const {auctioneer, provider, admin} = determineRoles(parsed);
                     setIsAuctioneer(auctioneer);
                     setIsProvider(provider);
+                    setIsAdmin(admin);
                 } catch {
                     setIsAuctioneer(false);
                     setIsProvider(false);
+                    setIsAdmin(false);
                 }
             }
         }
@@ -168,23 +179,22 @@ export default function Header({returnOption = false}: HeaderProps) {
                     </Link>
                 )}
                 <div className={s.clickables}>
-                {isProvider && (
-                    <Link href="/product/toevoegen" className={s.link}>
-                        Product toevoegen
-                    </Link>
-                )}
-
-                {isAuctioneer && (
-                    <>
-                        <Link href="/veiling/toevoegen" className={s.link}>
-                            Veiling toevoegen
+                    {(isProvider || isAdmin) && (
+                        <Link href="/product/toevoegen" className={s.link}>
+                            Product toevoegen
                         </Link>
-                        <Link href="/veiling/veilingmeesterOverzicht" className={s.link}>
-                            Veilingmeester overzicht
-                        </Link>
-                    </>
-                )}
+                    )}
 
+                    {(isAuctioneer || isAdmin) && (
+                        <>
+                            <Link href="/veiling/toevoegen" className={s.link}>
+                                Veiling toevoegen
+                            </Link>
+                            <Link href="/veiling/veilingmeesterOverzicht" className={s.link}>
+                                Veilingmeester overzicht
+                            </Link>
+                        </>
+                    )}
 
                     <Link href="#" onClick={logout} className={s.link}>
                         Uitloggen

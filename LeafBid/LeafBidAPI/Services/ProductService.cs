@@ -1,6 +1,7 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using LeafBidAPI.Data;
+using LeafBidAPI.DTOs.Company;
 using LeafBidAPI.DTOs.Product;
 using LeafBidAPI.DTOs.RegisteredProduct;
 using LeafBidAPI.Exceptions;
@@ -28,10 +29,19 @@ public class ProductService(
     public async Task<List<Product>> GetAvailableProducts()
     {
         List<Product> products = await context.Products
-            .Where(p => !context.AuctionProducts.Any(ap => ap.RegisteredProduct != null && ap.RegisteredProduct.ProductId == p.Id))
             .ToListAsync();
 
         return products;
+    }
+    public async Task<List<RegisteredProduct>> GetAvailableRegisteredProducts()
+    {
+        List<RegisteredProduct> registeredProducts = await context.RegisteredProducts
+            .Include(rp => rp.Product)
+            .Include(rp => rp.Company)
+            .Where(rp => !context.AuctionProducts.Any(ap => ap.RegisteredProductId == rp.Id))
+            .ToListAsync();
+
+        return registeredProducts;
     }
     
     public async Task<Product> GetProductById(int id)
@@ -115,15 +125,18 @@ public class ProductService(
         return product;
     }
 
-    public async Task<RegisteredProduct> CreateProductDeliveryGuy(CreateRegisteredProductEndpointDto registeredProductData, int productId, string userId)
+    public async Task<RegisteredProduct> CreateRegisteredProduct(CreateRegisteredProductEndpointDto registeredProductData, int productId, string userId, int companyId)
     {
-        Product? product = await context.Products.FirstOrDefaultAsync(p => p.Id == productId);
+        Product? product = await context.Products
+            .FirstOrDefaultAsync(p => p.Id == productId);
+        
         if (product == null)
         {
             throw new NotFoundException("Product not found");
         }
         
         User? user = await userManager.FindByIdAsync(userId);
+        
         if (user == null)
         {
             throw new NotFoundException("User not found");
@@ -143,7 +156,7 @@ public class ProductService(
             HarvestedAt = registeredProductData.HarvestedAt,
             StemLength = registeredProductData.StemLength,
             PotSize = registeredProductData.PotSize,
-            CompanyId = user.CompanyId.Value,
+            CompanyId = companyId,
             UserId = userId
         };
 
@@ -233,12 +246,20 @@ public class ProductService(
 
     public RegisteredProductResponse CreateRegisteredProductResponse(RegisteredProduct registeredProduct)
     {
-        if (registeredProduct.Product == null)
-        {
-            throw new NotFoundException("Product not found");
-        }
 
-        ProductResponse productResponse = CreateProductResponse(registeredProduct.Product);
+        ProductResponse? productResponse = registeredProduct.Product != null ? CreateProductResponse(registeredProduct.Product) : null;
+        CompanyResponse? companyResponse = registeredProduct.Company != null ? new CompanyResponse
+            {
+                Id = registeredProduct.Company.Id,
+                Name = registeredProduct.Company.Name,
+                Street = registeredProduct.Company.Street,
+                City = registeredProduct.Company.City,
+                HouseNumber = registeredProduct.Company.HouseNumber,
+                HouseNumberSuffix = registeredProduct.Company.HouseNumberSuffix ?? "",
+                PostalCode = registeredProduct.Company.PostalCode,
+                CountryCode = registeredProduct.Company.CountryCode,
+            }
+            : null;
         RegisteredProductResponse registeredProductResponse = new()
         {
             Id = registeredProduct.Id,
@@ -250,7 +271,8 @@ public class ProductService(
             HarvestedAt = registeredProduct.HarvestedAt,
             PotSize = registeredProduct.PotSize ?? null,
             StemLength = registeredProduct.StemLength ?? null,
-            ProviderUserName = registeredProduct.User?.UserName ?? "Unknown"
+            ProviderUserName = registeredProduct.User?.UserName ?? "Unknown",
+            Company = companyResponse!,
         };
 
         return registeredProductResponse;

@@ -1,11 +1,11 @@
-import React, { useCallback } from "react";
-import { Table, Form } from "react-bootstrap";
-import { Product } from "@/types/Product/Product";
+import React, {useCallback} from "react";
+import {Form, Table} from "react-bootstrap";
 import s from "./ProductPriceTable.module.css";
+import {RegisteredProduct} from "@/types/Product/RegisteredProducts";
 
 interface ProductPriceTableProps {
-    products: Product[]; // Array of products with productId, productName, etc.
-    onChange?: (updated: Product[]) => void; // Fired when a price changes
+    registeredProducts: RegisteredProduct[]; // Array of products with productId, productName, etc.
+    onChange?: (updated: RegisteredProduct[]) => void; // Fired when a price changes
     height?: number | string; // Optional scrollable height
 }
 
@@ -15,58 +15,58 @@ interface ProductPriceTableProps {
  * and a numeric input for its price.
  */
 const ProductPriceTable: React.FC<ProductPriceTableProps> = ({
-                                                                 products,
+                                                                 registeredProducts,
                                                                  onChange,
                                                                  height = 300,
                                                              }) => {
     // Safely update price per product
     const handlePriceChange = useCallback(
-        (productId: number, newValue: number) => {
+        (registeredProductId: number, newValue: number) => {
             const parsed = parseFloat(String(newValue));
             const price = isNaN(parsed) || parsed < 0 ? 0 : parsed;
 
-            const updated = products.map((p) =>
-                p.id === productId ? { ...p, maxPrice: price } : p
+            const updated = registeredProducts.map((rp) =>
+                rp.id === registeredProductId ? {...rp, maxPrice: price} : rp
             );
 
             onChange?.(updated);
         },
-        [products, onChange]
+        [registeredProducts, onChange]
     );
 
     return (
-        <div className={s.wrapper} style={{ maxHeight: height }}>
+        <div className={s.wrapper} style={{maxHeight: height}}>
             <Table striped size="sm" className={s.table}>
                 <thead className={s.header}>
                 <tr>
-                    <th style={{ width: "70%" }} className={s.th}>Productnaam</th>
-                    <th style={{ width: "30%" }} className={s.th}>Prijs (€)</th>
+                    <th style={{width: "70%"}} className={s.th}>Productnaam</th>
+                    <th style={{width: "30%"}} className={s.th}>Prijs (€)</th>
                 </tr>
                 </thead>
                 <tbody>
-                {products.length > 0 ? (
-                    products.map((product) => (
-                        <tr key={product.id}>
+                {registeredProducts.length > 0 ? (
+                    registeredProducts.map((registeredProduct) => (
+                        <tr key={registeredProduct.id}>
                             <td className={s.productName}>
-                                {product.name}
+                                {registeredProduct.product.name}
                             </td>
                             <td className={s.priceCell}>
                                 <Form.Control
                                     type="number"
                                     step="0.01"
                                     min="0"
-                                    value={product.maxPrice?.toString() ?? ""}
+                                    value={registeredProduct.maxPrice?.toString() ?? ""}
                                     placeholder="0.00"
                                     onChange={(e) => {
                                         // Allow typing any valid number (still sends numeric to parent)
                                         const val = parseFloat(e.target.value);
-                                        handlePriceChange(product.id, parseFloat(val.toFixed(2)) || 0);
+                                        handlePriceChange(registeredProduct.id, parseFloat(val.toFixed(2)) || 0);
                                     }}
                                     onBlur={(e) => {
                                         // Format to 2 decimals only when leaving the field
                                         const val = parseFloat(e.target.value);
                                         if (!isNaN(val)) {
-                                            handlePriceChange(product.id, parseFloat(val.toFixed(2)));
+                                            handlePriceChange(registeredProduct.id, parseFloat(val.toFixed(2)));
                                         }
                                     }}
                                     className={s.priceInput}
