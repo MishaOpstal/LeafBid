@@ -39,7 +39,7 @@ export default function Home() {
     useEffect(() => {
         (async () => {
             try {
-                const res = await fetch("http://localhost:5001/api/v2/Product/available", {
+                const res = await fetch("http://localhost:5001/api/v2/Product/available/registered", {
                     method: "GET",
                     credentials: "include",
                 });

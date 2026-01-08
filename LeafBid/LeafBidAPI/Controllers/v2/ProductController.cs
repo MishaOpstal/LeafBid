@@ -37,6 +37,21 @@ public class ProductController(IProductService productService, IUserService user
     /// </summary>
     /// <returns>A list of available products.</returns>
     [HttpGet("available")]
+    [ProducesResponseType(typeof(List<ProductResponse>), StatusCodes.Status200OK)]
+    public async Task<ActionResult<List<ProductResponse>>> GetAvailableProducts()
+    {
+        List<Product> products = await productService.GetAvailableProducts();
+        List<ProductResponse> productResponses = products
+            .Select(productService.CreateProductResponse)
+            .ToList();
+        return Ok(productResponses);
+    }
+    
+    /// <summary>
+    /// Get all available registered products.
+    /// </summary>
+    /// <returns>A list of available registered products.</returns>
+    [HttpGet("available/registered")]
     [ProducesResponseType(typeof(List<RegisteredProductResponse>), StatusCodes.Status200OK)]
     public async Task<ActionResult<List<RegisteredProductResponse>>> GetAvailableRegisteredProducts()
     {

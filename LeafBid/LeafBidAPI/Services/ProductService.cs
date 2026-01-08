@@ -26,6 +26,13 @@ public class ProductService(
         return await context.Products.ToListAsync();
     }
     
+    public async Task<List<Product>> GetAvailableProducts()
+    {
+        List<Product> products = await context.Products
+            .ToListAsync();
+
+        return products;
+    }
     public async Task<List<RegisteredProduct>> GetAvailableRegisteredProducts()
     {
         List<RegisteredProduct> registeredProducts = await context.RegisteredProducts
