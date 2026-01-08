@@ -1,4 +1,5 @@
-// src/components/header/header.tsx
+'use client';
+
 import s from "./header.module.css";
 import Image from "next/image";
 import Link from "next/link";
