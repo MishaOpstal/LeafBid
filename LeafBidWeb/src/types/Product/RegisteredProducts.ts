@@ -3,7 +3,8 @@ import {Company} from "@/types/Company/Company";
 
 export interface RegisteredProduct {
     id: number;
-    product: Product;
+    productId: number;
+    product?: Product;
     minPrice: number;
     maxPrice: number;
     stock: number;
@@ -13,5 +14,6 @@ export interface RegisteredProduct {
     stemLength?: number;
     providerUserName?: string;
     auctionId?: number;
-    company: Company;
+    companyId: number;
+    company?: Company;
 }

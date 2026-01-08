@@ -20,12 +20,10 @@ const locaties: Locatie[] = [
     {locatieId: 3, locatieNaam: "Naaldwijk"},
     {locatieId: 4, locatieNaam: "Eelde"},
 ];
-const createEmptyAuction = (userId = "8a57bc69-eeaa-42d1-930e-8270419f0a82"): Auction => ({
+const createEmptyAuction = (): Auction => ({
     startDate: "",
     clockLocationEnum: 0,
-    registeredProducts: [] as RegisteredProduct[],
-    userId,
-    isLive: false,
+    registeredProducts: [] as RegisteredProduct[]
 });
 export default function Home() {
     const [auctionData, setAuctionData] = useState<Auction>(() => createEmptyAuction());
@@ -45,6 +43,17 @@ export default function Home() {
                 });
                 if (!res.ok) throw new Error("Failed to fetch products");
                 const data: RegisteredProduct[] = await res.json();
+
+                // Fill the missing productId and companyId fields for all retrieved registered products, they reside inside the product -> id and company -> id respectively
+                data.forEach(rp => {
+                    if (rp.product) {
+                        rp.productId = rp.product.id;
+                    }
+                    if (rp.company) {
+                        rp.companyId = rp.company.id;
+                    }
+                });
+
                 setRegisteredProducts(data);
             } catch (error) {
                 console.error("Error fetching products:", error);
@@ -85,18 +94,26 @@ export default function Home() {
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
-        setAuctionData(createEmptyAuction());
         e.preventDefault();
         setMessage("");
-        if (!validate()) return;
+        if (!validate()) {
+            return;
+        }
 
         setIsSubmitting(true);
         try {
+            // Remove the product and company fields from registeredProducts before submission
+            const cleanedRegisteredProducts = auctionData.registeredProducts.map(({product, company, ...rest}) => rest);
+            const submissionData = {
+                ...auctionData,
+                registeredProducts: cleanedRegisteredProducts,
+            };
+
             // Submit auctionData directly
             const response = await fetch("http://localhost:5001/api/v2/Auction", {
                 method: "POST",
                 headers: {"Content-Type": "application/json"},
-                body: JSON.stringify(auctionData),
+                body: JSON.stringify(submissionData),
                 credentials: "include",
             });
 
@@ -153,7 +170,7 @@ export default function Home() {
                     <section className={s.section}>
                         <h3 className={s.h3}>Gekoppelde Producten</h3>
                         <OrderedMultiSelect
-                            items={[...registeredProducts].sort((a, b) => a.product.name.localeCompare(b.product.name))} //dit soorteert alfabetisch
+                            items={[...registeredProducts].sort((a, b) => a.product!.name.localeCompare(b.product!.name))} //dit soorteert alfabetisch
                             value={auctionData.registeredProducts}
                             onChange={handleProductsSelect}
                             showBadges={false}
