@@ -107,7 +107,7 @@ public async Task<AuctionSaleProductHistoryResponse> GetAuctionSaleProductsHisto
         ORDER BY a.Date DESC
         """;
 
-    var recentSales = new List<AuctionSaleProductResponse>();
+    var recentSales = new List<AuctionSaleProductHistorySalesDto>();
     await using (var cmd = new SqlCommand(historyQuery, connection))
     {
         cmd.Parameters.AddWithValue("@productId", productId);
@@ -117,10 +117,8 @@ public async Task<AuctionSaleProductHistoryResponse> GetAuctionSaleProductsHisto
         await using var reader = await cmd.ExecuteReaderAsync();
         while (await reader.ReadAsync())
         {
-            recentSales.Add(new AuctionSaleProductResponse
+            recentSales.Add(new AuctionSaleProductHistorySalesDto()
             {
-                Name = reader.GetString(0),
-                Picture = reader.GetString(1),
                 Quantity = reader.GetInt32(2),
                 Price = reader.GetDecimal(3),
                 Date = reader.GetDateTime(4),
