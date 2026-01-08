@@ -10,14 +10,13 @@ import { Auction } from "@/types/Auction/Auction";
 
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
-import {RegisteredProduct} from "@/types/Product/RegisteredProducts";
 
 export default function AuctionPage() {
     const params = useParams();
     const id = Number(params.id);
 
     const [auction, setAuction] = useState<Auction | null>(null);
-    const [registeredProducts, setRegisteredProducts] = useState<RegisteredProduct[]>([]);
+    const [products, setProducts] = useState<Product[]>([]);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
@@ -37,11 +36,11 @@ export default function AuctionPage() {
                 // but now you want ALL products for this auction
                 const auctionData: Auction = {
                     ...data.auction,
-                    registeredProducts: data.registeredProducts ?? [data.registeredProducts]
+                    products: data.products ?? [data.product]
                 };
 
                 setAuction(auctionData);
-                setRegisteredProducts(auctionData.registeredProducts);
+                setProducts(auctionData.products);
             } catch (err) {
                 console.error(err);
             } finally {
@@ -63,7 +62,7 @@ export default function AuctionPage() {
         );
     }
 
-    if (!auction || registeredProducts.length === 0) {
+    if (!auction || products.length === 0) {
         return (
             <>
                 <Header returnOption={true}/>
@@ -74,8 +73,8 @@ export default function AuctionPage() {
         );
     }
 
-    const currentProduct = registeredProducts[0];
-    const nextProducts = registeredProducts.slice(1);
+    const currentProduct = products[0];
+    const nextProducts = products.slice(1);
 
     const maxPrice = currentProduct.maxPrice;
     const minPrice = currentProduct.minPrice;
