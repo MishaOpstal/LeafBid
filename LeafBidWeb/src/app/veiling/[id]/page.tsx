@@ -8,11 +8,13 @@ import s from "./page.module.css";
 import { AuctionPageResult } from "@/types/Auction/AuctionPageResult";
 import {getServerNow, getServerOffset, setServerTimeOffset} from "@/utils/time";
 import config from "@/config";
+import History from "@/components/Popup/history";
 
 import { useParams } from "next/navigation";
 import { useCallback, useEffect, useState, useRef } from "react";
 import * as signalR from "@microsoft/signalr";
 import {Toast, ToastContainer} from "react-bootstrap";
+import {RegisteredProduct} from "@/types/Product/RegisteredProducts";
 
 const AUCTION_PAUSE_THRESHOLD_SECONDS = 10;
 
@@ -25,6 +27,8 @@ export default function AuctionPage() {
 
     const [currentPricePerUnit, setCurrentPricePerUnit] = useState<number | null>(null);
     const [now, setNow] = useState(getServerNow().getTime());
+
+    const toastList = useRef<Array<{ id: number; name: string; picture: string; companyName: string }>>([]);
     
     useEffect(() => {
         const interval = setInterval(() => setNow(getServerNow().getTime()), 1000);
@@ -82,6 +86,15 @@ export default function AuctionPage() {
                 const errorText = await res.text();
                 throw new Error(errorText || "Failed to buy product");
             }
+
+            if (currentProduct.product) {
+                toastList.current.push({
+                    id: currentProduct.id,
+                    name: currentProduct.product.name,
+                    picture: currentProduct.product.picture ? currentProduct.product.picture : "",
+                    companyName: currentProduct.company ? currentProduct.company.name : ""
+                });
+        }
 
             // We don't necessarily need to update state here as SignalR will broadcast it,
             // but for immediate feedback we can.
@@ -324,15 +337,33 @@ export default function AuctionPage() {
             </main>
 
             <ToastContainer position="bottom-end">
-                <Toast>
-                    <Toast.Header>
-                        <img src="holder.js/20x20?text=%20" className="rounded me-2" alt="" />
-                        <strong className="me-auto">Gekocht!</strong>
-                        <small className="text-muted"></small>
-                    </Toast.Header>
-                    <Toast.Body>Bekijk de prijshistorie hier: KNOPPIE</Toast.Body>
-                </Toast>
+                {toastList.current.map((item) => (
+                    <Toast key={item.id}>
+                        <Toast.Header>
+                            <img
+                                src={item.picture}
+                                className="rounded me-2"
+                                alt={item.name}
+                                width={20}
+                                height={20}
+                            />
+                            <strong className="me-auto">{item.name} gekocht!</strong>
+                            <small className="text-muted">{item.companyName}</small>
+                        </Toast.Header>
+
+                        <Toast.Body>
+                            Bekijk de prijshistorie hier:{" "}
+                            <History
+                                RegisteredProductID={item.id}
+                                Name={item.name}
+                                Picture={item.picture}
+                                companyName={item.companyName}
+                            />
+                        </Toast.Body>
+                    </Toast>
+                ))}
             </ToastContainer>
+
         </>
     );
 }
