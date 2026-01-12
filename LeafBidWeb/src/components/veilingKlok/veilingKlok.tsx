@@ -127,11 +127,6 @@ const AuctionTimer: React.FC<AuctionTimerProps> = ({
             return;
         }
 
-        if (isPaused) {
-            // If externally paused and NOT just waiting for startDate, 
-            // we might want to return. But for now, let's just let it run.
-        }
-
         const tickMs: number = 50;
         intervalRef.current = window.setInterval(() => {
             const finished = syncWithTime();
