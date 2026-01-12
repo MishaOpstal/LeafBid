@@ -268,156 +268,130 @@ public async Task<List<AuctionSaleProductResponse>> GetAuctionSaleProductsByUser
 
     public async Task<AuctionEventResponse> BuyProduct(BuyProductDto buyData, string userId)
     {
-        // Fetch auction to check pause and current start time
-        Auction? auction = await context.Auctions.FindAsync(buyData.AuctionId);
-        if (auction == null)
+        try
         {
-            throw new NotFoundException("Auction not found");
-        }
+            // Fetch auction to check pause and current start time
+            Auction auction = await context.Auctions.FindAsync(buyData.AuctionId) ?? throw new NotFoundException("Auction not found");
 
-        if (auction.NextProductStartTime == null || TimeHelper.GetAmsterdamTime() < auction.NextProductStartTime)
-        {
-            throw new InvalidOperationException("Auction is currently paused.");
-        }
+            switch (auction.NextProductStartTime)
+            {
+                case null:
+                case { } startTime when TimeHelper.GetAmsterdamTime() < startTime:
+                    throw new InvalidOperationException("Auction is currently paused.");
+            }
+            
+            RegisteredProduct registeredProduct = await context.RegisteredProducts
+                .FirstOrDefaultAsync(rp => rp.Id == buyData.RegisteredProductId) ?? throw new NotFoundException("Registered product not found");
+            
+            AuctionProduct auctionProduct = await context.AuctionProducts
+                .FirstOrDefaultAsync(ap => ap.AuctionId == auction.Id && ap.RegisteredProductId == registeredProduct.Id) ?? throw new NotFoundException("Auction product not found");
 
-        RegisteredProduct? registeredProduct = await context.RegisteredProducts
-            .FirstOrDefaultAsync(rp => rp.Id == buyData.RegisteredProductId);
+            if (auctionProduct.AuctionStock < buyData.Quantity)
+            {
+                throw new InvalidOperationException("Not enough stock available in this auction");
+            }
+            
+            // Calculate price on the server side
+            decimal pricePerUnit = CalculateCurrentPrice(auction, registeredProduct);
 
-        if (registeredProduct == null)
-        {
-            throw new NotFoundException("Registered product not found");
-        }
-
-        AuctionProduct? auctionProduct = await context.AuctionProducts
-            .FirstOrDefaultAsync(ap => ap.AuctionId == auction.Id && ap.RegisteredProductId == registeredProduct.Id);
-
-        if (auctionProduct == null || auctionProduct.AuctionStock < buyData.Quantity)
-        {
-            throw new InvalidOperationException("Not enough stock available in this auction");
-        }
-
-        if (registeredProduct.Stock < buyData.Quantity)
-        {
-            throw new InvalidOperationException("Not enough total stock available");
-        }
-
-        // Calculate price on server side
-        decimal pricePerUnit = CalculateCurrentPrice(auction, registeredProduct);
-
-        // Reduce stock
-        registeredProduct.Stock -= buyData.Quantity;
-        
-        if (auctionProduct != null)
-        {
+            // Reduce stock
+            registeredProduct.Stock -= buyData.Quantity;
             auctionProduct.AuctionStock -= buyData.Quantity;
+
+            // Check if there are any products with stock > 0 left in this auction
+            bool hasOtherProducts = await context.AuctionProducts
+                .AnyAsync(ap => ap.AuctionId == auction.Id && ap.RegisteredProductId != registeredProduct.Id && ap.AuctionStock > 0);
+
+            bool currentProductHasStock = auctionProduct?.AuctionStock > 0;
+
+            // If this is the last product and no more stock is available,
+            // make it unIsLive itself
+            if (!hasOtherProducts && !currentProductHasStock)
+            {
+                auction.IsLive = false;
+            }
+            
+            // Create an AuctionSale entry
+            AuctionSale auctionSale = new()
+            {
+                AuctionId = buyData.AuctionId,
+                UserId = userId,
+                Date = TimeHelper.GetAmsterdamTime(),
+                PaymentReference = "PAY-" + Guid.NewGuid().ToString().Substring(0, 8).ToUpper()
+            };
+            
+            context.AuctionSales.Add(auctionSale);
+            await context.SaveChangesAsync();
+            
+            // Create AuctionSaleProduct entry
+            AuctionSaleProduct auctionSaleProduct = new()
+            {
+                AuctionSaleId = auctionSale.Id,
+                RegisteredProductId = registeredProduct.Id,
+                Quantity = buyData.Quantity,
+                Price = pricePerUnit
+            };
+            
+            context.AuctionSaleProducts.Add(auctionSaleProduct);
+            await context.SaveChangesAsync();
+
+            return new AuctionEventResponse
+            {
+                RegisteredProduct = registeredProduct,
+                NextProductStartTime = auction.NextProductStartTime,
+                IsSuccess = true
+            };
         }
-
-        // Check if there are any products with stock > 0 left in this auction
-        bool hasOtherProducts = await context.AuctionProducts
-            .AnyAsync(ap => ap.AuctionId == auction.Id && ap.RegisteredProductId != registeredProduct.Id && ap.AuctionStock > 0);
-
-        bool currentProductHasStock = auctionProduct?.AuctionStock > 0;
-
-        if (!hasOtherProducts && !currentProductHasStock)
-        {
-            auction.IsLive = false;
+        catch (NotFoundException ex) {
+            throw new NotFoundException(ex.Message);
         }
-
-        // Reset auction timer for the next product or same product if stock remains
-        auction.NextProductStartTime = TimeHelper.GetAmsterdamTime().AddSeconds(5);
-
-        // Create an AuctionSale entry
-        AuctionSale auctionSale = new()
-        {
-            AuctionId = buyData.AuctionId,
-            UserId = userId,
-            Date = TimeHelper.GetAmsterdamTime(),
-            PaymentReference = "PAY-" + Guid.NewGuid().ToString().Substring(0, 8).ToUpper()
-        };
-
-        context.AuctionSales.Add(auctionSale);
-        await context.SaveChangesAsync();
-
-        // Create AuctionSaleProduct entry
-        AuctionSaleProduct auctionSaleProduct = new()
-        {
-            AuctionSaleId = auctionSale.Id,
-            RegisteredProductId = registeredProduct.Id,
-            Quantity = buyData.Quantity,
-            Price = pricePerUnit
-        };
-
-        context.AuctionSaleProducts.Add(auctionSaleProduct);
-        await context.SaveChangesAsync();
-
-        return new AuctionEventResponse
-        {
-            RegisteredProduct = registeredProduct,
-            NextProductStartTime = auction.NextProductStartTime,
-            IsSuccess = true
-        };
+        catch (InvalidOperationException ex) {
+            throw new InvalidOperationException(ex.Message);
+        }
     }
 
     public async Task<AuctionEventResponse> ExpireProduct(int registeredProductId, int auctionId)
     {
-        RegisteredProduct? registeredProduct = await context.RegisteredProducts
-            .FirstOrDefaultAsync(rp => rp.Id == registeredProductId);
-
-        if (registeredProduct == null)
+        try
         {
-            throw new NotFoundException("Registered product not found");
-        }
+            // Fetch registered product and auction
+            RegisteredProduct registeredProduct = await context.RegisteredProducts
+                .FirstOrDefaultAsync(rp => rp.Id == registeredProductId)
+                ?? throw new NotFoundException("Registered product not found");
+            
+            Auction auction = await context.Auctions.FindAsync(auctionId)
+                ?? throw new NotFoundException("Auction not found");
+            
+            AuctionProduct auctionProduct = await context.AuctionProducts
+                .FirstOrDefaultAsync(ap => ap.AuctionId == auction.Id && ap.RegisteredProductId == registeredProduct.Id)
+                ?? throw new NotFoundException("Auction product not found");
 
-        Auction? auction = await context.Auctions.FindAsync(auctionId);
-        if (auction == null)
-        {
-            throw new NotFoundException("Auction not found");
-        }
+            auctionProduct.AuctionStock = 0;
+            
+            // Check if there are any products with stock > 0 left in this auction
+            bool hasOtherProducts = await context.AuctionProducts
+                .AnyAsync(ap => ap.AuctionId == auction.Id && ap.RegisteredProductId != registeredProduct.Id && ap.AuctionStock > 0);
 
-        // Validate if the product should actually expire
-        double duration = AuctionHelper.GetProductDurationSeconds(registeredProduct);
-        double elapsed = (TimeHelper.GetAmsterdamTime() - (auction.NextProductStartTime ?? auction.StartDate)).TotalSeconds;
+            if (!hasOtherProducts)
+            {
+                auction.IsLive = false;
+            }
+            
+            // Reset auction timer for the next product
+            auction.NextProductStartTime = TimeHelper.GetAmsterdamTime().AddSeconds(5);
 
-        // 5 second tolerance for clock drift
-        if (elapsed < duration - 5)
-        {
-            // Not expired yet, ignore request but return current state
+            await context.SaveChangesAsync();
+
             return new AuctionEventResponse
             {
                 RegisteredProduct = registeredProduct,
-                NextProductStartTime = null,
-                IsSuccess = false
+                NextProductStartTime = auction.NextProductStartTime,
+                IsSuccess = true
             };
         }
-
-        AuctionProduct? auctionProduct = await context.AuctionProducts
-            .FirstOrDefaultAsync(ap => ap.AuctionId == auction.Id && ap.RegisteredProductId == registeredProduct.Id);
-        
-        if (auctionProduct != null)
-        {
-            auctionProduct.AuctionStock = 0;
+        catch (NotFoundException ex) {
+            throw new NotFoundException(ex.Message);
         }
-
-        // Check if there are any products with stock > 0 left in this auction
-        bool hasOtherProducts = await context.AuctionProducts
-            .AnyAsync(ap => ap.AuctionId == auction.Id && ap.RegisteredProductId != registeredProduct.Id && ap.AuctionStock > 0);
-
-        if (!hasOtherProducts)
-        {
-            auction.IsLive = false;
-        }
-
-        // Reset auction timer for the next product
-        auction.NextProductStartTime = TimeHelper.GetAmsterdamTime().AddSeconds(5);
-
-        await context.SaveChangesAsync();
-
-        return new AuctionEventResponse
-        {
-            RegisteredProduct = registeredProduct,
-            NextProductStartTime = auction.NextProductStartTime,
-            IsSuccess = true
-        };
     }
 
     private decimal CalculateCurrentPrice(Auction auction, RegisteredProduct product)
