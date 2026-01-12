@@ -286,7 +286,7 @@ public async Task<List<AuctionSaleProductResponse>> GetAuctionSaleProductsByUser
             AuctionProduct auctionProduct = await context.AuctionProducts
                 .FirstOrDefaultAsync(ap => ap.AuctionId == auction.Id && ap.RegisteredProductId == registeredProduct.Id) ?? throw new NotFoundException("Auction product not found");
 
-            if (auctionProduct.AuctionStock < buyData.Quantity)
+            if (registeredProduct.Stock < buyData.Quantity)
             {
                 throw new InvalidOperationException("Not enough stock available in this auction");
             }
@@ -302,7 +302,7 @@ public async Task<List<AuctionSaleProductResponse>> GetAuctionSaleProductsByUser
             bool hasOtherProducts = await context.AuctionProducts
                 .AnyAsync(ap => ap.AuctionId == auction.Id && ap.RegisteredProductId != registeredProduct.Id && ap.AuctionStock > 0);
 
-            bool currentProductHasStock = auctionProduct?.AuctionStock > 0;
+            bool currentProductHasStock = registeredProduct.Stock > 0;
 
             // If this is the last product and no more stock is available,
             // make it unIsLive itself
