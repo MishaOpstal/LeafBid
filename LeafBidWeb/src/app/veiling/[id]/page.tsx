@@ -14,8 +14,6 @@ import { useCallback, useEffect, useState, useRef } from "react";
 import * as signalR from "@microsoft/signalr";
 import {Toast, ToastContainer} from "react-bootstrap";
 
-const AUCTION_PAUSE_THRESHOLD_SECONDS = 10;
-
 export default function AuctionPage() {
     const params = useParams();
     const id = Number(params.id);
@@ -24,40 +22,32 @@ export default function AuctionPage() {
     const [loading, setLoading] = useState(true);
 
     const [currentPricePerUnit, setCurrentPricePerUnit] = useState<number | null>(null);
-    const [now, setNow] = useState(getServerNow().getTime());
-    
+    const [now, setNow] = useState(() => Date.now() + getServerOffset());
+
     useEffect(() => {
-        const interval = setInterval(() => setNow(getServerNow().getTime()), 1000);
+        const interval = setInterval(() => {
+            setNow(Date.now() + getServerOffset());
+        }, 100); // of 250ms
         return () => clearInterval(interval);
     }, []);
 
-    const startDateTs = auction?.auction?.nextProductStartTime ? new Date(auction.auction.nextProductStartTime).getTime() : 0;
-    const isPaused = now < startDateTs;
-    const pauseCountdown = Math.max(0, Math.ceil((startDateTs - now) / 1000));
+    const startDateTs = auction?.auction?.startDate ? new Date(auction.auction.startDate).getTime() : 0;
+    const timeToNextProductTs = auction?.auction?.nextProductStartTime ? new Date(auction.auction.nextProductStartTime).getTime() : 0;
+    const startCountdown = Math.max(0, Math.ceil((startDateTs - now) / 1000));
+    const pauseCountdown = Math.max(0, Math.ceil((timeToNextProductTs - now) / 1000));
+    const isPaused = pauseCountdown > 0;
 
     const connectionRef = useRef<signalR.HubConnection | null>(null);
 
     const onAuctionTimerFinished = useCallback(async () => {
-        if (!auction || auction.registeredProducts.length === 0 || isPaused) return;
+        if (!auction || auction.registeredProducts.length === 0 || isPaused) {
+            return;
+        }
+
         const currentProduct = auction.registeredProducts[0];
 
         console.log("Auction timer finished for product:", currentProduct.id);
-
-        try {
-            const res = await fetch(`${config.apiUrl}/AuctionSaleProduct/expire/${currentProduct.id}?auctionId=${id}`, {
-                method: "POST",
-                credentials: "include",
-            });
-
-            if (!res.ok) {
-                console.warn("Expire request failed, will retry...");
-                setTimeout(onAuctionTimerFinished, 2000);
-            }
-        } catch (err) {
-            console.error("Error expiring product:", err);
-            setTimeout(onAuctionTimerFinished, 2000);
-        }
-    }, [auction, id, isPaused]);
+    }, [auction, isPaused]);
 
     const onBuy = useCallback(async (amount: number) => {
         if (!auction || auction.registeredProducts.length === 0 || isPaused) {
@@ -117,9 +107,9 @@ export default function AuctionPage() {
                             newProducts[0] = { ...newProducts[0], stock: data.stock };
                         }
                     }
-                    
-                    return { 
-                        ...prev, 
+
+                    return {
+                        ...prev,
                         registeredProducts: newProducts,
                         auction: { ...prev.auction, nextProductStartTime: data.nextProductStartTime }
                     };
@@ -272,10 +262,23 @@ export default function AuctionPage() {
         );
     }
 
-    const isStarting = !auction.auction.isLive || pauseCountdown > AUCTION_PAUSE_THRESHOLD_SECONDS;
-    const countdownMessage = isStarting
-        ? `Veiling begint over ${formatCountdown(pauseCountdown)}`
-        : `Veiling gepauzeerd. Start opnieuw in ${pauseCountdown} seconden...`;
+    const isLive = auction.auction.isLive;
+    const shouldDisplayMessage = !isLive || isPaused;
+
+    let countdownMessage: string;
+
+    switch (true) {
+        case !isLive:
+            countdownMessage = `Veiling begint over ${formatCountdown(startCountdown)}`;
+            break;
+
+        case isPaused:
+            countdownMessage = `Veiling gepauzeerd. Start opnieuw in ${pauseCountdown} seconden...`;
+            break;
+
+        default:
+            countdownMessage = "";
+    }
 
     return (
         <>
@@ -293,7 +296,7 @@ export default function AuctionPage() {
                             startDate={auction.auction.nextProductStartTime}
                             timeOffset={getServerOffset()}
                         />
-                        {isPaused && (
+                        {shouldDisplayMessage && (
                             <div className="alert alert-info mt-2">
                                 {countdownMessage}
                             </div>

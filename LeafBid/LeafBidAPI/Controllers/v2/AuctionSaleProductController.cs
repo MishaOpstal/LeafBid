@@ -288,37 +288,4 @@ public class AuctionSaleProductController(
             return BadRequest(e.Message);
         }
     }
-
-    /// <summary>
-    /// Expires a product from an auction (sets stock to 0).
-    /// </summary>
-    /// <param name="registeredProductId">The registered product ID.</param>
-    /// <param name="auctionId">The auction ID.</param>
-    /// <returns>The updated registered product.</returns>
-    [HttpPost("expire/{registeredProductId:int}")]
-    [AllowAnonymous]
-    public async Task<IActionResult> ExpireProduct(int registeredProductId, [FromQuery] int auctionId)
-    {
-        try
-        {
-            AuctionEventResponse result = await auctionSaleProductService.ExpireProduct(registeredProductId, auctionId);
-
-            if (result.IsSuccess)
-            {
-                // Notify all clients in the auction group
-                await hubContext.Clients.Group(auctionId.ToString()).SendAsync("ProductExpired", new
-                {
-                    registeredProductId = result.RegisteredProduct.Id,
-                    nextProductStartTime = result.NextProductStartTime
-                });
-                return Ok(result.RegisteredProduct);
-            }
-
-            return BadRequest("Product not yet expired or already handled.");
-        }
-        catch (NotFoundException e)
-        {
-            return NotFound(e.Message);
-        }
-    }
 }

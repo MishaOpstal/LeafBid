@@ -144,6 +144,14 @@ const AuctionTimer: React.FC<AuctionTimerProps> = ({
         };
     }, [startCents, minCents, isPaused, decreaseCentsPerSecond, startDate, timeOffset]);
 
+    useEffect(() => {
+        // Hard reset whenever a new start moment or new product price range arrives
+        rawCentsRef.current = startCents;
+        lastTsRef.current = null;
+        setCurrentCents(startCents);
+        setPercentage(100);
+    }, [startCents, minCents, startDate]);
+
     const currentPrice: number = currentCents / 100;
 
     const remainingSeconds: number =

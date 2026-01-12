@@ -311,6 +311,9 @@ public async Task<List<AuctionSaleProductResponse>> GetAuctionSaleProductsByUser
                 auction.IsLive = false;
             }
             
+            // Reset auction timer for the next product
+            auction.NextProductStartTime = TimeHelper.GetAmsterdamTime().AddSeconds(5);
+            
             // Create an AuctionSale entry
             AuctionSale auctionSale = new()
             {

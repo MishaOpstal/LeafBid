@@ -23,14 +23,11 @@ public class AuctionProductFactory(ApplicationDbContext dbContext, Auction aucti
                 List<(RegisteredProduct Product, int AvailableStock)> viable = dbContext.RegisteredProducts
                     .Select(rp => new
                     {
-                        Product = rp,
-                        UsedStock = dbContext.AuctionProducts
-                            .Where(ap => ap.RegisteredProductId == rp.Id)
-                            .Sum(ap => (int?)ap.AuctionStock) ?? 0
+                        RegisteredProduct = rp
                     })
                     .AsEnumerable()
-                    .Select(x => (x.Product, AvailableStock: x.Product.Stock - x.UsedStock))
-                    .Where(x => x.AvailableStock > 0 && !_usedRegisteredProductIds.Contains(x.Product.Id))
+                    .Select(x => (x.RegisteredProduct, AvailableStock: x.RegisteredProduct.Stock))
+                    .Where(x => x.AvailableStock > 0 && !_usedRegisteredProductIds.Contains(x.RegisteredProduct.Id))
                     .ToList();
 
                 if (viable.Count == 0)
