@@ -371,8 +371,8 @@ export default function AuctionPage() {
             </main>
 
             <ToastContainer position="bottom-end">
-                {toastList.current.map((item) => (
-                    <Toast key={item.id}>
+                {toastList.current.map((item, index) => (
+                    <Toast key={`${item.id}-${index}`}>
                         <Toast.Header>
                             <img
                                 src={item.picture}
