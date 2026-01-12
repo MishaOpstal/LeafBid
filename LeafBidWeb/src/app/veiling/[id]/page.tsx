@@ -64,7 +64,10 @@ export default function AuctionPage() {
     }, [auction, id, isPaused]);
 
     const onBuy = useCallback(async (amount: number) => {
-        if (!auction || auction.registeredProducts.length === 0 || isPaused) return;
+        if (!auction || auction.registeredProducts.length === 0 || isPaused) {
+            return;
+        }
+
         const currentProduct = auction.registeredProducts[0];
 
         try {
@@ -77,7 +80,6 @@ export default function AuctionPage() {
                     registeredProductId: currentProduct.id,
                     auctionId: id,
                     quantity: amount,
-                    pricePerUnit: 0, // Ignored by server
                 }),
                 credentials: "include",
             });
