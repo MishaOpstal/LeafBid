@@ -69,6 +69,12 @@ public class AuctionStatusWorker(
             auction.IsVisible = true; // Ensure it's visible if it's live
             auction.NextProductStartTime = auction.StartDate; // Initialize the timer
             logger.LogInformation("Auction {AuctionId} is now Live.", auction.Id);
+            
+            // Send out an AuctionStarted event
+            await hubContext.Clients.Group(auction.Id.ToString()).SendAsync("AuctionStarted", new
+            {
+                auctionId = auction.Id
+            });
         }
 
         // 1.5 Process Expirations for live auctions
@@ -130,6 +136,13 @@ public class AuctionStatusWorker(
             auction.IsLive = false;
             auction.IsVisible = false;
             logger.LogInformation("Auction {AuctionId} is no longer Live (no stock remaining).", auction.Id);
+            
+            // Send out an AuctionStopped event
+            await hubContext.Clients.Group(auction.Id.ToString()).SendAsync("AuctionStopped", new
+            {
+                auctionId = auction.Id,
+                reason = "No products with stock remaining"
+            });
         }
 
         if (context.ChangeTracker.HasChanges())

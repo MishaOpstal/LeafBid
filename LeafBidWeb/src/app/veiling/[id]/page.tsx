@@ -5,16 +5,15 @@ import BigInfoVeld from "@/components/veilingInfo/veilingInfo";
 import Header from "@/components/header/header";
 import AuctionTimer from '@/components/veilingKlok/veilingKlok';
 import s from "./page.module.css";
-import { AuctionPageResult } from "@/types/Auction/AuctionPageResult";
+import {AuctionPageResult} from "@/types/Auction/AuctionPageResult";
 import {getServerNow, getServerOffset, setServerTimeOffset} from "@/utils/time";
 import config from "@/config";
 import History from "@/components/Popup/history";
 
-import { useParams } from "next/navigation";
-import { useCallback, useEffect, useState, useRef } from "react";
+import {useParams} from "next/navigation";
+import {useCallback, useEffect, useRef, useState} from "react";
 import * as signalR from "@microsoft/signalr";
 import {Toast, ToastContainer} from "react-bootstrap";
-import {RegisteredProduct} from "@/types/Product/RegisteredProducts";
 
 export default function AuctionPage() {
     const params = useParams();
@@ -24,21 +23,21 @@ export default function AuctionPage() {
     const [loading, setLoading] = useState(true);
 
     const [currentPricePerUnit, setCurrentPricePerUnit] = useState<number | null>(null);
-    const [now, setNow] = useState(() => Date.now() + getServerOffset());
-    
+    const [now, setNow] = useState(() => getServerNow());
+
     const toastList = useRef<Array<{ id: number; name: string; picture: string; companyName: string }>>([]);
-    
+
     useEffect(() => {
         const interval = setInterval(() => {
-            setNow(Date.now() + getServerOffset());
+            setNow(getServerNow());
         }, 100); // of 250ms
         return () => clearInterval(interval);
     }, []);
 
     const startDateTs = auction?.auction?.startDate ? new Date(auction.auction.startDate).getTime() : 0;
     const timeToNextProductTs = auction?.auction?.nextProductStartTime ? new Date(auction.auction.nextProductStartTime).getTime() : 0;
-    const startCountdown = Math.max(0, Math.ceil((startDateTs - now) / 1000));
-    const pauseCountdown = Math.max(0, Math.ceil((timeToNextProductTs - now) / 1000));
+    const startCountdown = Math.max(0, Math.ceil((startDateTs - now.getTime()) / 1000));
+    const pauseCountdown = Math.max(0, Math.ceil((timeToNextProductTs - now.getTime()) / 1000));
     const isPaused = pauseCountdown > 0;
 
     const connectionRef = useRef<signalR.HubConnection | null>(null);
@@ -105,26 +104,56 @@ export default function AuctionPage() {
             .withAutomaticReconnect()
             .build();
 
-        connection.on("ProductBought", (data: { registeredProductId: number, stock: number, quantityBought: number, nextProductStartTime: string }) => {
+        connection.on("AuctionStarted", (data: { auctionId: number }) => {
+            console.log("Real-time update: Auction started", data);
+            setAuction(prev => {
+                if (!prev) return null;
+                return {
+                    ...prev,
+                    auction: {...prev.auction, isLive: true}
+                };
+            });
+        });
+
+        connection.on("AuctionStopped", (data: {
+            auctionId: number,
+            reason: string
+        }) => {
+            console.log("Real-time update: Auction stopped", data);
+            setAuction(prev => {
+                if (!prev) return null;
+                return {
+                    ...prev,
+                    auction: {...prev.auction, isLive: false}
+                };
+            });
+        });
+
+        connection.on("ProductBought", (data: {
+            registeredProductId: number,
+            stock: number,
+            quantityBought: number,
+            nextProductStartTime: string
+        }) => {
             try {
                 console.log("Real-time update: Product bought", data);
-                
+
                 setAuction(prev => {
                     if (!prev) return null;
                     const newProducts = [...prev.registeredProducts];
-                    
+
                     if (newProducts.length > 0 && newProducts[0].id === data.registeredProductId) {
                         if (data.stock <= 0) {
                             newProducts.shift();
                         } else {
-                            newProducts[0] = { ...newProducts[0], stock: data.stock };
+                            newProducts[0] = {...newProducts[0], stock: data.stock};
                         }
                     }
 
                     return {
                         ...prev,
                         registeredProducts: newProducts,
-                        auction: { ...prev.auction, nextProductStartTime: data.nextProductStartTime }
+                        auction: {...prev.auction, nextProductStartTime: data.nextProductStartTime}
                     };
                 });
             } catch (error) {
@@ -144,10 +173,10 @@ export default function AuctionPage() {
                         newProducts.shift();
                     }
 
-                    return { 
-                        ...prev, 
+                    return {
+                        ...prev,
                         registeredProducts: newProducts,
-                        auction: { ...prev.auction, nextProductStartTime: data.nextProductStartTime }
+                        auction: {...prev.auction, nextProductStartTime: data.nextProductStartTime}
                     };
                 });
             } catch (error) {
@@ -186,14 +215,14 @@ export default function AuctionPage() {
                 }
 
                 const data: AuctionPageResult = await res.json();
-                
+
                 // Calculate clock offset (Server - Client)
                 setServerTimeOffset(data.serverTime);
-                setNow(getServerNow().getTime());
+                setNow(getServerNow());
 
                 // Filter out products with no stock
                 data.registeredProducts = (data.registeredProducts || []).filter(rp => (rp.stock ?? 0) > 0);
-                
+
                 setAuction(data);
             } catch (err) {
                 console.error(err);
@@ -232,7 +261,7 @@ export default function AuctionPage() {
     if (loading) {
         return (
             <>
-                <Header returnOption={true} />
+                <Header returnOption={true}/>
                 <main className={s.main}>
                     <h2>Laden...</h2>
                 </main>
@@ -243,7 +272,7 @@ export default function AuctionPage() {
     if (!auction || auction.registeredProducts.length === 0) {
         return (
             <>
-                <Header returnOption={true} />
+                <Header returnOption={true}/>
                 <main className={s.main}>
                     <div className="container mt-5 text-center">
                         <h2>De veiling is gesloten!</h2>
@@ -267,7 +296,7 @@ export default function AuctionPage() {
     if (!maxPrice || !minPrice) {
         return (
             <>
-                <Header returnOption={true} />
+                <Header returnOption={true}/>
                 <main className={s.main}>
                     <h2>Prijsinformatie niet beschikbaar</h2>
                 </main>
@@ -295,7 +324,7 @@ export default function AuctionPage() {
 
     return (
         <>
-            <Header returnOption={true} />
+            <Header returnOption={true}/>
             <main className={s.main}>
                 <div className={s.links}>
                     <div className="App">
@@ -321,7 +350,7 @@ export default function AuctionPage() {
                     <div className={s.tekstblokken}>
                         {nextProducts.length > 0 ? (
                             nextProducts.map((rp) => (
-                                <InfoVeld key={rp.id} registeredProduct={rp} />
+                                <InfoVeld key={rp.id} registeredProduct={rp}/>
                             ))
                         ) : (
                             <p>Geen volgende producten</p>
