@@ -158,7 +158,7 @@ const AuctionTimer: React.FC<AuctionTimerProps> = ({
         <section className="container mt-4" aria-label="Veiling klok">
             <h2>{parsePrice(Number(currentPrice.toFixed(2)))} </h2>
 
-            <section className={`progress ${s.progress}`}>
+            <section className={`progress mb-2 ${s.progress}`}>
                 <section
                     className={`progress-bar progress-bar-animated ${s.balkAnimatie}`}
                     role="progressbar"
@@ -171,8 +171,6 @@ const AuctionTimer: React.FC<AuctionTimerProps> = ({
                     {formatTime(remainingSeconds)}
                 </section>
             </section>
-
-            <section className="mt-2"></section>
         </section>
     );
 };
