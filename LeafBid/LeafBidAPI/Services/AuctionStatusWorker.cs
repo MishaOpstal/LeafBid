@@ -48,7 +48,7 @@ public class AuctionStatusWorker(
         // 0. Set IsVisible = true for auctions that should be visible (starting within 2 hours) and have stock
         List<Auction> auctionsToMakeVisible = await context.Auctions
             .Where(a => !a.IsVisible && a.StartDate <= visibilityThreshold)
-            .Where(a => context.AuctionProducts.Any(ap => ap.AuctionId == a.Id && ap.RegisteredProduct!.Stock > 0))
+            .Where(a => context.AuctionProducts.Any(ap => ap.AuctionId == a.Id && ap.AuctionStock > 0))
             .ToListAsync();
 
         foreach (Auction auction in auctionsToMakeVisible)
@@ -60,7 +60,7 @@ public class AuctionStatusWorker(
         // 1. Set IsLive = true for auctions that should start and have products with stock
         List<Auction> auctionsToStart = await context.Auctions
             .Where(a => !a.IsLive && a.StartDate <= now)
-            .Where(a => context.AuctionProducts.Any(ap => ap.AuctionId == a.Id && ap.RegisteredProduct!.Stock > 0))
+            .Where(a => context.AuctionProducts.Any(ap => ap.AuctionId == a.Id && ap.AuctionStock > 0))
             .ToListAsync();
 
         foreach (Auction auction in auctionsToStart)
@@ -84,7 +84,7 @@ public class AuctionStatusWorker(
             }
             
             RegisteredProduct? activeProduct = await context.AuctionProducts
-                .Where(ap => ap.AuctionId == auction.Id && ap.RegisteredProduct!.Stock > 0)
+                .Where(ap => ap.AuctionId == auction.Id && ap.AuctionStock > 0)
                 .OrderBy(ap => ap.ServeOrder)
                 .Include(ap => ap.RegisteredProduct)
                 .Select(ap => ap.RegisteredProduct)
@@ -119,15 +119,16 @@ public class AuctionStatusWorker(
             }
         }
 
-        // 2. Set IsLive = false for live auctions with no products with stock remaining
+        // 2. Set IsLive and IsVisible = false for live auctions with no products with stock remaining
         List<Auction> finishedAuctions = await context.Auctions
             .Where(a => a.IsLive)
-            .Where(a => !context.AuctionProducts.Any(ap => ap.AuctionId == a.Id && ap.RegisteredProduct!.Stock > 0))
+            .Where(a => !context.AuctionProducts.Any(ap => ap.AuctionId == a.Id && ap.AuctionStock > 0))
             .ToListAsync();
 
         foreach (Auction auction in finishedAuctions)
         {
             auction.IsLive = false;
+            auction.IsVisible = false;
             logger.LogInformation("Auction {AuctionId} is no longer Live (no stock remaining).", auction.Id);
         }
 

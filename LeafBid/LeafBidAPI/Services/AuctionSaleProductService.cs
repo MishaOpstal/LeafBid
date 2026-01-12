@@ -288,9 +288,17 @@ public async Task<List<AuctionSaleProductResponse>> GetAuctionSaleProductsByUser
             throw new NotFoundException("Registered product not found");
         }
 
+        AuctionProduct? auctionProduct = await context.AuctionProducts
+            .FirstOrDefaultAsync(ap => ap.AuctionId == auction.Id && ap.RegisteredProductId == registeredProduct.Id);
+
+        if (auctionProduct == null || auctionProduct.AuctionStock < buyData.Quantity)
+        {
+            throw new InvalidOperationException("Not enough stock available in this auction");
+        }
+
         if (registeredProduct.Stock < buyData.Quantity)
         {
-            throw new InvalidOperationException("Not enough stock available");
+            throw new InvalidOperationException("Not enough total stock available");
         }
 
         // Calculate price on server side
@@ -298,12 +306,19 @@ public async Task<List<AuctionSaleProductResponse>> GetAuctionSaleProductsByUser
 
         // Reduce stock
         registeredProduct.Stock -= buyData.Quantity;
+        
+        if (auctionProduct != null)
+        {
+            auctionProduct.AuctionStock -= buyData.Quantity;
+        }
 
         // Check if there are any products with stock > 0 left in this auction
         bool hasOtherProducts = await context.AuctionProducts
-            .AnyAsync(ap => ap.AuctionId == auction.Id && ap.RegisteredProductId != registeredProduct.Id && ap.RegisteredProduct!.Stock > 0);
+            .AnyAsync(ap => ap.AuctionId == auction.Id && ap.RegisteredProductId != registeredProduct.Id && ap.AuctionStock > 0);
 
-        if (!hasOtherProducts && registeredProduct.Stock <= 0)
+        bool currentProductHasStock = auctionProduct?.AuctionStock > 0;
+
+        if (!hasOtherProducts && !currentProductHasStock)
         {
             auction.IsLive = false;
         }
@@ -375,11 +390,17 @@ public async Task<List<AuctionSaleProductResponse>> GetAuctionSaleProductsByUser
             };
         }
 
-        registeredProduct.Stock = 0;
+        AuctionProduct? auctionProduct = await context.AuctionProducts
+            .FirstOrDefaultAsync(ap => ap.AuctionId == auction.Id && ap.RegisteredProductId == registeredProduct.Id);
+        
+        if (auctionProduct != null)
+        {
+            auctionProduct.AuctionStock = 0;
+        }
 
         // Check if there are any products with stock > 0 left in this auction
         bool hasOtherProducts = await context.AuctionProducts
-            .AnyAsync(ap => ap.AuctionId == auction.Id && ap.RegisteredProductId != registeredProduct.Id && ap.RegisteredProduct!.Stock > 0);
+            .AnyAsync(ap => ap.AuctionId == auction.Id && ap.RegisteredProductId != registeredProduct.Id && ap.AuctionStock > 0);
 
         if (!hasOtherProducts)
         {

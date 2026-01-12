@@ -92,7 +92,7 @@ export default function VeilingmeesterOverzicht() {
                                             title={product?.name ?? `Veiling #${auction.id}`}
                                             kloklocatie={parseClockLocation(auction.clockLocationEnum)}
                                             imageSrc={product?.picture}
-                                            resterendeTijd={new Date(auction.startDate).toLocaleString()}
+                                            auctionStatus={new Date(auction.startDate).toLocaleString()}
                                         />
                                     </Link>
                                 );
@@ -123,7 +123,7 @@ export default function VeilingmeesterOverzicht() {
                                             title={product?.name ?? `Veiling #${auction.id}`}
                                             kloklocatie={parseClockLocation(auction.clockLocationEnum)}
                                             imageSrc={product?.picture}
-                                            resterendeTijd={new Date(auction.startDate).toLocaleString()}
+                                            auctionStatus={new Date(auction.startDate).toLocaleString()}
                                         />
                                     </Link>
                                 );
@@ -151,7 +151,7 @@ export default function VeilingmeesterOverzicht() {
                                             title={product?.name ?? `Veiling #${auction.id}`}
                                             kloklocatie={parseClockLocation(auction.clockLocationEnum)}
                                             imageSrc={product?.picture}
-                                            resterendeTijd={new Date(auction.startDate).toLocaleString()}
+                                            auctionStatus={new Date(auction.startDate).toLocaleString()}
                                         />
                                     </Link>
                                 );

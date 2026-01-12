@@ -86,8 +86,8 @@ export default function Home() {
 
                                 const isLive = auction.isLive;
                                 const startTime = new Date(auction.startDate);
-                                const timeDisplay = isLive 
-                                    ? "LIVE NU" 
+                                const auctionStatus = isLive
+                                    ? "Live"
                                     : `Start: ${startTime.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}`;
 
                                 return (
@@ -97,9 +97,9 @@ export default function Home() {
                                             title={product?.name ?? `Veiling #${auction.id}`}
                                             kloklocatie={parseClockLocation(auction.clockLocationEnum)}
                                             imageSrc={resolveImageSrc(product?.picture)}
-                                            resterendeTijd={timeDisplay}
+                                            auctionStatus={auctionStatus}
                                             huidigePrijs={reg?.minPrice}
-                                            aankomendProductNaam={nextProduct?.product.name || "Geen product"}
+                                            aankomendProductNaam={nextProduct?.product!.name || "Geen product"}
                                             aankomendProductStartprijs={nextProduct?.minPrice}
                                         />
                                     </a>

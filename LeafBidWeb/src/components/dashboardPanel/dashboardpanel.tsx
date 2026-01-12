@@ -10,7 +10,7 @@ type DashboardPanelProps = {
     title?: string;
     kloklocatie?: string;
     imageSrc?: string;
-    resterendeTijd?: string;
+    auctionStatus?: string;
     huidigePrijs?: number;
     aankomendProductNaam?: string;
     aankomendProductStartprijs?: number;
@@ -28,7 +28,7 @@ const enum Kloklocaties {
 
 
 
-const DashboardPanel: React.FC<DashboardPanelProps> = ({title, kloklocatie, imageSrc, resterendeTijd, huidigePrijs, aankomendProductNaam, aankomendProductStartprijs, children, loading = false, compact = false,}) => {
+const DashboardPanel: React.FC<DashboardPanelProps> = ({title, kloklocatie, imageSrc, auctionStatus, huidigePrijs, aankomendProductNaam, aankomendProductStartprijs, children, loading = false, compact = false,}) => {
 // compacte kaart
     if (compact) {
         return (
@@ -63,7 +63,7 @@ const DashboardPanel: React.FC<DashboardPanelProps> = ({title, kloklocatie, imag
                             // standard compact card
                             <>
                                 <Card.Title className="mb-0">{kloklocatie}</Card.Title>
-                                <small className="text-muted">{resterendeTijd}</small>
+                                <small className="text-muted">{auctionStatus}</small>
                             </>
                         )}
                     </div>
@@ -108,8 +108,8 @@ const DashboardPanel: React.FC<DashboardPanelProps> = ({title, kloklocatie, imag
                                 <Card.Title>Kloklocatie: {kloklocatie}</Card.Title>
                                 <Card.Text>
                                     <span>Huidig product: {title}</span><br />
-                                    <span>Resterende tijd: {resterendeTijd}</span><br />
-                                    <span>Huidige prijs: {parsePrice(huidigePrijs ?? 0)}</span>
+                                    <span>Huidige prijs: {parsePrice(huidigePrijs ?? 0)}</span><br />
+                                    <span>Status: {auctionStatus}</span><br />
                                 </Card.Text>
 
                             </>
