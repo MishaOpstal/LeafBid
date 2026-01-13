@@ -41,7 +41,7 @@ function SearchableDropdown<T>({
         onSelect(item);
     };
 
-    // Focus search when dropdown opens
+    // Focus search when the dropdown opens
     useEffect(() => {
         if (show && searchRef.current) {
             searchRef.current.focus();

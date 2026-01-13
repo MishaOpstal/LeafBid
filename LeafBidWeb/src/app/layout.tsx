@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import ClientTopLoader from '@/components/ClientTopLoader/ClientTopLoader';
+import React from "react";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -66,6 +67,7 @@ export default function RootLayout({
   return (
     <html lang="nl-NL" data-theme="light">
     <head>
+        <title>LeafBid</title>
         <link rel="preconnect" href="https://fonts.googleapis.com"/>
         <link rel="preconnect" href="https://fonts.gstatic.com"/>
         {/* eslint-disable-next-line @next/next/no-page-custom-font */}

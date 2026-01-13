@@ -106,7 +106,8 @@ export default function Header({ returnOption = false }: HeaderProps) {
                         Terug
                     </Link>
                 )}
-                <div className={s.clickables}>
+
+                <div className={s.navigationContainer}>
                     {isUserInRole(parseRole(Roles.Provider)) && (
                         <Link href="/product/register" className={s.link}>
                             Product registreren

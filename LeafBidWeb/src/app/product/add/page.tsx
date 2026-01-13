@@ -123,6 +123,7 @@ export default function ProductForm() {
                     value={formData.name}
                     onChange={handleChange}
                 />
+                {errors.name && <div className={s.error}>{errors.name}</div>}
 
                 <TextInput
                     label="Soort"
@@ -131,8 +132,10 @@ export default function ProductForm() {
                     value={formData.species}
                     onChange={handleChange}
                 />
+                {errors.species && <div className={s.error}>{errors.species}</div>}
 
                 <FileInput label="Plaatje" name="picture" onChange={handleFileChange}/>
+                {errors.picture && <div className={s.error}>{errors.picture}</div>}
 
                 <TextAreaInput
                     label="Product Informatie"
@@ -141,6 +144,7 @@ export default function ProductForm() {
                     value={formData.description}
                     onChange={handleChange}
                 />
+                {errors.description && <div className={s.error}>{errors.description}</div>}
 
                 <Button
                     variant="primary"

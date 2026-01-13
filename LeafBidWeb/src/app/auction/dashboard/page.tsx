@@ -11,12 +11,13 @@ import {AuctionPageResult} from "@/types/Auction/AuctionPageResult";
 import {getServerNow, setServerTimeOffset} from "@/utils/Time";
 
 
-export default function VeilingmeesterOverzicht() {
+export default function AuctionDashboard() {
     const [auctions, setAuctions] = useState<AuctionPageResult[]>([]);
     const [loading, setLoading] = useState(true);
 
+    // Fetch auctions from the server
     useEffect(() => {
-        const fetchAuctions = async () => {
+        const loadAuctions = async (): Promise<void> => {
             setLoading(true);
 
             try {
@@ -43,7 +44,7 @@ export default function VeilingmeesterOverzicht() {
             }
         };
 
-        fetchAuctions();
+        void loadAuctions();
     }, []);
 
 
@@ -58,7 +59,6 @@ export default function VeilingmeesterOverzicht() {
     const pastAuctions = auctions.filter(
         a => !a.auction.isLive && new Date(a.auction.startDate) <= now
     );
-
 
     return (
         <>

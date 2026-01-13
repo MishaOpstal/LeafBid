@@ -18,7 +18,7 @@ import ValidationFailedException, {isValidationFailedException} from "@/exceptio
 
 const roles: Role[] = [];
 
-// Retrieve roles from backend using fetch
+// Retrieve roles from the backend using fetch
 const fetchRoles = async () => {
     const response = await fetch("http://localhost:5001/api/v2/Role", {
         method: "GET",
@@ -135,7 +135,7 @@ export default function RegisterPage() {
                     />
                 </div>
 
-                <h1 id="loginTitle" className={s.title}>Welkom bij Leafbid</h1>
+                <h1 id="loginTitle" className={s.title}>Welkom bij LeafBid</h1>
 
                 <Form noValidate className={s.form}>
                     {/* Username */}
@@ -145,6 +145,7 @@ export default function RegisterPage() {
                                    e.target.value = e.target.value.replace(/[^a-zA-Z0-9]/g, '');
                                    setRegisterData({...registerData, userName: e.target.value})
                                }}/>
+                    {errors.userName && <div className={s.error}>{errors.userName}</div>}
 
                     {/* Email */}
                     <TextInput
@@ -157,6 +158,7 @@ export default function RegisterPage() {
                             setRegisterData({...registerData, email: value});
                         }}
                     />
+                    {errors.email && <div className={s.error}>{errors.email}</div>}
 
                     {/* Password */}
                     <div className={s.passwordRow}>
@@ -164,6 +166,7 @@ export default function RegisterPage() {
                                    value={registerData.password}
                                    onChange={(e) => setRegisterData({...registerData, password: e.target.value})}
                                    secret={true}/>
+                        {errors.password && <div className={s.error}>{errors.password}</div>}
 
                         {/* Password Verify */}
                         <TextInput label={"passwordConfirmation"} name={"passwordConfirmation"}
@@ -173,6 +176,7 @@ export default function RegisterPage() {
                                        ...registerData,
                                        passwordConfirmation: e.target.value
                                    })} secret={true}/>
+                        {errors.passwordConfirmation && <div className={s.error}>{errors.passwordConfirmation}</div>}
                     </div>
 
                     <SearchableDropdown
@@ -186,6 +190,7 @@ export default function RegisterPage() {
                         })}
                         placeholder="Zoek naar rol..."
                     />
+                    {errors.roles && <div className={s.error}>{errors.roles}</div>}
 
                     {/* Submit */}
                     <Button
@@ -193,8 +198,11 @@ export default function RegisterPage() {
                         type="button"
                         label="Registreren"
                         onClick={handleSubmit}
+                        disabled={isSubmitting}
                     />
                 </Form>
+
+                {message && <div className={s.message}>{message}</div>}
 
                 <p className={s.registerLine}>
                     <Link href="/auth/login" className={s.registerLink}>

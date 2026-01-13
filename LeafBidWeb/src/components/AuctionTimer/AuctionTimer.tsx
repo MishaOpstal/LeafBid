@@ -78,7 +78,7 @@ const AuctionTimer: React.FC<AuctionTimerProps> = ({
     }, [currentCents]);
 
     useEffect(() => {
-        // Cleanup previous interval if any
+        // Clean up previous interval if any
         if (intervalRef.current !== null) {
             clearInterval(intervalRef.current);
             intervalRef.current = null;

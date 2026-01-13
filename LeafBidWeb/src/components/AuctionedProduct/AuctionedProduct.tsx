@@ -1,9 +1,10 @@
 ﻿import s from '@/components/AuctionedProduct/AuctionedProduct.module.css';
-import {parseDate, parsePrice, RegisteredProduct} from "@/types/Product/RegisteredProducts";
+import {parsePrice, RegisteredProduct} from "@/types/Product/RegisteredProducts";
 import { Image } from "react-bootstrap";
 import Button from "@/components/Input/Button";
 import NumberInput from "@/components/Input/NumberInput";
 import { resolveImageSrc } from "@/utils/Image";
+import { parseDate } from "@/utils/Time";
 import React, { useEffect, useState } from "react";
 
 export default function AuctionedProduct({ registeredProduct, currentPricePerUnit, onBuy, isPaused, isLive }: { registeredProduct: RegisteredProduct, currentPricePerUnit: number, onBuy: (amount: number) => Promise<void>, isPaused?: boolean, isLive?: boolean }) {

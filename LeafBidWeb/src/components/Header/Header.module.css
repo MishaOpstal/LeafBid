@@ -10,7 +10,7 @@
     aspect-ratio: 1;
 }
 
-.clickables {
+.navigationContainer {
     flex-direction: row;
     justify-content: flex-end;
     align-items: center;

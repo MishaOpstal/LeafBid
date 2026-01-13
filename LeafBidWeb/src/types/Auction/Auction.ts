@@ -1,4 +1,3 @@
-import {Product} from "@/types/Product/Product";
 import {RegisteredProduct} from "@/types/Product/RegisteredProducts";
 
 export interface Auction {
@@ -10,17 +9,4 @@ export interface Auction {
     userId?: string;
     isLive?: boolean;
     isVisible?: boolean;
-}
-
-export function parseDate(date: Date|string): string {
-    const options: Intl.DateTimeFormatOptions = {
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric',
-        hour: 'numeric',
-        minute: 'numeric',
-    };
-
-    const formatter = new Intl.DateTimeFormat('nl-NL', options);
-    return formatter.format(new Date(date));
 }

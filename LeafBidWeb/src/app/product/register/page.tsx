@@ -162,6 +162,7 @@ export default function ProductForm() {
                     onSelect={handleProductSelect}
                     placeholder="Selecteer product"
                 />
+                {errors.productId && <div className={s.error}>{errors.productId}</div>}
 
                 <NumberInput
                     label="Aantal"
@@ -171,6 +172,7 @@ export default function ProductForm() {
                     value={formData.stock}
                     onChange={handleChange}
                 />
+                {errors.stock && <div className={s.error}>{errors.stock}</div>}
 
                 <NumberInput
                     label="Minimale Prijs"
@@ -181,6 +183,7 @@ export default function ProductForm() {
                     onChange={handleChange}
                     prefix="€"
                 />
+                {errors.minPrice && <div className={s.error}>{errors.minPrice}</div>}
 
                 <NumberInput
                     label="Gewicht"
@@ -191,6 +194,7 @@ export default function ProductForm() {
                     onChange={handleChange}
                     postfix="kg"
                 />
+                {errors.weight && <div className={s.error}>{errors.weight}</div>}
 
                 <TextInput
                     label="Regio"
@@ -199,12 +203,14 @@ export default function ProductForm() {
                     value={formData.region}
                     onChange={handleChange}
                 />
+                {errors.region && <div className={s.error}>{errors.region}</div>}
 
                 <DateSelect
                     label="Oogst Datum"
                     placeholder="Selecteer startdatum"
                     onSelect={handleDateSelect}
                 />
+                {errors.harvestedAt && <div className={s.error}>{errors.harvestedAt}</div>}
 
                 <SelectableButtonGroup
                     name="measurementType"
@@ -214,29 +220,38 @@ export default function ProductForm() {
                         setFormData((prev) => ({...prev, [name]: value}))
                     }
                 />
+                {errors.measurementType && <div className={s.error}>{errors.measurementType}</div>}
 
                 {formData.measurementType === "Pot grootte" && (
-                    <NumberInput
-                        label="Pot grootte"
-                        name="potSize"
-                        placeholder="pot grootte"
-                        step={0.1}
-                        value={formData.potSize}
-                        onChange={handleChange}
-                        postfix="cm"
-                    />
+                    <>
+                        <NumberInput
+                            label="Pot grootte"
+                            name="potSize"
+                            placeholder="pot grootte"
+                            step={0.1}
+                            value={formData.potSize}
+                            onChange={handleChange}
+                            postfix="cm"
+                        />
+
+                        {errors.potSize && <div className={s.error}>{errors.potSize}</div>}
+                    </>
                 )}
 
                 {formData.measurementType === "Stem lengte" && (
-                    <NumberInput
-                        label="Stam lengte"
-                        name="stemLength"
-                        placeholder="stam lengte"
-                        step={0.1}
-                        value={formData.stemLength}
-                        onChange={handleChange}
-                        postfix="cm"
-                    />
+                    <>
+                        <NumberInput
+                            label="Stam lengte"
+                            name="stemLength"
+                            placeholder="stam lengte"
+                            step={0.1}
+                            value={formData.stemLength}
+                            onChange={handleChange}
+                            postfix="cm"
+                        />
+
+                        {errors.stemLength && <div className={s.error}>{errors.stemLength}</div>}
+                    </>
                 )}
 
                 <Button

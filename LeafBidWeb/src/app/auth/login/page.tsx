@@ -109,7 +109,7 @@ export default function LoginPage() {
                     />
                 </div>
 
-                <h1 id="loginTitle" className={s.title}>Welkom bij Leafbid</h1>
+                <h1 id="loginTitle" className={s.title}>Welkom bij LeafBid</h1>
 
                 <Form noValidate className={s.form}>
                     {/* Email */}
@@ -123,12 +123,14 @@ export default function LoginPage() {
                             setLoginData({...loginData, email: value});
                         }}
                     />
+                    {errors.email && <div className={s.error}>{errors.email}</div>}
 
                     {/* Password */}
                     <TextInput label={"password"} name={"password"} placeholder={"Password"}
                                value={loginData.password}
                                onChange={(e) => setLoginData({...loginData, password: e.target.value})}
                                secret={true}/>
+                    {errors.password && <div className={s.error}>{errors.password}</div>}
 
                     {/* Remember me */}
                     <Form.Label className={`form-check-label ${s.check}`} htmlFor="remember">
@@ -149,9 +151,16 @@ export default function LoginPage() {
                     </Form.Label>
 
                     {/* Submit */}
-                    <Form.Control as={Button} type="submit" value="Inloggen"
-                                  onClick={handleSubmit}>Inloggen</Form.Control>
+                    <Form.Control
+                        as={Button}
+                        type="submit"
+                        value="Inloggen"
+                        onClick={handleSubmit}
+                        disabled={isSubmitting}
+                    >Inloggen</Form.Control>
                 </Form>
+
+                {message && <div className={s.message}>{message}</div>}
 
                 <p className={s.registerLine}>
                     <Link href="/auth/register" className={s.registerLink}>

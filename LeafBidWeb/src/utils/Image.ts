@@ -3,11 +3,7 @@
         return undefined;
     }
 
-    if (
-        picture.startsWith("http://") ||
-        picture.startsWith("https://") ||
-        picture.startsWith("//")
-    ) {
+    if (/^(https?:)?\/\//.test(picture)) {
         return picture;
     }
 

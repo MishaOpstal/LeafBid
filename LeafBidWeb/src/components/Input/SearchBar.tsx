@@ -24,7 +24,7 @@ const SearchBar = forwardRef<HTMLInputElement, SearchBarProps>(
     ) => {
         const [value, setValue] = useState<string>(controlledValue ?? "");
 
-        // keep internal value synced with parent
+        // keep internal value synced with the parent
         useEffect(() => {
             if (controlledValue !== undefined) {
                 setValue(controlledValue);

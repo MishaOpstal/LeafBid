@@ -15,7 +15,7 @@ interface OrderedMultiSelectProps {
 }
 
 /**
- * A stable, fully controlled, paginated and searchable multi-select list.
+ * A stable, fully controlled, paginated, and searchable multi-select list.
  * Works with both local (dummy) data and remote API data.
  */
 const OrderedMultiSelect: React.FC<OrderedMultiSelectProps> = ({
@@ -33,7 +33,7 @@ const OrderedMultiSelect: React.FC<OrderedMultiSelectProps> = ({
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
-    // Fetch remote data if endpoint is provided
+    // Fetch remote data if an endpoint is provided
     useEffect(() => {
         if (!endpoint) return;
 
@@ -50,7 +50,10 @@ const OrderedMultiSelect: React.FC<OrderedMultiSelectProps> = ({
                 if (query.trim()) url.searchParams.set("q", query);
 
                 const res = await fetch(url.toString(), {signal: controller.signal});
-                if (!res.ok) throw new Error(`HTTP ${res.status}`);
+                if (!res.ok) {
+                    throw new Error(`HTTP ${res.status}`);
+                }
+
                 const data = await res.json();
 
                 setRemoteItems(data.data ?? data);
@@ -63,7 +66,7 @@ const OrderedMultiSelect: React.FC<OrderedMultiSelectProps> = ({
             }
         };
 
-        fetchData();
+        void fetchData();
         return () => controller.abort();
     }, [endpoint, page, query, pageSize]);
 
@@ -101,7 +104,7 @@ const OrderedMultiSelect: React.FC<OrderedMultiSelectProps> = ({
     const nextPage = () => setPage((p) => Math.min(p + 1, totalPages));
     const prevPage = () => setPage((p) => Math.max(p - 1, 1));
 
-    // Reset to first page when query changes
+    // Reset to the first page when a query changes
     useEffect(() => setPage(1), [query]);
 
     return (

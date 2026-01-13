@@ -29,14 +29,14 @@ const SelectableButtonGroup: React.FC<SelectableButtonGroupProps> = ({
         if (value !== undefined && value !== selected) {
             setSelected(value);
         }
-    }, [value]);
+    }, [selected, value]);
 
     // notify parent of selection changes
     useEffect(() => {
         if (onChange && selected) {
             onChange(name, selected);
         }
-    }, [selected]);
+    }, [name, onChange, selected]);
 
     return (
         <ButtonGroup aria-label={`${name} options`} className="mb-3">

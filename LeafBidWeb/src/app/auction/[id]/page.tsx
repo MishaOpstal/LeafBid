@@ -188,21 +188,19 @@ export default function AuctionPage() {
         connection.start()
             .then(() => {
                 console.log("SignalR Connected");
-                connection.invoke("JoinAuction", id);
+                void connection.invoke("JoinAuction", id);
             })
             .catch(err => console.error("SignalR Connection Error: ", err));
 
         connectionRef.current = connection;
 
         return () => {
-            connection.stop();
+            void connection.stop();
         };
     }, [id]);
 
     useEffect(() => {
-        if (!id) return;
-
-        const fetchData = async () => {
+        const fetchData = async (): Promise<void> => {
             try {
                 setLoading(true);
 
@@ -212,7 +210,8 @@ export default function AuctionPage() {
                 });
 
                 if (!res.ok) {
-                    throw new Error("Failed to fetch auction");
+                    console.error("Failed to fetch auction");
+                    return;
                 }
 
                 const data: AuctionPageResult = await res.json();
@@ -222,18 +221,20 @@ export default function AuctionPage() {
                 setNow(getServerNow());
 
                 // Filter out products with no stock
-                data.registeredProducts = (data.registeredProducts || []).filter(rp => (rp.stock ?? 0) > 0);
+                data.registeredProducts = (data.registeredProducts || []).filter(
+                    (rp) => (rp.stock ?? 0) > 0
+                );
 
                 setAuction(data);
             } catch (err) {
-                console.error(err);
+                console.error("Failed to load auction:", err);
                 setAuction(null);
             } finally {
                 setLoading(false);
             }
         };
 
-        fetchData();
+        void fetchData();
     }, [id]);
 
     // Keep the currentPricePerUnit in sync with the current product's maxPrice

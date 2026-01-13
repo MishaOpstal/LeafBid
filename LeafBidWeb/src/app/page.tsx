@@ -16,7 +16,7 @@ export default function Home() {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        const fetchAuctions = async () => {
+        const fetchAuctions = async (): Promise<void> => {
             setLoading(true);
 
             try {
@@ -25,21 +25,37 @@ export default function Home() {
                     credentials: "include",
                 });
 
-                if (!res.ok) return;
+                if (!res.ok) {
+                    console.error("Failed to fetch auctions");
+                    return;
+                }
 
                 const data: AuctionPageResult[] = await res.json();
 
-                const visibleOrLive = data.filter((page) => page.auction.isLive || page.auction.isVisible);
+                const visibleOrLive = data.filter(
+                    (page) => page.auction.isLive || page.auction.isVisible
+                );
 
                 // One live or upcoming auction per clock location
                 const uniqueByClock = Object.values(ClockLocation)
                     .filter((v): v is number => typeof v === "number")
                     .map((clockId) => {
                         // Prefer live over just visible
-                        return visibleOrLive.find((p) => p.auction.clockLocationEnum === clockId && p.auction.isLive)
-                            || visibleOrLive.find((p) => p.auction.clockLocationEnum === clockId);
+                        return (
+                            visibleOrLive.find(
+                                (p) =>
+                                    p.auction.clockLocationEnum === clockId &&
+                                    p.auction.isLive
+                            ) ??
+                            visibleOrLive.find(
+                                (p) =>
+                                    p.auction.clockLocationEnum === clockId
+                            )
+                        );
                     })
-                    .filter((p): p is AuctionPageResult => Boolean(p));
+                    .filter(
+                        (p): p is AuctionPageResult => Boolean(p)
+                    );
 
                 setAuctions(uniqueByClock);
 
@@ -53,7 +69,7 @@ export default function Home() {
             }
         };
 
-        fetchAuctions();
+        void fetchAuctions();
     }, []);
 
     useEffect(() => {

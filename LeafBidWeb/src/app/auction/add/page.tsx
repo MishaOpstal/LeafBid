@@ -13,7 +13,6 @@ import Button from "@/components/Input/Button";
 import ProductPriceTable from "@/components/Input/ProductPriceTable";
 import {Auction} from "@/types/Auction/Auction";
 import {RegisteredProduct, RegisteredProductForAuction} from "@/types/Product/RegisteredProducts";
-import {useRouter} from "nextjs-toploader/app";
 import {isUserInRole} from "@/utils/IsUserInRole";
 import {parseRole, Roles} from "@/enums/Roles";
 
@@ -192,7 +191,7 @@ export default function Home() {
                     <section className={s.section}>
                         <h3 className={s.h3}>Gekoppelde Producten</h3>
                         <OrderedMultiSelect
-                            items={[...registeredProducts].sort((a, b) => a.product!.name.localeCompare(b.product!.name))} //dit soorteert alfabetisch
+                            items={[...registeredProducts].sort((a, b) => a.product!.name.localeCompare(b.product!.name))} //dit sorteert de lijst alfabetisch
                             value={auctionData.registeredProducts}
                             onChange={handleProductsSelect}
                             showBadges={false}
