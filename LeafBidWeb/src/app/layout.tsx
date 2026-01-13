@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import ClientTopLoader from '@/components/clientTopLoader/ClientTopLoader';
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -71,6 +72,7 @@ export default function RootLayout({
               rel="stylesheet"/>
     </head>
     <body className={`${geistSans.variable} ${geistMono.variable}`} suppressHydrationWarning={true}>
+    <ClientTopLoader />
     {children}
     </body>
     </html>

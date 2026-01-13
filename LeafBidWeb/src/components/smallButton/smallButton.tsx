@@ -2,8 +2,7 @@
 
 import React from "react";
 import { Button } from "react-bootstrap";
-import { useRouter } from "next/navigation";
-import { Trash, Pencil } from "react-bootstrap-icons"; // ✅ import correct icons
+import { Trash, Pencil } from "react-bootstrap-icons";
 import styles from "./SmallButton.module.css";
 
 type ActionButtonsProps = {
@@ -12,7 +11,6 @@ type ActionButtonsProps = {
 };
 
 const ActionButtons: React.FC<ActionButtonsProps> = ({ onDelete, onUpdate }) => {
-    const router = useRouter();
 
     return (
         <div className="d-flex gap-2">

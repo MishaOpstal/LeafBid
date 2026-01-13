@@ -7,7 +7,7 @@ import {MoonFill, Sun} from "react-bootstrap-icons";
 import ThemeInitializer, {getTheme, toggleTheme} from "./theme";
 import {useEffect, useState} from "react";
 import {LoggedInResponse} from "@/types/User/Auth/LoggedInResponse";
-import {useRouter} from "next/navigation";
+import {useRouter} from "nextjs-toploader/app";
 import {isUserInRole} from "@/utils/isUserInRole";
 import {parseRole, Roles} from "@/enums/Roles";
 
@@ -104,7 +104,7 @@ export default function Header({returnOption = false}: HeaderProps) {
                     style={{objectFit: "contain"}}
                     priority
                     onClick={() => {
-                        window.location.href = "/"
+                        router.push("/");
                     }}
                 />
             </div>

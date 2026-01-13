@@ -9,8 +9,10 @@ import History from "@/components/Popup/history";
 import { AuctionPageResult } from "@/types/Auction/AuctionPageResult";
 import {resolveImageSrc} from "@/utils/image";
 import { setServerTimeOffset } from "@/utils/time";
+import {useRouter} from "nextjs-toploader/app";
 
 export default function Home() {
+    const router = useRouter();
     const [auctions, setAuctions] = useState<AuctionPageResult[]>([]);
     const [loading, setLoading] = useState(true);
 
@@ -91,7 +93,7 @@ export default function Home() {
                                     : `Start: ${startTime.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}`;
 
                                 return (
-                                    <a key={`${auction.clockLocationEnum}-${auction.id}`} href={`/veiling/${auction.id}`}>
+                                    <a key={`${auction.clockLocationEnum}-${auction.id}`} onClick={() => router.push(`/auction/${auction.id}`)} href="#">
                                         <DashboardPanel
                                             loading={false}
                                             title={product?.name ?? `Veiling #${auction.id}`}

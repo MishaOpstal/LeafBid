@@ -53,17 +53,17 @@ export default function BigInfoVeld({ registeredProduct, currentPricePerUnit, on
         <div className={`d-flex flex-column ${s.wrapper}`}>
             <div className="d-flex flex-row gap-4">
                 <Image
-                    src={resolveImageSrc(registeredProduct.product.picture)}
-                    alt={registeredProduct.product.name}
+                    src={resolveImageSrc(registeredProduct.product!.picture)}
+                    alt={registeredProduct.product!.name}
                     className={`mb-3 ${s.plaatje}`}
                 />
                 <div className={`d-flex flex-row gap-1 ${s.infoBox}`}>
-                    <p>{registeredProduct.product.description}</p>
+                    <p>{registeredProduct.product!.description}</p>
                 </div>
             </div>
 
             <div className={`d-flex flex-column gap-3 p-3 ${s.tekstcontainer}`}>
-                <h2>{registeredProduct.product.name}</h2>
+                <h2>{registeredProduct.product!.name}</h2>
                 <p>Aantal: {registeredProduct.stock}</p>
                 <p>Geoogst: {parseDate(registeredProduct.harvestedAt ?? "")}</p>
                 <p>Leverancier: {registeredProduct.providerUserName}</p>
@@ -78,7 +78,6 @@ export default function BigInfoVeld({ registeredProduct, currentPricePerUnit, on
                     step={1}
                     onChange={handleAmountChange}
                     postfix={maxStock > 0 ? `/ ${maxStock}` : undefined}
-                    disabled={isPaused}
                 />
 
                 <div>

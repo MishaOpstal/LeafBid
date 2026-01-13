@@ -13,7 +13,7 @@ import Button from "@/components/input/Button";
 import ProductPriceTable from "@/components/input/ProductPriceTable";
 import {Auction} from "@/types/Auction/Auction";
 import {RegisteredProduct, RegisteredProductForAuction} from "@/types/Product/RegisteredProducts";
-import {useRouter} from "next/navigation";
+import {useRouter} from "nextjs-toploader/app";
 import {isUserInRole} from "@/utils/isUserInRole";
 import {parseRole, Roles} from "@/enums/Roles";
 

@@ -12,6 +12,7 @@
     "@microsoft/signalr": "^10.0.0",
     "bootstrap": "^5.3.8",
     "next": "^15.5.5",
+    "nextjs-toploader": "^3.9.17",
     "react": "^19.2.3",
     "react-bootstrap": "^2.10.10",
     "react-bootstrap-icons": "^1.11.6",

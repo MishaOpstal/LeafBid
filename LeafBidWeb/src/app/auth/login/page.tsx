@@ -6,7 +6,7 @@ import s from '../page.module.css';
 import "bootstrap/dist/css/bootstrap-grid.min.css"
 import Form from "react-bootstrap/Form";
 import Button from "react-bootstrap/Button";
-import {useRouter} from 'next/navigation';
+import {useRouter} from 'nextjs-toploader/app';
 import React, {useState} from "react";
 import LoginFailedException, {isLoginFailedException} from "@/exceptions/Auth/LoginFailedException";
 import ValidationFailedException, {isValidationFailedException} from "@/exceptions/ValidationFailedException";
