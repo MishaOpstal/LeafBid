@@ -1,5 +1,3 @@
-using LeafBidAPI.Enums;
-
 namespace LeafBidAPI.DTOs.Auction;
 
 public class RegisteredProductForAuctionRequest

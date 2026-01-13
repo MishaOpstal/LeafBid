@@ -18,6 +18,11 @@ export interface RegisteredProduct {
     company?: Company;
 }
 
+export interface RegisteredProductForAuction {
+    id: number;
+    maxPrice: number;
+}
+
 export function parsePrice(price: number): string {
     return new Intl.NumberFormat('nl-NL', {
         style: 'currency',
