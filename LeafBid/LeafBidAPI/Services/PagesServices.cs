@@ -127,7 +127,7 @@ public class PagesServices(
     private async Task<List<RegisteredProduct>> GetRegisteredProductsForAuction(int auctionId)
     {
         return await context.AuctionProducts
-            .Where(ap => ap.AuctionId == auctionId && ap.AuctionStock > 0)
+            .Where(ap => ap.AuctionId == auctionId && ap.RegisteredProduct!.Stock > 0)
             .Include(ap => ap.RegisteredProduct)
             .ThenInclude(rp => rp!.Product)
             .Include(ap => ap.RegisteredProduct)

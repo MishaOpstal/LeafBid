@@ -39,16 +39,21 @@ public class AuctionStatusWorker(
     private async Task UpdateAuctionStatuses()
     {
         using IServiceScope scope = scopeFactory.CreateScope();
+
         ApplicationDbContext context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
         IAuctionSaleProductService auctionSaleProductService =
             scope.ServiceProvider.GetRequiredService<IAuctionSaleProductService>();
+
+        AuctionHelper auctionHelper =
+            scope.ServiceProvider.GetRequiredService<AuctionHelper>();
+        
         DateTime now = TimeHelper.GetAmsterdamTime();
         DateTime visibilityThreshold = now.AddHours(2);
 
         // 0. Set IsVisible = true for auctions that should be visible (starting within 2 hours) and have stock
         List<Auction> auctionsToMakeVisible = await context.Auctions
             .Where(a => !a.IsVisible && a.StartDate <= visibilityThreshold)
-            .Where(a => context.AuctionProducts.Any(ap => ap.AuctionId == a.Id && ap.AuctionStock > 0))
+            .Where(a => context.AuctionProducts.Any(ap => ap.AuctionId == a.Id && ap.RegisteredProduct!.Stock > 0))
             .ToListAsync();
 
         foreach (Auction auction in auctionsToMakeVisible)
@@ -60,7 +65,7 @@ public class AuctionStatusWorker(
         // 1. Set IsLive = true for auctions that should start and have products with stock
         List<Auction> auctionsToStart = await context.Auctions
             .Where(a => !a.IsLive && a.StartDate <= now)
-            .Where(a => context.AuctionProducts.Any(ap => ap.AuctionId == a.Id && ap.AuctionStock > 0))
+            .Where(a => context.AuctionProducts.Any(ap => ap.AuctionId == a.Id && ap.RegisteredProduct!.Stock > 0))
             .ToListAsync();
 
         foreach (Auction auction in auctionsToStart)
@@ -90,7 +95,7 @@ public class AuctionStatusWorker(
             }
             
             RegisteredProduct? activeProduct = await context.AuctionProducts
-                .Where(ap => ap.AuctionId == auction.Id && ap.AuctionStock > 0)
+                .Where(ap => ap.AuctionId == auction.Id && ap.RegisteredProduct!.Stock > 0)
                 .OrderBy(ap => ap.ServeOrder)
                 .Include(ap => ap.RegisteredProduct)
                 .Select(ap => ap.RegisteredProduct)
@@ -101,7 +106,7 @@ public class AuctionStatusWorker(
                 continue;
             }
 
-            double duration = AuctionHelper.GetProductDurationSeconds(activeProduct);
+            double duration = auctionHelper.GetProductDurationSeconds(activeProduct);
             double elapsed = (now - auction.NextProductStartTime.Value).TotalSeconds;
 
             if (!(elapsed >= duration))
@@ -128,7 +133,7 @@ public class AuctionStatusWorker(
         // 2. Set IsLive and IsVisible = false for live auctions with no products with stock remaining
         List<Auction> finishedAuctions = await context.Auctions
             .Where(a => a.IsLive)
-            .Where(a => !context.AuctionProducts.Any(ap => ap.AuctionId == a.Id && ap.AuctionStock > 0))
+            .Where(a => !context.AuctionProducts.Any(ap => ap.AuctionId == a.Id && ap.RegisteredProduct!.Stock > 0))
             .ToListAsync();
 
         foreach (Auction auction in finishedAuctions)

@@ -55,7 +55,7 @@ public class AuctionSaleProductFactory(
                 )
                 .Sum(asp => (int?)asp.Quantity) ?? 0;
 
-            int remainingQuantity = auctionProduct.AuctionStock - alreadySold;
+            int remainingQuantity = registeredProduct.Stock - alreadySold;
             if (remainingQuantity <= 0)
             {
                 continue;

@@ -11,5 +11,5 @@ public class CreateAuctionDto
     public required DateTime StartDate { get; set; }
 
     public required ClockLocationEnum ClockLocationEnum { get; set; }
-    public required Models.RegisteredProduct[] RegisteredProducts { get; set; }
+    public required RegisteredProductForAuctionRequest[] RegisteredProductForAuction { get; set; }
 }

@@ -45,7 +45,6 @@ public class AuctionProductFactory(ApplicationDbContext dbContext, Auction aucti
                     AuctionId = auction.Id,
                     RegisteredProductId = chosen.Id,
                     ServeOrder = serveOrder,
-                    AuctionStock = f.Random.Int(1, availableStock)
                 };
             });
     }

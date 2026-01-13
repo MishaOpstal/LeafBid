@@ -1,8 +1,10 @@
 using System.Reflection;
+using LeafBidAPI.Configuration;
 using LeafBidAPI.Data;
 using LeafBidAPI.Data.extensions;
 using LeafBidAPI.Data.seeders;
 using LeafBidAPI.Filters;
+using LeafBidAPI.Helpers;
 using LeafBidAPI.Hubs;
 using LeafBidAPI.Interfaces;
 using LeafBidAPI.Models;
@@ -52,6 +54,7 @@ public class Program
         builder.Services.AddScoped<IRoleService, RoleService>();
         builder.Services.AddScoped<IUserService, UserService>();
         builder.Services.AddScoped<IPagesServices, PagesServices>();
+        builder.Services.AddScoped<AuctionHelper>();
         builder.Services.AddHostedService<AuctionStatusWorker>();
 
         builder.Services.AddDbContext<ApplicationDbContext>(options =>
@@ -63,6 +66,20 @@ public class Program
         builder.Services.AddHttpClient();
 
         builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("EmailSettings"));
+        builder.Services.Configure<AuctionTimerSettings>(
+            builder.Configuration.GetSection("AuctionTimer")
+        );
+        
+        builder.Services
+            .AddOptions<AuctionTimerSettings>()
+            .Bind(builder.Configuration)
+            .ValidateDataAnnotations()
+            .Validate(
+                s => s.MinDurationForAuctionTimer > 0,
+                "MinDurationForAuctionTimer must be positive"
+            )
+            .ValidateOnStart();
+
 
         builder.Services.AddIdentityCore<User>(options =>
             {

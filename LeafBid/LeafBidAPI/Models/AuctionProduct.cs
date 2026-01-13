@@ -27,9 +27,4 @@ public class AuctionProduct
     /// Order in auction. (A lower number will be served first)
     /// </summary>
     public required int ServeOrder { get; set; }
-
-    /// <summary>
-    /// Products left
-    /// </summary>
-    public required int AuctionStock { get; set; }
 }

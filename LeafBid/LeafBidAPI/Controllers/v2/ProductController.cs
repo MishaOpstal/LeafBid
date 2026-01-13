@@ -121,8 +121,6 @@ public class ProductController(IProductService productService, IUserService user
     /// </summary>
     /// <param name="productData">The product data.</param>
     /// <param name="productId">The id of the Product</param>
-    /// <param name="userId">The id of the User</param>
-    /// <param name="companyId">The id of the Company</param>
     /// <returns>The created product.</returns>
     /// <exception cref="NotFoundException">Thrown when the main product cannot be found.</exception>
     [HttpPost("registeredCreate/{ProductId:int}")]
@@ -138,8 +136,12 @@ public class ProductController(IProductService productService, IUserService user
         {
             LoggedInUserResponse me = await userService.GetLoggedInUser(User);
             
-            RegisteredProduct registeredProduct = await productService.CreateRegisteredProduct(productData, productId, me.UserData.Id, me.UserData.CompanyId.Value);
-            
+            RegisteredProduct registeredProduct = await productService.CreateRegisteredProduct(
+                productData,
+                productId,
+                me.UserData!.Id,
+                me.UserData.CompanyId!.Value
+            );
             
             RegisteredProductResponse registeredProductResponse = productService.CreateRegisteredProductResponse(registeredProduct);
             return CreatedAtAction(

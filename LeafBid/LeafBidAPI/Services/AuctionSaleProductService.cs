@@ -1,16 +1,18 @@
+using System.Data;
 using LeafBidAPI.Data;
 using LeafBidAPI.DTOs.AuctionSaleProduct;
+using LeafBidAPI.Enums;
 using LeafBidAPI.Exceptions;
+using LeafBidAPI.Helpers;
 using LeafBidAPI.Interfaces;
 using LeafBidAPI.Models;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
-using LeafBidAPI.Enums;
-using LeafBidAPI.Helpers;
 
 namespace LeafBidAPI.Services;
 
-public class AuctionSaleProductService(ApplicationDbContext context) : IAuctionSaleProductService
+public class AuctionSaleProductService(ApplicationDbContext context, AuctionHelper auctionHelper)
+    : IAuctionSaleProductService
 {
     public async Task<List<AuctionSaleProduct>> GetAuctionSaleProducts()
     {
@@ -29,114 +31,114 @@ public class AuctionSaleProductService(ApplicationDbContext context) : IAuctionS
 
         return auctionSaleProduct;
     }
-    
-public async Task<AuctionSaleProductHistoryResponse> GetAuctionSaleProductsHistory(
-    int registeredProductId,
-    HistoryEnum scope,
-    bool includeCompanyName,
-    int? limit = 10
-)
-{
-    await using SqlConnection connection = (SqlConnection)context.Database.GetDbConnection();
-    if (connection.State != System.Data.ConnectionState.Open)
-        await connection.OpenAsync();
 
-    // Haal productId en companyId op
-    int productId, companyId;
-    const string productQuery = """
-        SELECT ProductId, CompanyId
-        FROM RegisteredProducts
-        WHERE Id = @registeredProductId
-        """;
-    
-    await using (SqlCommand productCmd = new SqlCommand(productQuery, connection))
+    public async Task<AuctionSaleProductHistoryResponse> GetAuctionSaleProductsHistory(
+        int registeredProductId,
+        HistoryEnum scope,
+        bool includeCompanyName,
+        int? limit = 10
+    )
     {
-        productCmd.Parameters.AddWithValue("@registeredProductId", registeredProductId);
-        await using var reader = await productCmd.ExecuteReaderAsync();
-        if (!await reader.ReadAsync())
-            throw new InvalidOperationException("Registered product not found.");
+        await using SqlConnection connection = (SqlConnection)context.Database.GetDbConnection();
+        if (connection.State != ConnectionState.Open)
+            await connection.OpenAsync();
 
-        productId = reader.GetInt32(0);
-        companyId = reader.GetInt32(1);
-    }
+        // Haal productId en companyId op
+        int productId, companyId;
+        const string productQuery = """
+                                    SELECT ProductId, CompanyId
+                                    FROM RegisteredProducts
+                                    WHERE Id = @registeredProductId
+                                    """;
 
-    // Bepaal filter op basis van scope
-    string companyFilter = scope switch
-    {
-        HistoryEnum.All => "",
-        HistoryEnum.OnlyCompany => "AND rp.CompanyId = @companyId",
-        HistoryEnum.ExcludeCompany => "AND rp.CompanyId <> @companyId",
-        _ => throw new ArgumentOutOfRangeException(nameof(scope), "Invalid history scope")
-    };
-
-    // Bereken gemiddelde prijs
-    const string avgPriceQueryTemplate = """
-        SELECT AVG(asp.Price)
-        FROM AuctionSaleProducts asp
-        JOIN RegisteredProducts rp ON asp.RegisteredProductId = rp.Id
-        WHERE rp.ProductId = @productId
-        {0}
-        """;
-
-    string avgPriceQuery = string.Format(avgPriceQueryTemplate, companyFilter);
-    decimal averagePrice = 0;
-
-    await using (var avgCmd = new SqlCommand(avgPriceQuery, connection))
-    {
-        avgCmd.Parameters.AddWithValue("@productId", productId);
-        if (scope != HistoryEnum.All)
-            avgCmd.Parameters.AddWithValue("@companyId", companyId);
-
-        var result = await avgCmd.ExecuteScalarAsync();
-        if (result != DBNull.Value)
-            averagePrice = Convert.ToDecimal(result);
-    }
-
-    // Haal recente verkopen op
-    string topClause = limit.HasValue ? $"TOP {limit}" : "";
-    string historyQuery = $"""
-        SELECT {topClause} 
-            p.Name, p.Picture, asp.Quantity, asp.Price, a.Date
-            {(includeCompanyName ? ", c.Name AS CompanyName" : "")}
-        FROM AuctionSaleProducts asp
-        JOIN AuctionSales a ON asp.AuctionSaleId = a.Id
-        JOIN RegisteredProducts rp ON asp.RegisteredProductId = rp.Id
-        JOIN Products p ON rp.ProductId = p.Id
-        {(includeCompanyName ? "JOIN Companies c ON rp.CompanyId = c.Id" : "")}
-        WHERE rp.ProductId = @productId
-        {companyFilter}
-        ORDER BY a.Date DESC
-        """;
-
-    var recentSales = new List<AuctionSaleProductHistorySalesDto>();
-    await using (var cmd = new SqlCommand(historyQuery, connection))
-    {
-        cmd.Parameters.AddWithValue("@productId", productId);
-        if (scope != HistoryEnum.All)
-            cmd.Parameters.AddWithValue("@companyId", companyId);
-
-        await using var reader = await cmd.ExecuteReaderAsync();
-        while (await reader.ReadAsync())
+        await using (SqlCommand productCmd = new(productQuery, connection))
         {
-            recentSales.Add(new AuctionSaleProductHistorySalesDto()
-            {
-                Quantity = reader.GetInt32(2),
-                Price = reader.GetDecimal(3),
-                Date = reader.GetDateTime(4),
-                CompanyName = includeCompanyName && !reader.IsDBNull(5) ? reader.GetString(5) : null
-            });
+            productCmd.Parameters.AddWithValue("@registeredProductId", registeredProductId);
+            await using SqlDataReader? reader = await productCmd.ExecuteReaderAsync();
+            if (!await reader.ReadAsync())
+                throw new InvalidOperationException("Registered product not found.");
+
+            productId = reader.GetInt32(0);
+            companyId = reader.GetInt32(1);
         }
+
+        // Bepaal filter op basis van scope
+        string companyFilter = scope switch
+        {
+            HistoryEnum.All => "",
+            HistoryEnum.OnlyCompany => "AND rp.CompanyId = @companyId",
+            HistoryEnum.ExcludeCompany => "AND rp.CompanyId <> @companyId",
+            _ => throw new ArgumentOutOfRangeException(nameof(scope), "Invalid history scope")
+        };
+
+        // Bereken gemiddelde prijs
+        const string avgPriceQueryTemplate = """
+                                             SELECT AVG(asp.Price)
+                                             FROM AuctionSaleProducts asp
+                                             JOIN RegisteredProducts rp ON asp.RegisteredProductId = rp.Id
+                                             WHERE rp.ProductId = @productId
+                                             {0}
+                                             """;
+
+        string avgPriceQuery = string.Format(avgPriceQueryTemplate, companyFilter);
+        decimal averagePrice = 0;
+
+        await using (SqlCommand avgCmd = new(avgPriceQuery, connection))
+        {
+            avgCmd.Parameters.AddWithValue("@productId", productId);
+            if (scope != HistoryEnum.All)
+                avgCmd.Parameters.AddWithValue("@companyId", companyId);
+
+            object? result = await avgCmd.ExecuteScalarAsync();
+            if (result != DBNull.Value)
+                averagePrice = Convert.ToDecimal(result);
+        }
+
+        // Haal recente verkopen op
+        string topClause = limit.HasValue ? $"TOP {limit}" : "";
+        string historyQuery = $"""
+                               SELECT {topClause} 
+                                   p.Name, p.Picture, asp.Quantity, asp.Price, a.Date
+                                   {(includeCompanyName ? ", c.Name AS CompanyName" : "")}
+                               FROM AuctionSaleProducts asp
+                               JOIN AuctionSales a ON asp.AuctionSaleId = a.Id
+                               JOIN RegisteredProducts rp ON asp.RegisteredProductId = rp.Id
+                               JOIN Products p ON rp.ProductId = p.Id
+                               {(includeCompanyName ? "JOIN Companies c ON rp.CompanyId = c.Id" : "")}
+                               WHERE rp.ProductId = @productId
+                               {companyFilter}
+                               ORDER BY a.Date DESC
+                               """;
+
+        List<AuctionSaleProductHistorySalesDto> recentSales = [];
+        await using (SqlCommand cmd = new(historyQuery, connection))
+        {
+            cmd.Parameters.AddWithValue("@productId", productId);
+            if (scope != HistoryEnum.All)
+                cmd.Parameters.AddWithValue("@companyId", companyId);
+
+            await using SqlDataReader? reader = await cmd.ExecuteReaderAsync();
+            while (await reader.ReadAsync())
+            {
+                recentSales.Add(new AuctionSaleProductHistorySalesDto()
+                {
+                    Quantity = reader.GetInt32(2),
+                    Price = reader.GetDecimal(3),
+                    Date = reader.GetDateTime(4),
+                    CompanyName = includeCompanyName && !reader.IsDBNull(5) ? reader.GetString(5) : null
+                });
+            }
+        }
+
+        return new AuctionSaleProductHistoryResponse
+        {
+            AvgPrice = averagePrice,
+            RecentSales = recentSales
+        };
     }
 
-    return new AuctionSaleProductHistoryResponse
-    {
-        AvgPrice = averagePrice,
-        RecentSales = recentSales
-    };
-}
 
-
-public async Task<List<AuctionSaleProductResponse>> GetAuctionSaleProductsByUserId(string userId)
+    public async Task<List<AuctionSaleProductResponse>> GetAuctionSaleProductsByUserId(string userId)
     {
         List<AuctionSaleProduct> list = await context.AuctionSaleProducts
             .Where(asp => asp.AuctionSale != null && asp.AuctionSale.UserId == userId)
@@ -157,45 +159,45 @@ public async Task<List<AuctionSaleProductResponse>> GetAuctionSaleProductsByUser
 
     public async Task<List<AuctionSaleProductResponse>> GetAuctionSaleProductsByCompanyId(int companyId)
     {
-        var responseList = await context.AuctionSaleProducts
+        List<AuctionSaleProductResponse> responseList = await context.AuctionSaleProducts
             .Where(asp => asp.RegisteredProduct != null && asp.RegisteredProduct.CompanyId == companyId)
             .GroupBy(asp => new
             {
                 asp.RegisteredProductId,
-                asp.AuctionSale.AuctionId,
-                ProductName = asp.RegisteredProduct.Product.Name,
+                asp.AuctionSale!.AuctionId,
+                ProductName = asp.RegisteredProduct!.Product!.Name,
                 ProductPicture = asp.RegisteredProduct.Product.Picture
             })
             .Select(g => new AuctionSaleProductResponse
             {
-                Name = g.Key.ProductName ?? "Unknown Product",
+                Name = g.Key.ProductName,
                 Picture = g.Key.ProductPicture ?? string.Empty,
                 Price = g.Sum(x => x.Price),
                 Quantity = g.Sum(x => x.Quantity),
-                Date = g.Max(x => x.AuctionSale.Date)
+                Date = g.Max(x => x.AuctionSale!.Date)
             })
             .ToListAsync();
 
         return responseList;
     }
-    
-    
+
+
     public async Task<SaleChartResponse> GetSaleChartDataByCompany(int companyId)
     {
-        var data = await context.AuctionSaleProducts
-            .Where(asp => asp.RegisteredProduct.CompanyId == companyId)
+        List<AuctionSaleProduct> data = await context.AuctionSaleProducts
+            .Where(asp => asp.RegisteredProduct!.CompanyId == companyId)
             .Include(asp => asp.RegisteredProduct)
-            .ThenInclude(rp => rp.Product)
+            .ThenInclude(rp => rp!.Product)
             .Include(asp => asp.AuctionSale)
             .ToListAsync();
-        
-        var currentMonthData = data
-            .Where(asp => asp.AuctionSale.Date.Month == DateTime.Now.Month 
+
+        List<SaleChartDataPoint> currentMonthData = data
+            .Where(asp => asp.AuctionSale!.Date.Month == DateTime.Now.Month
                           && asp.AuctionSale.Date.Year == DateTime.Now.Year)
-            .GroupBy(asp => new 
-            { 
-                asp.RegisteredProduct.Product.Id, 
-                asp.RegisteredProduct.Product.Name 
+            .GroupBy(asp => new
+            {
+                asp.RegisteredProduct!.Product!.Id,
+                asp.RegisteredProduct.Product.Name
             })
             .Select(g => new SaleChartDataPoint
             {
@@ -204,11 +206,11 @@ public async Task<List<AuctionSaleProductResponse>> GetAuctionSaleProductsByUser
             })
             .ToList();
 
-        var allTimeData = data
-            .GroupBy(asp => new 
-            { 
-                asp.RegisteredProduct.Product.Id, 
-                asp.RegisteredProduct.Product.Name 
+        List<SaleChartDataPoint> allTimeData = data
+            .GroupBy(asp => new
+            {
+                asp.RegisteredProduct!.Product!.Id,
+                asp.RegisteredProduct.Product.Name
             })
             .Select(g => new SaleChartDataPoint
             {
@@ -226,7 +228,6 @@ public async Task<List<AuctionSaleProductResponse>> GetAuctionSaleProductsByUser
     }
 
 
-    
     public async Task<AuctionSaleProduct> CreateAuctionSaleProduct(
         CreateAuctionSaleProductDto auctionSaleProductData)
     {
@@ -243,7 +244,7 @@ public async Task<List<AuctionSaleProductResponse>> GetAuctionSaleProductsByUser
 
         return auctionSaleProduct;
     }
-    
+
     public async Task<AuctionSaleProduct> UpdateAuctionSaleProduct(
         int id,
         UpdateAuctionSaleProductDto auctionSaleProductData)
@@ -271,7 +272,8 @@ public async Task<List<AuctionSaleProductResponse>> GetAuctionSaleProductsByUser
         try
         {
             // Fetch auction to check pause and current start time
-            Auction auction = await context.Auctions.FindAsync(buyData.AuctionId) ?? throw new NotFoundException("Auction not found");
+            Auction auction = await context.Auctions.FindAsync(buyData.AuctionId) ??
+                              throw new NotFoundException("Auction not found");
 
             switch (auction.NextProductStartTime)
             {
@@ -279,28 +281,29 @@ public async Task<List<AuctionSaleProductResponse>> GetAuctionSaleProductsByUser
                 case { } startTime when TimeHelper.GetAmsterdamTime() < startTime:
                     throw new InvalidOperationException("Auction is currently paused.");
             }
-            
+
             RegisteredProduct registeredProduct = await context.RegisteredProducts
-                .FirstOrDefaultAsync(rp => rp.Id == buyData.RegisteredProductId) ?? throw new NotFoundException("Registered product not found");
-            
-            AuctionProduct auctionProduct = await context.AuctionProducts
-                .FirstOrDefaultAsync(ap => ap.AuctionId == auction.Id && ap.RegisteredProductId == registeredProduct.Id) ?? throw new NotFoundException("Auction product not found");
+                                                      .FirstOrDefaultAsync(rp =>
+                                                          rp.Id == buyData.RegisteredProductId) ??
+                                                  throw new NotFoundException("Registered product not found");
 
             if (registeredProduct.Stock < buyData.Quantity)
             {
                 throw new InvalidOperationException("Not enough stock available in this auction");
             }
-            
+
             // Calculate price on the server side
             decimal pricePerUnit = CalculateCurrentPrice(auction, registeredProduct);
 
             // Reduce stock
             registeredProduct.Stock -= buyData.Quantity;
-            auctionProduct.AuctionStock -= buyData.Quantity;
 
             // Check if there are any products with stock > 0 left in this auction
             bool hasOtherProducts = await context.AuctionProducts
-                .AnyAsync(ap => ap.AuctionId == auction.Id && ap.RegisteredProductId != registeredProduct.Id && ap.AuctionStock > 0);
+                .AnyAsync(ap => ap.AuctionId == auction.Id
+                                && ap.RegisteredProductId != registeredProduct.Id
+                                && ap.RegisteredProduct!.Stock > 0
+                );
 
             bool currentProductHasStock = registeredProduct.Stock > 0;
 
@@ -310,10 +313,10 @@ public async Task<List<AuctionSaleProductResponse>> GetAuctionSaleProductsByUser
             {
                 auction.IsLive = false;
             }
-            
+
             // Reset auction timer for the next product
             auction.NextProductStartTime = TimeHelper.GetAmsterdamTime().AddSeconds(5);
-            
+
             // Create an AuctionSale entry
             AuctionSale auctionSale = new()
             {
@@ -322,10 +325,10 @@ public async Task<List<AuctionSaleProductResponse>> GetAuctionSaleProductsByUser
                 Date = TimeHelper.GetAmsterdamTime(),
                 PaymentReference = "PAY-" + Guid.NewGuid().ToString().Substring(0, 8).ToUpper()
             };
-            
+
             context.AuctionSales.Add(auctionSale);
             await context.SaveChangesAsync();
-            
+
             // Create AuctionSaleProduct entry
             AuctionSaleProduct auctionSaleProduct = new()
             {
@@ -334,7 +337,7 @@ public async Task<List<AuctionSaleProductResponse>> GetAuctionSaleProductsByUser
                 Quantity = buyData.Quantity,
                 Price = pricePerUnit
             };
-            
+
             context.AuctionSaleProducts.Add(auctionSaleProduct);
             await context.SaveChangesAsync();
 
@@ -345,10 +348,12 @@ public async Task<List<AuctionSaleProductResponse>> GetAuctionSaleProductsByUser
                 IsSuccess = true
             };
         }
-        catch (NotFoundException ex) {
+        catch (NotFoundException ex)
+        {
             throw new NotFoundException(ex.Message);
         }
-        catch (InvalidOperationException ex) {
+        catch (InvalidOperationException ex)
+        {
             throw new InvalidOperationException(ex.Message);
         }
     }
@@ -359,27 +364,27 @@ public async Task<List<AuctionSaleProductResponse>> GetAuctionSaleProductsByUser
         {
             // Fetch registered product and auction
             RegisteredProduct registeredProduct = await context.RegisteredProducts
-                .FirstOrDefaultAsync(rp => rp.Id == registeredProductId)
-                ?? throw new NotFoundException("Registered product not found");
-            
-            Auction auction = await context.Auctions.FindAsync(auctionId)
-                ?? throw new NotFoundException("Auction not found");
-            
-            AuctionProduct auctionProduct = await context.AuctionProducts
-                .FirstOrDefaultAsync(ap => ap.AuctionId == auction.Id && ap.RegisteredProductId == registeredProduct.Id)
-                ?? throw new NotFoundException("Auction product not found");
+                                                      .FirstOrDefaultAsync(rp => rp.Id == registeredProductId)
+                                                  ?? throw new NotFoundException("Registered product not found");
 
-            auctionProduct.AuctionStock = 0;
-            
+            Auction auction = await context.Auctions.FindAsync(auctionId)
+                              ?? throw new NotFoundException("Auction not found");
+
+            registeredProduct.Stock = 0;
+
             // Check if there are any products with stock > 0 left in this auction
             bool hasOtherProducts = await context.AuctionProducts
-                .AnyAsync(ap => ap.AuctionId == auction.Id && ap.RegisteredProductId != registeredProduct.Id && ap.AuctionStock > 0);
+                .AnyAsync(ap =>
+                    ap.AuctionId == auction.Id
+                    && ap.RegisteredProductId != registeredProduct.Id
+                    && ap.RegisteredProduct!.Stock > 0
+                );
 
             if (!hasOtherProducts)
             {
                 auction.IsLive = false;
             }
-            
+
             // Reset auction timer for the next product
             auction.NextProductStartTime = TimeHelper.GetAmsterdamTime().AddSeconds(5);
 
@@ -392,7 +397,8 @@ public async Task<List<AuctionSaleProductResponse>> GetAuctionSaleProductsByUser
                 IsSuccess = true
             };
         }
-        catch (NotFoundException ex) {
+        catch (NotFoundException ex)
+        {
             throw new NotFoundException(ex.Message);
         }
     }
@@ -400,14 +406,14 @@ public async Task<List<AuctionSaleProductResponse>> GetAuctionSaleProductsByUser
     private decimal CalculateCurrentPrice(Auction auction, RegisteredProduct product)
     {
         if (auction.NextProductStartTime == null) return product.MaxPrice ?? product.MinPrice;
-        
+
         double elapsedSeconds = (TimeHelper.GetAmsterdamTime() - auction.NextProductStartTime.Value).TotalSeconds;
         if (elapsedSeconds <= 0) return product.MaxPrice ?? product.MinPrice;
 
         decimal startPrice = product.MaxPrice ?? product.MinPrice;
         decimal minPrice = product.MinPrice;
-        
-        double durationSeconds = AuctionHelper.GetProductDurationSeconds(product);
+
+        double durationSeconds = auctionHelper.GetProductDurationSeconds(product);
         if (durationSeconds <= 0) return minPrice;
 
         decimal startCents = startPrice * 100;
@@ -418,5 +424,4 @@ public async Task<List<AuctionSaleProductResponse>> GetAuctionSaleProductsByUser
 
         return Math.Max(minPrice, Math.Ceiling(currentCents) / 100m);
     }
-
 }

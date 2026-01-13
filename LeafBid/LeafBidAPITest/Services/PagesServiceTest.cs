@@ -36,10 +36,26 @@ public class PagesServiceTest
 
         var companies = new List<Company>
         {
-            new() { Id = 1, Name = "Company 1", Street = "Street 1", City = "City 1", HouseNumber = "1", PostalCode = "1234AB", CountryCode = "NL" },
-            new() { Id = 2, Name = "Company 2", Street = "Street 2", City = "City 2", HouseNumber = "2", PostalCode = "1234AB", CountryCode = "NL" },
-            new() { Id = 3, Name = "Company 3", Street = "Street 3", City = "City 3", HouseNumber = "3", PostalCode = "1234AB", CountryCode = "NL" },
-            new() { Id = 4, Name = "Company 4", Street = "Street 4", City = "City 4", HouseNumber = "4", PostalCode = "1234AB", CountryCode = "NL" }
+            new()
+            {
+                Id = 1, Name = "Company 1", Street = "Street 1", City = "City 1", HouseNumber = "1",
+                PostalCode = "1234AB", CountryCode = "NL"
+            },
+            new()
+            {
+                Id = 2, Name = "Company 2", Street = "Street 2", City = "City 2", HouseNumber = "2",
+                PostalCode = "1234AB", CountryCode = "NL"
+            },
+            new()
+            {
+                Id = 3, Name = "Company 3", Street = "Street 3", City = "City 3", HouseNumber = "3",
+                PostalCode = "1234AB", CountryCode = "NL"
+            },
+            new()
+            {
+                Id = 4, Name = "Company 4", Street = "Street 4", City = "City 4", HouseNumber = "4",
+                PostalCode = "1234AB", CountryCode = "NL"
+            }
         };
         var users = new List<User>
         {
@@ -57,19 +73,19 @@ public class PagesServiceTest
         await context.SaveChangesAsync();
 
         // 2. Create AuctionProducts with the generated IDs
-        var auctionProducts = new List<AuctionProduct>();
-        for (int i = 0; i < auctions.Count; i++)
+        List<AuctionProduct> auctionProducts = [];
+        foreach (Auction auction in auctions)
         {
-            for (int j = 0; j < registeredProducts.Count; j++)
-            {
-                auctionProducts.Add(new AuctionProduct
-                {
-                    AuctionId = auctions[i].Id,
-                    RegisteredProductId = registeredProducts[j].Id,
-                    ServeOrder = j + 1,
-                    AuctionStock = 10
-                });
-            }
+            auctionProducts.AddRange(
+                registeredProducts.Select((t, j) =>
+                    new AuctionProduct
+                    {
+                        AuctionId = auction.Id,
+                        RegisteredProductId = t.Id,
+                        ServeOrder = j + 1
+                    }
+                )
+            );
         }
 
         context.AuctionProducts.AddRange(auctionProducts);
@@ -130,10 +146,26 @@ public class PagesServiceTest
 
         var companies = new List<Company>
         {
-            new() { Id = 1, Name = "Company 1", Street = "Street 1", City = "City 1", HouseNumber = "1", PostalCode = "1234AB", CountryCode = "NL" },
-            new() { Id = 2, Name = "Company 2", Street = "Street 2", City = "City 2", HouseNumber = "2", PostalCode = "1234AB", CountryCode = "NL" },
-            new() { Id = 3, Name = "Company 3", Street = "Street 3", City = "City 3", HouseNumber = "3", PostalCode = "1234AB", CountryCode = "NL" },
-            new() { Id = 4, Name = "Company 4", Street = "Street 4", City = "City 4", HouseNumber = "4", PostalCode = "1234AB", CountryCode = "NL" }
+            new()
+            {
+                Id = 1, Name = "Company 1", Street = "Street 1", City = "City 1", HouseNumber = "1",
+                PostalCode = "1234AB", CountryCode = "NL"
+            },
+            new()
+            {
+                Id = 2, Name = "Company 2", Street = "Street 2", City = "City 2", HouseNumber = "2",
+                PostalCode = "1234AB", CountryCode = "NL"
+            },
+            new()
+            {
+                Id = 3, Name = "Company 3", Street = "Street 3", City = "City 3", HouseNumber = "3",
+                PostalCode = "1234AB", CountryCode = "NL"
+            },
+            new()
+            {
+                Id = 4, Name = "Company 4", Street = "Street 4", City = "City 4", HouseNumber = "4",
+                PostalCode = "1234AB", CountryCode = "NL"
+            }
         };
         var users = new List<User>
         {
@@ -151,19 +183,19 @@ public class PagesServiceTest
         await context.SaveChangesAsync();
 
         // 2. Create AuctionProducts with the generated IDs
-        var auctionProducts = new List<AuctionProduct>();
-        for (int i = 0; i < auctions.Count; i++)
+        List<AuctionProduct> auctionProducts = [];
+        foreach (Auction auction in auctions)
         {
-            for (int j = 0; j < registeredProducts.Count; j++)
-            {
-                auctionProducts.Add(new AuctionProduct
-                {
-                    AuctionId = auctions[i].Id,
-                    RegisteredProductId = registeredProducts[j].Id,
-                    ServeOrder = j + 1,
-                    AuctionStock = 10
-                });
-            }
+            auctionProducts.AddRange(
+                registeredProducts.Select((t, j) =>
+                    new AuctionProduct
+                    {
+                        AuctionId = auction.Id,
+                        RegisteredProductId = t.Id,
+                        ServeOrder = j + 1
+                    }
+                )
+            );
         }
 
         context.AuctionProducts.AddRange(auctionProducts);
