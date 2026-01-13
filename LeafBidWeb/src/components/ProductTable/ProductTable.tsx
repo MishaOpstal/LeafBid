@@ -48,7 +48,7 @@ export default function ProductTable({ userRoles }: Props) {
             }
         };
         fetchProducts().then(() => console.log("Fetched products"));
-    }, []);
+    }, [userRoles]);
 
     if (userRoles == Roles.Buyer) {
         return (

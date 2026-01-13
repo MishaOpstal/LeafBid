@@ -1,7 +1,7 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
-import { ButtonGroup, Button } from "react-bootstrap";
+import React, {useEffect, useState} from "react";
+import {Button, ButtonGroup} from "react-bootstrap";
 
 interface SelectableButtonGroupProps {
     options: string[];

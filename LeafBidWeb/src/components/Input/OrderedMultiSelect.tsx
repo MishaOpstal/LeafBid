@@ -1,5 +1,5 @@
-import React, { useMemo, useState, useEffect } from "react";
-import { ListGroup, Form, Badge, Button, Spinner } from "react-bootstrap";
+import React, {useEffect, useMemo, useState} from "react";
+import {Badge, Button, ListGroup, Spinner} from "react-bootstrap";
 import SearchBar from "./SearchBar";
 import SelectedBadgeList from "./SelectedBadgeList";
 import s from "./OrderedMultiSelect.module.css";
@@ -49,7 +49,7 @@ const OrderedMultiSelect: React.FC<OrderedMultiSelectProps> = ({
                 url.searchParams.set("limit", String(pageSize));
                 if (query.trim()) url.searchParams.set("q", query);
 
-                const res = await fetch(url.toString(), { signal: controller.signal });
+                const res = await fetch(url.toString(), {signal: controller.signal});
                 if (!res.ok) throw new Error(`HTTP ${res.status}`);
                 const data = await res.json();
 
@@ -73,7 +73,7 @@ const OrderedMultiSelect: React.FC<OrderedMultiSelectProps> = ({
 
         const q = query.toLowerCase();
         const filtered = q
-            ? items.filter((rp) => rp.product.name.toLowerCase().includes(q))
+            ? items.filter((rp) => rp.product!.name.toLowerCase().includes(q))
             : items;
 
         setTotalPages(Math.max(1, Math.ceil(filtered.length / pageSize)));
@@ -107,18 +107,18 @@ const OrderedMultiSelect: React.FC<OrderedMultiSelectProps> = ({
     return (
         <div className={`p-3 border rounded ${s.container}`}>
             {/* Search bar */}
-            <SearchBar placeholder="Search products..." onSearch={setQuery} delay={300} />
+            <SearchBar placeholder="Search products..." onSearch={setQuery} delay={300}/>
 
             {/* Optional badges */}
             {showBadges && value.length > 0 && (
-                <SelectedBadgeList items={value} onRemove={handleToggle} />
+                <SelectedBadgeList items={value} onRemove={handleToggle}/>
             )}
 
             {/* Product list */}
             <ListGroup className={s.listGroup}>
                 {loading ? (
                     <div className="text-center py-4">
-                        <Spinner animation="border" size="sm" /> Loading...
+                        <Spinner animation="border" size="sm"/> Loading...
                     </div>
                 ) : error ? (
                     <ListGroup.Item className="text-danger text-center">{error}</ListGroup.Item>
@@ -140,8 +140,8 @@ const OrderedMultiSelect: React.FC<OrderedMultiSelectProps> = ({
                             >
                                 <div className={s.productRow}>
                                     <div className={s.productInfo}>
-                                        <strong className={s.productName}>{registeredProduct.product.name}</strong>
-                                        <span className={s.companyName}>{registeredProduct.company.name}</span>
+                                        <strong className={s.productName}>{registeredProduct.product!.name}</strong>
+                                        <span className={s.companyName}>{registeredProduct.company!.name}</span>
                                     </div>
                                     <span className={s.quantity}>
                                         Qty: {registeredProduct.stock ?? "N/A"}

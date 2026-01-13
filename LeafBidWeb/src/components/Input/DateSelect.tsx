@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from "react";
-import { InputGroup, Form, Row, Col } from "react-bootstrap";
+import React, {useEffect, useState} from "react";
+import {Form, Row} from "react-bootstrap";
 import s from "./DateSelect.module.css";
 
 interface DateSelectProps {
@@ -48,26 +48,26 @@ const DateSelect: React.FC<DateSelectProps> = ({
     }, [date, time, delay, onSelect, useTime]);
 
     return (
-            <Form.Label className="mb-3">
-                {label}
+        <Form.Label className="mb-3">
+            {label}
             <Row className={s.inputParents}>
-                    <Form.Control
-                        type="date"
-                        value={date}
-                        placeholder={placeholder}
-                        onChange={(e) => setDate(e.target.value)}
-                        className={`${s.formControl} ${s.dateControl}`}
-                    />
+                <Form.Control
+                    type="date"
+                    value={date}
+                    placeholder={placeholder}
+                    onChange={(e) => setDate(e.target.value)}
+                    className={`${s.formControl} ${s.dateControl}`}
+                />
                 {useTime && (
-                        <Form.Control
-                            type="time"
-                            value={time}
-                            onChange={(e) => setTime(e.target.value)}
-                            className={`${s.formControl} ${s.timeControl}`}
-                        />
+                    <Form.Control
+                        type="time"
+                        value={time}
+                        onChange={(e) => setTime(e.target.value)}
+                        className={`${s.formControl} ${s.timeControl}`}
+                    />
                 )}
             </Row>
-            </Form.Label>
+        </Form.Label>
     );
 };
 

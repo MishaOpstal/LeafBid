@@ -1,18 +1,17 @@
 import React from "react";
-import { Badge } from "react-bootstrap";
-import { Product } from "@/types/Product/Product";
+import {Badge} from "react-bootstrap";
 import s from "./SelectedBadgeList.module.css";
 import {RegisteredProduct} from "@/types/Product/RegisteredProducts";
 
 interface SelectedBadgeListProps {
     items: RegisteredProduct[];
-    onRemove: (registeredproduct: RegisteredProduct) => void;
+    onRemove: (registeredProduct: RegisteredProduct) => void;
 }
 
 /**
  * Displays selected products as removable badges.
  */
-const SelectedBadgeList: React.FC<SelectedBadgeListProps> = ({ items, onRemove }) => {
+const SelectedBadgeList: React.FC<SelectedBadgeListProps> = ({items, onRemove}) => {
     if (items.length === 0) return null;
 
     return (
@@ -23,10 +22,10 @@ const SelectedBadgeList: React.FC<SelectedBadgeListProps> = ({ items, onRemove }
                     bg="secondary"
                     pill
                     className={s.selectedBadge}
-                    title={`Click to remove ${rp.product.name}`}
+                    title={`Click to remove ${rp.product!.name}`}
                     onClick={() => onRemove(rp)}
                 >
-                    {i + 1}. {rp.product.name}
+                    {i + 1}. {rp.product!.name}
                 </Badge>
             ))}
         </div>
