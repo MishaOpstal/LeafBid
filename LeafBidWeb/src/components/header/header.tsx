@@ -52,10 +52,10 @@ export default function Header({returnOption = false}: HeaderProps) {
             localStorage.removeItem("userData");
             localStorage.removeItem("loggedIn");
 
-            window.location.href = "/auth/login";
+            router.push("/auth/login");
         } catch (err) {
             console.error(err);
-            window.location.href = "/auth/login";
+            router.push("/auth/login");
         }
     };
 
@@ -167,7 +167,9 @@ export default function Header({returnOption = false}: HeaderProps) {
                     fill
                     style={{objectFit: "contain"}}
                     priority
-                    onClick={() => { window.location.href = "/"}}
+                    onClick={() => {
+                        window.location.href = "/"
+                    }}
                 />
             </div>
 
