@@ -154,8 +154,7 @@ public class ProductController(IProductService productService, IUserService user
         }
         catch (NotFoundException e)
         {
-            Console.WriteLine(e);
-            throw;
+            return NotFound(e.Message);
         }
         catch (UnauthorizedException e)
         {
