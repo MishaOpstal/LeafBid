@@ -193,10 +193,6 @@ export default function AuctionPage() {
             .catch(err => console.error("SignalR Connection Error: ", err));
 
         connectionRef.current = connection;
-
-        return () => {
-            void connection.stop();
-        };
     }, [id]);
 
     useEffect(() => {
