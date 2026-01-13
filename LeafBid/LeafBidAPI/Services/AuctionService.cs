@@ -43,7 +43,7 @@ public class AuctionService(
             throw new UnauthorizedAccessException("User does not have the required role to create an auction");
         }
 
-        foreach (RegisteredProductForAuctionRequest registeredProductForAuction in auctionData.RegisteredProductForAuction)
+        foreach (RegisteredProductForAuctionRequest registeredProductForAuction in auctionData.RegisteredProductsForAuction)
         {
             AuctionProduct? auctionProducts =
                 await context.AuctionProducts.FirstOrDefaultAsync(a => a.RegisteredProductId == registeredProductForAuction.Id);
@@ -64,7 +64,7 @@ public class AuctionService(
         await context.SaveChangesAsync();
 
         int counter = 1;
-        foreach (RegisteredProductForAuctionRequest registeredProductForAuction in auctionData.RegisteredProductForAuction)
+        foreach (RegisteredProductForAuctionRequest registeredProductForAuction in auctionData.RegisteredProductsForAuction)
         {
             AuctionProduct auctionProduct = new()
             {

@@ -12,7 +12,8 @@ import SearchableDropdown from "@/components/input/SearchableDropdown";
 import Button from "@/components/input/Button";
 import ProductPriceTable from "@/components/input/ProductPriceTable";
 import {Auction} from "@/types/Auction/Auction";
-import {RegisteredProduct} from "@/types/Product/RegisteredProducts";
+import {RegisteredProduct, RegisteredProductForAuction} from "@/types/Product/RegisteredProducts";
+import {useRouter} from "next/navigation";
 
 const locaties: Locatie[] = [
     {locatieId: 1, locatieNaam: "Aalsmeer"},
@@ -26,8 +27,8 @@ const createEmptyAuction = (): Auction => ({
     registeredProducts: [] as RegisteredProduct[]
 });
 export default function Home() {
+    const router = useRouter();
     const [auctionData, setAuctionData] = useState<Auction>(() => createEmptyAuction());
-
 
     const [registeredProducts, setRegisteredProducts] = useState<RegisteredProduct[]>([]);
     const [errors, setErrors] = useState<Record<string, string>>({});
@@ -103,10 +104,15 @@ export default function Home() {
         setIsSubmitting(true);
         try {
             // Remove the product and company fields from registeredProducts before submission
-            const cleanedRegisteredProducts = auctionData.registeredProducts.map(({product, company, ...rest}) => rest);
+            const registeredProductsForAuction: RegisteredProductForAuction[]
+                = auctionData.registeredProducts.map((rp) => ({
+                id: rp.id,
+                maxPrice: rp.maxPrice,
+            }));
+
             const submissionData = {
                 ...auctionData,
-                registeredProducts: cleanedRegisteredProducts,
+                registeredProductsForAuction: registeredProductsForAuction,
             };
 
             // Submit auctionData directly
@@ -124,6 +130,8 @@ export default function Home() {
 
             setMessage("Veiling succesvol aangemaakt!");
             setErrors({});
+
+            location.reload();
         } catch (err) {
             console.error(err);
             setMessage("Aanmaken mislukt. Controleer je invoer of probeer opnieuw.");
