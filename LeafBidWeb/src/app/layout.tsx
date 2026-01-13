@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import ClientTopLoader from '@/components/clientTopLoader/ClientTopLoader';
+import ClientTopLoader from '@/components/ClientTopLoader/ClientTopLoader';
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -68,6 +68,7 @@ export default function RootLayout({
     <head>
         <link rel="preconnect" href="https://fonts.googleapis.com"/>
         <link rel="preconnect" href="https://fonts.gstatic.com"/>
+        {/* eslint-disable-next-line @next/next/no-page-custom-font */}
         <link href="https://fonts.googleapis.com/css2?family=Nunito:ital,wght@0,200..1000;1,200..1000&display=swap"
               rel="stylesheet"/>
     </head>

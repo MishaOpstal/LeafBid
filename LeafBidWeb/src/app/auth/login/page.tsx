@@ -11,8 +11,8 @@ import React, {useState} from "react";
 import LoginFailedException, {isLoginFailedException} from "@/exceptions/Auth/LoginFailedException";
 import ValidationFailedException, {isValidationFailedException} from "@/exceptions/ValidationFailedException";
 import {Login} from "@/types/User/Login";
-import TextInput from "@/components/input/TextInput";
-import {toggleTheme} from "@/components/header/theme";
+import TextInput from "@/components/Input/TextInput";
+import {toggleTheme} from "@/components/Header/Theme";
 
 export default function LoginPage() {
     toggleTheme();
@@ -47,7 +47,7 @@ export default function LoginPage() {
         try {
             const response = await fetch("http://localhost:5001/api/v2/User/login", {
                 method: "POST",
-                headers: { "Content-Type": "application/json" },
+                headers: {"Content-Type": "application/json"},
                 credentials: "include",
                 body: JSON.stringify(loginData),
             });
@@ -120,7 +120,7 @@ export default function LoginPage() {
                         value={loginData.email}
                         onChange={(e) => {
                             const value = e.target.value.replace(/\s/g, '');
-                            setLoginData({ ...loginData, email: value });
+                            setLoginData({...loginData, email: value});
                         }}
                     />
 

@@ -1,14 +1,13 @@
 'use client';
 import styles from './page.module.css';
-import Header from "@/components/header/header";
-import DashboardPanel from "@/components/dashboardPanel/dashboardpanel";
-import {useState, useEffect} from "react";
+import Header from "@/components/Header/Header";
+import DashboardPanel from "@/components/DashboardPanel/DashboardPanel";
+import {useEffect, useState} from "react";
 import {ClockLocation, parseClockLocation} from "@/enums/ClockLocation";
-import History from "@/components/Popup/history";
 
-import { AuctionPageResult } from "@/types/Auction/AuctionPageResult";
-import {resolveImageSrc} from "@/utils/image";
-import { setServerTimeOffset } from "@/utils/time";
+import {AuctionPageResult} from "@/types/Auction/AuctionPageResult";
+import {resolveImageSrc} from "@/utils/Image";
+import {setServerTimeOffset} from "@/utils/Time";
 import {useRouter} from "nextjs-toploader/app";
 
 export default function Home() {
@@ -37,13 +36,13 @@ export default function Home() {
                     .filter((v): v is number => typeof v === "number")
                     .map((clockId) => {
                         // Prefer live over just visible
-                        return visibleOrLive.find((p) => p.auction.clockLocationEnum === clockId && p.auction.isLive) 
+                        return visibleOrLive.find((p) => p.auction.clockLocationEnum === clockId && p.auction.isLive)
                             || visibleOrLive.find((p) => p.auction.clockLocationEnum === clockId);
                     })
                     .filter((p): p is AuctionPageResult => Boolean(p));
 
                 setAuctions(uniqueByClock);
-                
+
                 if (data.length > 0) {
                     setServerTimeOffset(data[0].serverTime);
                 }
@@ -73,8 +72,8 @@ export default function Home() {
                     <div className={styles.panels}>
                         {loading ? (
                             <>
-                                {Array.from({ length: 4 }).map((_, i) => (
-                                    <DashboardPanel key={i} loading={true} title="Laden..." />
+                                {Array.from({length: 4}).map((_, i) => (
+                                    <DashboardPanel key={i} loading={true} title="Laden..."/>
                                 ))}
                             </>
                         ) : auctions.length === 0 ? (
@@ -90,10 +89,14 @@ export default function Home() {
                                 const startTime = new Date(auction.startDate);
                                 const auctionStatus = isLive
                                     ? "Live"
-                                    : `Start: ${startTime.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}`;
+                                    : `Start: ${startTime.toLocaleTimeString([], {
+                                        hour: '2-digit',
+                                        minute: '2-digit'
+                                    })}`;
 
                                 return (
-                                    <a key={`${auction.clockLocationEnum}-${auction.id}`} onClick={() => router.push(`/auction/${auction.id}`)} href="#">
+                                    <a key={`${auction.clockLocationEnum}-${auction.id}`}
+                                       onClick={() => router.push(`/auction/${auction.id}`)} href="#">
                                         <DashboardPanel
                                             loading={false}
                                             title={product?.name ?? `Veiling #${auction.id}`}

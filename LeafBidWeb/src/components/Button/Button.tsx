@@ -2,14 +2,14 @@
 
 import React from 'react';
 import { useRouter } from 'nextjs-toploader/app';
-import s from './knop.module.css';
+import s from './Button.module.css';
 
 type KnopProps = {
     label: string;
     to: string;
 };
 
-const Knop: React.FC<KnopProps> = ({ label, to }) => {
+const Button: React.FC<KnopProps> = ({ label, to }) => {
     const router = useRouter();
 
     const handleClick = () => {
@@ -23,4 +23,4 @@ const Knop: React.FC<KnopProps> = ({ label, to }) => {
     );
 };
 
-export default Knop;
+export default Button;

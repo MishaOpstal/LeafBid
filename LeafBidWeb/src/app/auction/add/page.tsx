@@ -4,17 +4,17 @@ import s from "@/app/layouts/add/page.module.css";
 import ToevoegenLayout from "@/app/layouts/add/layout";
 
 import Form from "react-bootstrap/Form";
-import OrderedMultiSelect from "@/components/input/OrderedMultiSelect";
+import OrderedMultiSelect from "@/components/Input/OrderedMultiSelect";
 import {Location} from "@/types/Auction/Location";
 import React, {useEffect, useState} from "react";
-import DateSelect from "@/components/input/DateSelect";
-import SearchableDropdown from "@/components/input/SearchableDropdown";
-import Button from "@/components/input/Button";
-import ProductPriceTable from "@/components/input/ProductPriceTable";
+import DateSelect from "@/components/Input/DateSelect";
+import SearchableDropdown from "@/components/Input/SearchableDropdown";
+import Button from "@/components/Input/Button";
+import ProductPriceTable from "@/components/Input/ProductPriceTable";
 import {Auction} from "@/types/Auction/Auction";
 import {RegisteredProduct, RegisteredProductForAuction} from "@/types/Product/RegisteredProducts";
 import {useRouter} from "nextjs-toploader/app";
-import {isUserInRole} from "@/utils/isUserInRole";
+import {isUserInRole} from "@/utils/IsUserInRole";
 import {parseRole, Roles} from "@/enums/Roles";
 
 // Check if a user has an Auctioneer role
@@ -39,7 +39,6 @@ const createEmptyAuction = (): Auction => ({
 });
 
 export default function Home() {
-    const router = useRouter();
     const [auctionData, setAuctionData] = useState<Auction>(() => createEmptyAuction());
 
     const [registeredProducts, setRegisteredProducts] = useState<RegisteredProduct[]>([]);
@@ -54,7 +53,10 @@ export default function Home() {
                     method: "GET",
                     credentials: "include",
                 });
-                if (!res.ok) throw new Error("Failed to fetch products");
+                if (!res.ok) {
+                    throw new Error("Failed to fetch products");
+                }
+
                 const data: RegisteredProduct[] = await res.json();
 
                 // Fill the missing productId and companyId fields for all retrieved registered products, they reside inside the product -> id and company -> id respectively

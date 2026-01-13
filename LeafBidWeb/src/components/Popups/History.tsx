@@ -3,7 +3,7 @@
 import {useState} from "react";
 import Button from "react-bootstrap/Button";
 import {Table} from "react-bootstrap";
-import s from "./history.module.css";
+import s from "./History.module.css";
 import Image from "next/image";
 
 type HistoryProps = {

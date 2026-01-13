@@ -1,10 +1,10 @@
 'use client';
 
 import React from 'react';
-import { Card, Row, Col, Image, Button } from 'react-bootstrap';
+import {Card} from 'react-bootstrap';
 import Placeholder from "react-bootstrap/Placeholder";
 import {parsePrice} from "@/types/Product/RegisteredProducts";
-import s from "./dashboardPanel.module.css";
+import s from "./DashboardPanel.module.css";
 
 type DashboardPanelProps = {
     title?: string;
@@ -18,17 +18,18 @@ type DashboardPanelProps = {
     compact?: boolean;
     children?: React.ReactNode;
 };
-
-const enum Kloklocaties {
-    Naaldwijk,   // = 0
-    Aalsmeer,    // = 1
-    Rijnsburg,   // = 2
-    Eelde        // = 3
-}
-
-
-
-const DashboardPanel: React.FC<DashboardPanelProps> = ({title, kloklocatie, imageSrc, auctionStatus, huidigePrijs, aankomendProductNaam, aankomendProductStartprijs, children, loading = false, compact = false,}) => {
+const DashboardPanel: React.FC<DashboardPanelProps> = ({
+                                                           title,
+                                                           kloklocatie,
+                                                           imageSrc,
+                                                           auctionStatus,
+                                                           huidigePrijs,
+                                                           aankomendProductNaam,
+                                                           aankomendProductStartprijs,
+                                                           children,
+                                                           loading = false,
+                                                           compact = false,
+                                                       }) => {
 // compacte kaart
     if (compact) {
         return (
@@ -39,7 +40,7 @@ const DashboardPanel: React.FC<DashboardPanelProps> = ({title, kloklocatie, imag
                     className={`${s.image}`}
                     variant="left"
                     src={imageSrc || "/images/grey.png"}
-                    style={{ width: "100px", height: "100px", objectFit: "cover" }}
+                    style={{width: "100px", height: "100px", objectFit: "cover"}}
                 />
 
 
@@ -49,12 +50,12 @@ const DashboardPanel: React.FC<DashboardPanelProps> = ({title, kloklocatie, imag
                         {loading ? (
                             <>
                                 {/*loading compact card*/}
-                                <div style={{ width: "120px" }}>
+                                <div style={{width: "120px"}}>
                                     <Placeholder as={Card.Title} animation="glow">
-                                        <Placeholder xs={8} />
+                                        <Placeholder xs={8}/>
                                     </Placeholder>
                                     <Placeholder as="small" animation="glow">
-                                        <Placeholder xs={6} />
+                                        <Placeholder xs={6}/>
                                     </Placeholder>
                                 </div>
 
@@ -71,7 +72,7 @@ const DashboardPanel: React.FC<DashboardPanelProps> = ({title, kloklocatie, imag
                     {/* Right side: children */}
                     <div className="d-flex gap-2">
                         {loading ? (
-                            <Placeholder.Button variant="secondary" xs={2} />
+                            <Placeholder.Button variant="secondary" xs={2}/>
                         ) : (
                             children
                         )}
@@ -97,34 +98,34 @@ const DashboardPanel: React.FC<DashboardPanelProps> = ({title, kloklocatie, imag
                         {loading ? (
                             <>
                                 <Placeholder as={Card.Title} animation="glow">
-                                    <Placeholder xs={6} />
+                                    <Placeholder xs={6}/>
                                 </Placeholder>
                                 <Placeholder as={Card.Text} animation="glow">
-                                    <Placeholder xs={7} /> <Placeholder xs={4} /> <Placeholder xs={5} />
+                                    <Placeholder xs={7}/> <Placeholder xs={4}/> <Placeholder xs={5}/>
                                 </Placeholder>
                             </>
                         ) : (
                             <>
                                 <Card.Title>Kloklocatie: {kloklocatie}</Card.Title>
                                 <Card.Text>
-                                    <span>Huidig product: {title}</span><br />
-                                    <span>Huidige prijs: {parsePrice(huidigePrijs ?? 0)}</span><br />
-                                    <span>Status: {auctionStatus}</span><br />
+                                    <span>Huidig product: {title}</span><br/>
+                                    <span>Huidige prijs: {parsePrice(huidigePrijs ?? 0)}</span><br/>
+                                    <span>Status: {auctionStatus}</span><br/>
                                 </Card.Text>
 
                             </>
                         )}
                     </div>
 
-                {/*loading card*/}
+                    {/*loading card*/}
                     <div className="flex-fill w-100 w-md-25">
                         {loading ? (
                             <>
                                 <Placeholder as={Card.Title} animation="glow">
-                                    <Placeholder xs={5} />
+                                    <Placeholder xs={5}/>
                                 </Placeholder>
                                 <Placeholder as={Card.Text} animation="glow">
-                                    <Placeholder xs={6} /> <Placeholder xs={3} />
+                                    <Placeholder xs={6}/> <Placeholder xs={3}/>
                                 </Placeholder>
                             </>
                         ) : (
@@ -132,7 +133,8 @@ const DashboardPanel: React.FC<DashboardPanelProps> = ({title, kloklocatie, imag
                                 <Card.Title>Aankomende producten</Card.Title>
                                 <Card.Text>
                                     <span className="mb-0 d-block">{aankomendProductNaam}</span>
-                                    <span className="mb-0 d-block" style={{ fontSize: "0.7rem" }}>Startprijs: {parsePrice(aankomendProductStartprijs ?? 0)}</span>
+                                    <span className="mb-0 d-block"
+                                          style={{fontSize: "0.7rem"}}>Startprijs: {parsePrice(aankomendProductStartprijs ?? 0)}</span>
                                 </Card.Text>
                             </>
                         )}

@@ -1,12 +1,12 @@
-﻿import s from '@/components/veilingInfo/velinginfo.module.css';
+﻿import s from '@/components/AuctionedProduct/AuctionedProduct.module.css';
 import {parseDate, parsePrice, RegisteredProduct} from "@/types/Product/RegisteredProducts";
 import { Image } from "react-bootstrap";
-import Button from "@/components/input/Button";
-import NumberInput from "@/components/input/NumberInput";
-import { resolveImageSrc } from "@/utils/image";
-import { useEffect, useState } from "react";
+import Button from "@/components/Input/Button";
+import NumberInput from "@/components/Input/NumberInput";
+import { resolveImageSrc } from "@/utils/Image";
+import React, { useEffect, useState } from "react";
 
-export default function BigInfoVeld({ registeredProduct, currentPricePerUnit, onBuy, isPaused, isLive }: { registeredProduct: RegisteredProduct, currentPricePerUnit: number, onBuy: (amount: number) => Promise<void>, isPaused?: boolean, isLive?: boolean }) {
+export default function AuctionedProduct({ registeredProduct, currentPricePerUnit, onBuy, isPaused, isLive }: { registeredProduct: RegisteredProduct, currentPricePerUnit: number, onBuy: (amount: number) => Promise<void>, isPaused?: boolean, isLive?: boolean }) {
     const [amount, setAmount] = useState<number>(1);
     const [isBuying, setIsBuying] = useState(false);
 

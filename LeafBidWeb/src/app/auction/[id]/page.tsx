@@ -1,19 +1,20 @@
 ﻿'use client';
 
-import InfoVeld from "@/components/infoVeldKlein/infoVeldKlein";
-import BigInfoVeld from "@/components/veilingInfo/veilingInfo";
-import Header from "@/components/header/header";
-import AuctionTimer from '@/components/veilingKlok/veilingKlok';
+import InfoVeld from "@/components/UpcomingProduct/UpcomingProduct";
+import AuctionedProduct from "@/components/AuctionedProduct/AuctionedProduct";
+import Header from "@/components/Header/Header";
+import AuctionTimer from '@/components/AuctionTimer/AuctionTimer';
 import s from "./page.module.css";
 import {AuctionPageResult} from "@/types/Auction/AuctionPageResult";
-import {getServerNow, getServerOffset, setServerTimeOffset} from "@/utils/time";
-import config from "@/config";
-import History from "@/components/Popup/history";
+import {getServerNow, getServerOffset, setServerTimeOffset} from "@/utils/Time";
+import config from "@/Config";
+import History from "@/components/Popups/History";
 
 import {useParams} from "next/navigation";
 import {useCallback, useEffect, useRef, useState} from "react";
 import * as signalR from "@microsoft/signalr";
 import {Toast, ToastContainer} from "react-bootstrap";
+import Image from "next/image";
 
 export default function AuctionPage() {
     const params = useParams();
@@ -87,7 +88,7 @@ export default function AuctionPage() {
                 });
             }
 
-            // We don't necessarily need to update state here as SignalR will broadcast it,
+            // We don't necessarily need to update the state here as SignalR will broadcast it,
             // but for immediate feedback we can.
             // Note: The broadcast will also contain the new nextProductStartTime.
         } catch (err) {
@@ -235,7 +236,7 @@ export default function AuctionPage() {
         fetchData();
     }, [id]);
 
-    // Keep currentPricePerUnit in sync with the current product's maxPrice
+    // Keep the currentPricePerUnit in sync with the current product's maxPrice
     // This hook must be ABOVE any early returns.
     useEffect(() => {
         const maxPrice = auction?.registeredProducts?.[0]?.maxPrice;
@@ -360,7 +361,7 @@ export default function AuctionPage() {
 
                 <div className={s.infoblok}>
                     <h3 className="fw-bold mb-2">Huidig Product:</h3>
-                    <BigInfoVeld
+                    <AuctionedProduct
                         registeredProduct={currentProduct}
                         currentPricePerUnit={currentPricePerUnit ?? maxPrice}
                         onBuy={onBuy}
@@ -374,7 +375,7 @@ export default function AuctionPage() {
                 {toastList.current.map((item, index) => (
                     <Toast key={`${item.id}-${index}`}>
                         <Toast.Header>
-                            <img
+                            <Image
                                 src={item.picture}
                                 className="rounded me-2"
                                 alt={item.name}

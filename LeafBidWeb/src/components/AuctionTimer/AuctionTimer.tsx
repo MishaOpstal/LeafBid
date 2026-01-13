@@ -1,7 +1,7 @@
 ﻿import React, { useEffect, useMemo, useRef, useState } from 'react';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { parsePrice } from '@/types/Product/RegisteredProducts';
-import s from './veilingKlok.module.css';
+import s from './AuctionTimer.module.css';
 
 interface AuctionTimerProps {
     onFinished?: () => void;

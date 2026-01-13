@@ -3,12 +3,12 @@
 import s from "@/app/layouts/add/page.module.css";
 import ToevoegenLayout from "@/app/layouts/add/layout";
 import Form from "react-bootstrap/Form";
-import TextInput from "@/components/input/TextInput";
-import FileInput from "@/components/input/FileInput";
-import TextAreaInput from "@/components/input/TextAreaInput";
-import Button from "@/components/input/Button";
-import React, { useState } from "react";
-import {isUserInRole} from "@/utils/isUserInRole";
+import TextInput from "@/components/Input/TextInput";
+import FileInput from "@/components/Input/FileInput";
+import TextAreaInput from "@/components/Input/TextAreaInput";
+import Button from "@/components/Input/Button";
+import React, {useState} from "react";
+import {isUserInRole} from "@/utils/IsUserInRole";
 import {parseRole, Roles} from "@/enums/Roles";
 
 // Check if a user has an Auctioneer role
@@ -37,12 +37,8 @@ export default function ProductForm() {
     };
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-        const { name, value } = e.target;
-        setFormData((prev) => ({ ...prev, [name]: value }));
-    };
-
-    const handleDateSelect = (date: string | null) => {
-        setFormData((prev) => ({ ...prev, harvestedAt: date ?? "" }));
+        const {name, value} = e.target;
+        setFormData((prev) => ({...prev, [name]: value}));
     };
 
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -54,7 +50,7 @@ export default function ProductForm() {
             }));
             return;
         }
-        setFormData((prev) => ({ ...prev, picture: file }));
+        setFormData((prev) => ({...prev, picture: file}));
     };
 
     const fileToBase64 = (file: File): Promise<string> =>
@@ -82,9 +78,6 @@ export default function ProductForm() {
                 pictureBase64 = await fileToBase64(formData.picture);
             }
 
-            const userData = localStorage.getItem("userData");
-            const userId = userData ? JSON.parse(userData).id : null;
-
             const payload = {
                 name: formData.name,
                 description: formData.description,
@@ -94,14 +87,14 @@ export default function ProductForm() {
 
             const response = await fetch("http://localhost:5001/api/v2/Product", {
                 method: "POST",
-                headers: { "Content-Type": "application/json" },
+                headers: {"Content-Type": "application/json"},
                 credentials: "include",
                 body: JSON.stringify(payload),
             });
 
-            const data = await response.json();
-
-            if (!response.ok) throw new Error(`Server returned ${response.status}`);
+            if (!response.ok) {
+                throw new Error(`Server returned ${response.status}`);
+            }
 
             setMessage("Product succesvol toegevoegd!");
             setFormData({
@@ -139,7 +132,7 @@ export default function ProductForm() {
                     onChange={handleChange}
                 />
 
-                <FileInput label="Plaatje" name="picture" onChange={handleFileChange} />
+                <FileInput label="Plaatje" name="picture" onChange={handleFileChange}/>
 
                 <TextAreaInput
                     label="Product Informatie"
@@ -156,7 +149,7 @@ export default function ProductForm() {
                     disabled={isSubmitting}
                 />
 
-                {message && <p style={{ marginTop: "1rem" }}>{message}</p>}
+                {message && <p style={{marginTop: "1rem"}}>{message}</p>}
             </Form>
         </ToevoegenLayout>
     );

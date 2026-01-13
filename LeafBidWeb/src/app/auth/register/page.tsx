@@ -5,15 +5,15 @@ import Link from 'next/link';
 import s from '../page.module.css';
 import "bootstrap/dist/css/bootstrap-grid.min.css"
 import Form from "react-bootstrap/Form";
-import Button from "@/components/input/Button";
+import Button from "@/components/Input/Button";
 import {useRouter} from 'nextjs-toploader/app';
 import React, {useState} from "react";
 import {Register} from "@/types/User/Register";
 import RegisterFailedException, {isRegisterFailedException} from '@/exceptions/Auth/RegisterFailedException';
-import SearchableDropdown from "@/components/input/SearchableDropdown";
+import SearchableDropdown from "@/components/Input/SearchableDropdown";
 import {Role} from "@/types/User/Role";
 import RoleFetchFailedException from "@/exceptions/Auth/RoleFetchFailedException";
-import TextInput from "@/components/input/TextInput";
+import TextInput from "@/components/Input/TextInput";
 import ValidationFailedException, {isValidationFailedException} from "@/exceptions/ValidationFailedException";
 
 const roles: Role[] = [];
@@ -154,7 +154,7 @@ export default function RegisterPage() {
                         value={registerData.email}
                         onChange={(e) => {
                             const value = e.target.value.replace(/\s/g, '');
-                            setRegisterData({ ...registerData, email: value });
+                            setRegisterData({...registerData, email: value});
                         }}
                     />
 

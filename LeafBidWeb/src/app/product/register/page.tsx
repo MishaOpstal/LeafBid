@@ -3,14 +3,14 @@
 import s from "@/app/layouts/add/page.module.css";
 import ToevoegenLayout from "@/app/layouts/add/layout";
 import Form from "react-bootstrap/Form";
-import TextInput from "@/components/input/TextInput";
-import NumberInput from "@/components/input/NumberInput";
-import Button from "@/components/input/Button";
+import TextInput from "@/components/Input/TextInput";
+import NumberInput from "@/components/Input/NumberInput";
+import Button from "@/components/Input/Button";
 import React, {useEffect, useState} from "react";
-import SelectableButtonGroup from "@/components/input/SelectableButtonGroup";
-import SearchableDropdown from "@/components/input/SearchableDropdown";
-import DateSelect from "@/components/input/DateSelect";
-import {isUserInRole} from "@/utils/isUserInRole";
+import SelectableButtonGroup from "@/components/Input/SelectableButtonGroup";
+import SearchableDropdown from "@/components/Input/SearchableDropdown";
+import DateSelect from "@/components/Input/DateSelect";
+import {isUserInRole} from "@/utils/IsUserInRole";
 import {parseRole, Roles} from "@/enums/Roles";
 import {Product} from "@/types/Product/Product";
 
@@ -52,7 +52,10 @@ export default function ProductForm() {
                     method: "GET",
                     credentials: "include",
                 });
-                if (!res.ok) throw new Error("Failed to fetch products");
+                if (!res.ok) {
+                    throw new Error("Failed to fetch products");
+                }
+
                 const data: Product[] = await res.json();
                 setProducts(data);
             } catch (error) {
@@ -122,9 +125,9 @@ export default function ProductForm() {
                 body: JSON.stringify(payload),
             });
 
-            const data = await response.json();
-
-            if (!response.ok) throw new Error(`Server returned ${response.status}`);
+            if (!response.ok) {
+                throw new Error(`Server returned ${response.status}`);
+            }
 
             setMessage("Product succesvol toegevoegd!");
             setFormData({

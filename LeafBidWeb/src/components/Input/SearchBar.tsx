@@ -1,6 +1,6 @@
-import React, { useState, useEffect, forwardRef } from "react";
-import { InputGroup, Form } from "react-bootstrap";
-import { XCircleFill } from "react-bootstrap-icons";
+import React, {forwardRef, useEffect, useState} from "react";
+import {Form, InputGroup} from "react-bootstrap";
+import {XCircleFill} from "react-bootstrap-icons";
 import s from "./SearchBar.module.css";
 
 interface SearchBarProps {
@@ -11,7 +11,7 @@ interface SearchBarProps {
     clearOnChange?: boolean;
 }
 
-// ForwardRef allows parent to focus the input
+// ForwardRef allows parent to focus the Input
 const SearchBar = forwardRef<HTMLInputElement, SearchBarProps>(
     (
         {
@@ -19,7 +19,6 @@ const SearchBar = forwardRef<HTMLInputElement, SearchBarProps>(
             onSearch,
             delay = 300,
             value: controlledValue,
-            clearOnChange = false,
         },
         ref
     ) => {
@@ -62,7 +61,7 @@ const SearchBar = forwardRef<HTMLInputElement, SearchBarProps>(
                         className={s.clearButton}
                         title="Clear search"
                     >
-                        <XCircleFill size={16} />
+                        <XCircleFill size={16}/>
                     </InputGroup.Text>
                 )}
             </InputGroup>

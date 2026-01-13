@@ -59,7 +59,7 @@ function SearchableDropdown<T>({
             </Dropdown.Toggle>
 
             <Dropdown.Menu className={s.menu}>
-                {/* Search input */}
+                {/* Search Input */}
                 <div className={s.searchContainer}>
                     <SearchBar
                         ref={searchRef}

@@ -1,14 +1,14 @@
 'use client';
 
 import styles from "@/app/page.module.css";
-import Header from "@/components/header/header";
-import DashboardPanel from "@/components/dashboardPanel/dashboardpanel";
-import { useState, useEffect } from "react";
-import { ClockLocation, parseClockLocation } from "@/enums/ClockLocation";
+import Header from "@/components/Header/Header";
+import DashboardPanel from "@/components/DashboardPanel/DashboardPanel";
+import {useEffect, useState} from "react";
+import {parseClockLocation} from "@/enums/ClockLocation";
 import Link from "next/link";
 
-import { AuctionPageResult } from "@/types/Auction/AuctionPageResult";
-import { getServerNow, setServerTimeOffset } from "@/utils/time";
+import {AuctionPageResult} from "@/types/Auction/AuctionPageResult";
+import {getServerNow, setServerTimeOffset} from "@/utils/Time";
 
 
 export default function VeilingmeesterOverzicht() {
@@ -32,7 +32,7 @@ export default function VeilingmeesterOverzicht() {
 
                 const data: AuctionPageResult[] = await res.json();
                 setAuctions(data);
-                
+
                 if (data.length > 0) {
                     setServerTimeOffset(data[0].serverTime);
                 }
@@ -62,7 +62,7 @@ export default function VeilingmeesterOverzicht() {
 
     return (
         <>
-            <Header returnOption={true} />
+            <Header returnOption={true}/>
 
             <main className={styles.main}>
                 <div className={styles.page}>
@@ -72,9 +72,9 @@ export default function VeilingmeesterOverzicht() {
                     <div className={styles.panels}>
                         {loading ? (
                             <>
-                                <DashboardPanel compact loading title="Laden..." />
-                                <DashboardPanel compact loading title="Laden..." />
-                                <DashboardPanel compact loading title="Laden..." />
+                                <DashboardPanel compact loading title="Laden..."/>
+                                <DashboardPanel compact loading title="Laden..."/>
+                                <DashboardPanel compact loading title="Laden..."/>
                             </>
                         ) : currentAuctions.length === 0 ? (
                             <p>Geen huidige veilingen beschikbaar</p>
@@ -104,8 +104,8 @@ export default function VeilingmeesterOverzicht() {
                     <div className={styles.panels}>
                         {loading ? (
                             <>
-                                <DashboardPanel compact loading title="Laden..." />
-                                <DashboardPanel compact loading title="Laden..." />
+                                <DashboardPanel compact loading title="Laden..."/>
+                                <DashboardPanel compact loading title="Laden..."/>
                             </>
                         ) : upcomingAuctions.length === 0 ? (
                             <p>Geen aankomende veilingen beschikbaar</p>
@@ -134,7 +134,7 @@ export default function VeilingmeesterOverzicht() {
                     <h2 className={styles.sectionTitle}>Afgelopen veilingen</h2>
                     <div className={styles.panels}>
                         {loading ? (
-                            <DashboardPanel compact loading title="Laden..." />
+                            <DashboardPanel compact loading title="Laden..."/>
                         ) : pastAuctions.length === 0 ? (
                             <p>Geen afgelopen veilingen beschikbaar</p>
                         ) : (

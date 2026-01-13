@@ -12,7 +12,7 @@ interface ButtonProps {
 
 /**
  * A flexible Bootstrap-based Button component.
- * Defaults to a non-submitting button (type="button").
+ * Defaults to a non-submitting Button (type="Button").
  */
 const Button: React.FC<ButtonProps> = ({
                                            label,
