@@ -85,7 +85,7 @@ export default function VeilingmeesterOverzicht() {
                                 const product = reg?.product;
 
                                 return (
-                                    <Link key={auction.id} href={`/veiling/${auction.id}`}>
+                                    <Link key={auction.id} href={`/auction/${auction.id}`}>
                                         <DashboardPanel
                                             compact
                                             loading={false}
@@ -116,7 +116,7 @@ export default function VeilingmeesterOverzicht() {
                                 const product = reg?.product;
 
                                 return (
-                                    <Link key={auction.id} href={`/veiling/${auction.id}`}>
+                                    <Link key={auction.id} href={`/auction/${auction.id}`}>
                                         <DashboardPanel
                                             compact
                                             loading={false}
@@ -144,7 +144,7 @@ export default function VeilingmeesterOverzicht() {
                                 const product = reg?.product;
 
                                 return (
-                                    <Link key={auction.id} href={`/veiling/${auction.id}`}>
+                                    <Link key={auction.id} href={`/auction/${auction.id}`}>
                                         <DashboardPanel
                                             compact
                                             loading={false}

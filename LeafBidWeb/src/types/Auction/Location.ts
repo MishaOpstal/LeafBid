@@ -1,4 +1,4 @@
-export interface Locatie {
+export interface Location {
     locatieId: number;
     locatieNaam: string;
 }

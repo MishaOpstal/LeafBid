@@ -1,11 +1,11 @@
 "use client";
 
-import s from "@/app/layouts/toevoegen/page.module.css";
-import ToevoegenLayout from "@/app/layouts/toevoegen/layout";
+import s from "@/app/layouts/add/page.module.css";
+import ToevoegenLayout from "@/app/layouts/add/layout";
 
 import Form from "react-bootstrap/Form";
 import OrderedMultiSelect from "@/components/input/OrderedMultiSelect";
-import {Locatie} from "@/types/Auction/Locatie";
+import {Location} from "@/types/Auction/Location";
 import React, {useEffect, useState} from "react";
 import DateSelect from "@/components/input/DateSelect";
 import SearchableDropdown from "@/components/input/SearchableDropdown";
@@ -14,18 +14,30 @@ import ProductPriceTable from "@/components/input/ProductPriceTable";
 import {Auction} from "@/types/Auction/Auction";
 import {RegisteredProduct, RegisteredProductForAuction} from "@/types/Product/RegisteredProducts";
 import {useRouter} from "next/navigation";
+import {isUserInRole} from "@/utils/isUserInRole";
+import {parseRole, Roles} from "@/enums/Roles";
 
-const locaties: Locatie[] = [
+// Check if a user has an Auctioneer role
+if (!isUserInRole(parseRole(Roles.Auctioneer))) {
+    // Redirect to dashboard
+    if (typeof window !== 'undefined') {
+        window.location.href = "/";
+    }
+}
+
+const locaties: Location[] = [
     {locatieId: 1, locatieNaam: "Aalsmeer"},
     {locatieId: 2, locatieNaam: "Rijnsburg"},
     {locatieId: 3, locatieNaam: "Naaldwijk"},
     {locatieId: 4, locatieNaam: "Eelde"},
 ];
+
 const createEmptyAuction = (): Auction => ({
     startDate: "",
     clockLocationEnum: 0,
     registeredProducts: [] as RegisteredProduct[]
 });
+
 export default function Home() {
     const router = useRouter();
     const [auctionData, setAuctionData] = useState<Auction>(() => createEmptyAuction());
@@ -67,7 +79,7 @@ export default function Home() {
 
         if (!auctionData.startDate) newErrors.startDate = "Startdatum en tijd is verplicht.";
         if (!auctionData.clockLocationEnum || auctionData.clockLocationEnum === 0)
-            newErrors.location = "Locatie is verplicht.";
+            newErrors.location = "Location is verplicht.";
         if (!auctionData.registeredProducts || auctionData.registeredProducts.length === 0)
             newErrors.products = "Minimaal één product is verplicht.";
 
@@ -79,7 +91,7 @@ export default function Home() {
         setAuctionData((prev) => ({...prev, startDate: date ?? ""}));
     };
 
-    const handleLocatieSelect = (loc: Locatie) => {
+    const handleLocatieSelect = (loc: Location) => {
         setAuctionData((prev) => ({
             ...prev,
             clockLocationEnum: loc.locatieId, // or map to your enum if needed
