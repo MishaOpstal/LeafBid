@@ -154,11 +154,6 @@ export default function RegisterPage() {
         return Object.keys(newErrors).length === 0;
     };
 
-    const selectedRoleName = registerData.roles?.[0] ?? null;
-
-    const needsCompany =
-        selectedRoleName === "Provider" || selectedRoleName === "Buyer" || selectedRoleName === "Auctioneer" || selectedRoleName ==="Admin";
-
     return (
         <main className={s.main}>
             <title>Register</title>
@@ -243,7 +238,7 @@ export default function RegisterPage() {
 
                     {errors.roles && <div className={s.error}>{errors.roles}</div>}
 
-                    {needsCompany && (
+                    {(
                         <SearchableDropdown
                             label="Selecteer een bedrijf"
                             placeholder="Zoek naar bedrijf..."

@@ -3,6 +3,8 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import ClientTopLoader from '@/components/ClientTopLoader/ClientTopLoader';
 import React from "react";
+import s from "@/components/Header/Header.module.css";
+import ThemeInitializer, {getTheme, toggleTheme} from "@/components/Header/Theme";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -58,7 +60,6 @@ export const metadata: Metadata = {
     }
 };
 
-
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -75,6 +76,7 @@ export default function RootLayout({
               rel="stylesheet"/>
     </head>
     <body className={`${geistSans.variable} ${geistMono.variable}`} suppressHydrationWarning={true}>
+    <ThemeInitializer />
     <ClientTopLoader />
     {children}
     </body>

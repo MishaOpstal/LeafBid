@@ -40,8 +40,6 @@ export default function Header({ returnOption = false }: HeaderProps)
 
     return (
         <header>
-            <ThemeInitializer />
-
             <div className={s.logoWrapper}>
                 <Image
                     src="/LeafBid.svg"
@@ -70,7 +68,6 @@ export default function Header({ returnOption = false }: HeaderProps)
                     {user && isUserInRole(parseRole(Roles.Auctioneer)) && (
                         <>
                             <Link href="/product/add" className={s.link}>Product aanmaken</Link>
-                            <Link href="/auction/add" className={s.link}>Veiling toevoegen</Link>
                             <Link href="/auction/dashboard" className={s.link}>Veilingmeester overzicht</Link>
                         </>
                     )}

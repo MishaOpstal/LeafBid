@@ -3,15 +3,17 @@
 import styles from "@/app/auction/view/page.module.css";
 import Header from "@/components/Header/Header";
 import DashboardPanel from "@/components/DashboardPanel/DashboardPanel";
-import {useEffect, useState} from "react";
+import React, {useEffect, useState} from "react";
 import {parseClockLocation} from "@/enums/ClockLocation";
 import Link from "next/link";
-
 import {AuctionPageResult} from "@/types/Auction/AuctionPageResult";
 import {getServerNow, setServerTimeOffset} from "@/utils/Time";
+import Button from "@/components/Input/Button";
+import {useRouter} from "nextjs-toploader/app";
 
 
 export default function AuctionDashboard() {
+    const router = useRouter();
     const [auctions, setAuctions] = useState<AuctionPageResult[]>([]);
     const [loading, setLoading] = useState(true);
 
@@ -65,10 +67,15 @@ export default function AuctionDashboard() {
 
             <main className={styles.main}>
                 <div className={styles.page}>
-                    <h1 className={styles.huidigeVeilingen}>Veilingmeester Dashboard</h1>
-
-                    <h2 className={styles.sectionTitle}>Huidige veilingen</h2>
-                    <div className={styles.panels}>
+                    <h1 className={`${styles.huidigeVeilingen} mb-4`}>Veilingmeester Dashboard</h1>
+                    <Button
+                        variant="primary"
+                        type="submit"
+                        label={"Veiling Aanmaken"}
+                        onClick={() => router.push("/auction/create")}
+                    />
+                    <div className={`${styles.panels} mt-4`}>
+                        <h2 className={styles.sectionTitle}>Huidige veilingen</h2>
                         {loading ? (
                             <>
                                 <DashboardPanel compact loading title="Laden..."/>
@@ -99,8 +106,8 @@ export default function AuctionDashboard() {
                         )}
                     </div>
 
-                    <h2 className={styles.sectionTitle}>Aankomende veilingen</h2>
-                    <div className={styles.panels}>
+                    <div className={`${styles.panels} mt-4`}>
+                        <h2 className={styles.sectionTitle}>Aankomende veilingen</h2>
                         {loading ? (
                             <>
                                 <DashboardPanel compact loading title="Laden..."/>
@@ -130,8 +137,8 @@ export default function AuctionDashboard() {
                         )}
                     </div>
 
-                    <h2 className={styles.sectionTitle}>Afgelopen veilingen</h2>
-                    <div className={styles.panels}>
+                    <div className={`${styles.panels} mt-4`}>
+                        <h2 className={styles.sectionTitle}>Afgelopen veilingen</h2>
                         {loading ? (
                             <DashboardPanel compact loading title="Laden..."/>
                         ) : pastAuctions.length === 0 ? (

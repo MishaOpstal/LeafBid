@@ -47,6 +47,11 @@ export function useAuth() {
                 method: "GET",
                 credentials: "include",
             });
+
+            if (!res.ok) {
+                return;
+            }
+
             const response: LoggedInResponse = await res.json();
 
             if (response.loggedIn) {

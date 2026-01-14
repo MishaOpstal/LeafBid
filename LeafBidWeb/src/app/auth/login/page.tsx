@@ -60,7 +60,7 @@ export default function LoginPage() {
                 throw LoginFailedException("login mislukt.");
             }
 
-            await checkAuth({force: true});
+            await checkAuth();
         } finally {
             setIsSubmitting(false);
         }
