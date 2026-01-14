@@ -1,10 +1,10 @@
 import Header from "@/components/Header/Header";
-import AuctionDashboard from "@/components/Pages/AuctionDashboard";
+import AuctionView from "@/components/Pages/AuctionView";
 export default function AuctionViewPage() {
     return (
         <>
             <Header/>
-            <AuctionDashboard/>
+            <AuctionView/>
         </>
     );
 }

@@ -1,136 +1,57 @@
 'use client';
-import styles from './page.module.css';
+import { useAuth } from "@/utils/useAuth";
 import Header from "@/components/Header/Header";
-import DashboardPanel from "@/components/DashboardPanel/DashboardPanel";
-import {useEffect, useState} from "react";
-import {ClockLocation, parseClockLocation} from "@/enums/ClockLocation";
+import AuctionView from "@/components/Pages/AuctionView";
+import AuctionDashboard from "@/components/Pages/AuctionDashboard";
+import ProductDashboard from "@/components/Pages/ProductDashboard";
 
-import {AuctionPageResult} from "@/types/Auction/AuctionPageResult";
-import {resolveImageSrc} from "@/utils/Image";
-import {setServerTimeOffset} from "@/utils/Time";
-import {useRouter} from "nextjs-toploader/app";
+export default function HomePage() {
+    const { user, loggedIn } = useAuth();
 
-export default function Home() {
-    const router = useRouter();
-    const [auctions, setAuctions] = useState<AuctionPageResult[]>([]);
-    const [loading, setLoading] = useState(true);
+    if (loggedIn === null) {
+        // wacht tot auth-status bekend is
+        return <p>Loading...</p>;
+    }
 
-    useEffect(() => {
-        const fetchAuctions = async (): Promise<void> => {
-            setLoading(true);
+    const roles = user?.roles || [];
 
-            try {
-                const res = await fetch("http://localhost:5001/api/v2/Pages", {
-                    method: "GET",
-                    credentials: "include",
-                });
+    const isBuyer = roles.includes("Buyer");
+    const isAuctioneer = roles.includes("Auctioneer");
+    const isProvider = roles.includes("Provider");
+    const isAdmin = roles.includes("Admin");
 
-                if (!res.ok) {
-                    console.error("Failed to fetch auctions");
-                    return;
-                }
+    if (isBuyer) return (
+        <>
+            <Header />
+            <AuctionView />
+        </>
+    );
 
-                const data: AuctionPageResult[] = await res.json();
+    if (isAuctioneer) return (
+        <>
+            <Header />
+            <AuctionDashboard />
+        </>
+    );
 
-                const visibleOrLive = data.filter(
-                    (page) => page.auction.isLive || page.auction.isVisible
-                );
+    if (isProvider) return (
+        <>
+            <Header />
+            <ProductDashboard />
+        </>
+    );
 
-                // One live or upcoming auction per clock location
-                const uniqueByClock = Object.values(ClockLocation)
-                    .filter((v): v is number => typeof v === "number")
-                    .map((clockId) => {
-                        // Prefer live over just visible
-                        return (
-                            visibleOrLive.find(
-                                (p) =>
-                                    p.auction.clockLocationEnum === clockId &&
-                                    p.auction.isLive
-                            ) ??
-                            visibleOrLive.find(
-                                (p) =>
-                                    p.auction.clockLocationEnum === clockId
-                            )
-                        );
-                    })
-                    .filter(
-                        (p): p is AuctionPageResult => Boolean(p)
-                    );
-
-                setAuctions(uniqueByClock);
-
-                if (data.length > 0) {
-                    setServerTimeOffset(data[0].serverTime);
-                }
-            } catch (err) {
-                console.error("Failed to load auctions:", err);
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        void fetchAuctions();
-    }, []);
-
-    useEffect(() => {
-        const ids = auctions.map(a => a.auction.id);
-        const duplicates = ids.filter((id, idx) => ids.indexOf(id) !== idx);
-        if (duplicates.length > 0) console.warn("Duplicate auction ids:", duplicates);
-    }, [auctions]);
+    if (isAdmin) return (
+        <>
+            <Header />
+            <AuctionView />
+        </>
+    );
 
     return (
         <>
-            <Header/>
-            <main className={styles.main}>
-                <div className={styles.page}>
-                    <h1 className={styles.huidigeVeilingen}>Veilingen Dashboard</h1>
-
-                    <div className={styles.panels}>
-                        {loading ? (
-                            <>
-                                {Array.from({length: 4}).map((_, i) => (
-                                    <DashboardPanel key={i} loading={true} title="Laden..."/>
-                                ))}
-                            </>
-                        ) : auctions.length === 0 ? (
-                            <p>Geen veilingen gevonden. Kom later terug.</p>
-                        ) : (
-                            auctions.map((page) => {
-                                const auction = page.auction;
-                                const reg = page.registeredProducts[0];
-                                const product = reg?.product;
-                                const nextProduct = page.registeredProducts[1];
-
-                                const isLive = auction.isLive;
-                                const startTime = new Date(auction.startDate);
-                                const auctionStatus = isLive
-                                    ? "Live"
-                                    : `Start: ${startTime.toLocaleTimeString([], {
-                                        hour: '2-digit',
-                                        minute: '2-digit'
-                                    })}`;
-
-                                return (
-                                    <a key={`${auction.clockLocationEnum}-${auction.id}`}
-                                       onClick={() => router.push(`/auction/${auction.id}`)} href="#">
-                                        <DashboardPanel
-                                            loading={false}
-                                            title={product?.name ?? `Veiling #${auction.id}`}
-                                            kloklocatie={parseClockLocation(auction.clockLocationEnum)}
-                                            imageSrc={resolveImageSrc(product?.picture)}
-                                            auctionStatus={auctionStatus}
-                                            huidigePrijs={reg?.minPrice}
-                                            aankomendProductNaam={nextProduct?.product!.name || "Geen product"}
-                                            aankomendProductStartprijs={nextProduct?.minPrice}
-                                        />
-                                    </a>
-                                );
-                            })
-                        )}
-                    </div>
-                </div>
-
-            </main>
+            <Header />
+            <p>Welkom! Geen rol toegewezen.</p>
         </>
     );
 }
