@@ -305,20 +305,13 @@ export default function AuctionPage() {
     const isLive = auction.auction.isLive;
     const shouldDisplayMessage = !isLive || isPaused;
 
-    let countdownMessage: string;
+    const messages = [
+        { cond: () => !isLive, msg: () => `Veiling begint over ${formatCountdown(startCountdown)}` },
+        { cond: () => isPaused, msg: () => `Veiling gepauzeerd. Start opnieuw in ${pauseCountdown} seconden...` }
+    ];
 
-    switch (true) {
-        case !isLive:
-            countdownMessage = `Veiling begint over ${formatCountdown(startCountdown)}`;
-            break;
-
-        case isPaused:
-            countdownMessage = `Veiling gepauzeerd. Start opnieuw in ${pauseCountdown} seconden...`;
-            break;
-
-        default:
-            countdownMessage = "";
-    }
+    const countdownMessage =
+        messages.find(({ cond }) => cond())?.msg() ?? "";
 
     return (
         <>

@@ -80,7 +80,7 @@ export default function Home() {
 
         if (!auctionData.startDate) newErrors.startDate = "Startdatum en tijd is verplicht.";
         if (!auctionData.clockLocationEnum || auctionData.clockLocationEnum === 0)
-            newErrors.location = "Location is verplicht.";
+            newErrors.location = "Locatie is verplicht.";
         if (!auctionData.registeredProducts || auctionData.registeredProducts.length === 0)
             newErrors.products = "Minimaal één product is verplicht.";
 

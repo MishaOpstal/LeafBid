@@ -274,14 +274,15 @@ public class AuctionSaleProductService(ApplicationDbContext context, AuctionHelp
             // Fetch auction to check pause and current start time
             Auction auction = await context.Auctions.FindAsync(buyData.AuctionId) ??
                               throw new NotFoundException("Auction not found");
+            
+            DateTime now = TimeHelper.GetAmsterdamTime();
+            DateTime? startTime = auction.NextProductStartTime;
 
-            switch (auction.NextProductStartTime)
+            if (startTime is null || now < startTime.Value)
             {
-                case null:
-                case { } startTime when TimeHelper.GetAmsterdamTime() < startTime:
-                    throw new InvalidOperationException("Auction is currently paused.");
+                throw new InvalidOperationException("Auction is currently paused.");
             }
-
+ 
             RegisteredProduct registeredProduct = await context.RegisteredProducts
                                                       .FirstOrDefaultAsync(rp =>
                                                           rp.Id == buyData.RegisteredProductId) ??
