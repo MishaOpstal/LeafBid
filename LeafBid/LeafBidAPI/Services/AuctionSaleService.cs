@@ -7,13 +7,15 @@ using Microsoft.EntityFrameworkCore;
 
 namespace LeafBidAPI.Services;
 
-public class AuctionSaleService(ApplicationDbContext context) : IAuctionSaleService
+public class AuctionSaleService(
+    ApplicationDbContext context
+) : IAuctionSaleService
 {
     public async Task<List<AuctionSale>> GetAuctionSales()
     {
         return await context.AuctionSales.ToListAsync();
     }
-    
+
     public async Task<AuctionSale> GetAuctionSaleById(int id)
     {
         AuctionSale? auctionSale =
@@ -26,7 +28,7 @@ public class AuctionSaleService(ApplicationDbContext context) : IAuctionSaleServ
 
         return auctionSale;
     }
-    
+
     public async Task<AuctionSale> CreateAuctionSale(CreateAuctionSaleDto auctionSaleData)
     {
         AuctionSale auctionSale = new()

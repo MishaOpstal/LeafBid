@@ -4,5 +4,5 @@ export interface Register {
     password: string;
     passwordConfirmation: string;
     roles?: string[];
-    company?: number | null;
+    companyId?: number | null;
 }

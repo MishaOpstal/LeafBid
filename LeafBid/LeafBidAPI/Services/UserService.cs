@@ -13,13 +13,15 @@ public class UserService(
     ApplicationDbContext context,
     SignInManager<User> signInManager,
     UserManager<User> userManager,
-    IRoleService roleService) : IUserService
+    RoleManager<IdentityRole> roleManager,
+    IRoleService roleService
+) : IUserService
 {
     public async Task<List<User>> GetUsers()
     {
         return await context.Users.ToListAsync();
     }
-    
+
     public async Task<User> GetUserById(string id)
     {
         User? user = await context.Users.FirstOrDefaultAsync(u => u.Id == id);
@@ -30,13 +32,14 @@ public class UserService(
 
         return user;
     }
-    
+
     public async Task<User> RegisterUser(CreateUserDto userData)
     {
         User user = new()
         {
             UserName = userData.UserName,
-            Email = userData.Email
+            Email = userData.Email,
+            CompanyId = userData.CompanyId
         };
 
         if (userData.Password != userData.PasswordConfirmation)
@@ -45,10 +48,11 @@ public class UserService(
         }
 
         IdentityResult result = await userManager.CreateAsync(user, userData.Password);
-        
+
         if (!result.Succeeded)
         {
-            throw new UserCreationFailedException("User creation failed, error: " + string.Join(", ", result.Errors.Select(e => e.Description)));
+            throw new UserCreationFailedException("User creation failed, error: " +
+                                                  string.Join(", ", result.Errors.Select(e => e.Description)));
         }
 
         if (userData.Roles != null && !Array.Empty<string>().Equals(userData.Roles))
@@ -63,7 +67,7 @@ public class UserService(
 
         return user;
     }
-    
+
     public async Task<User> UpdateUser(string id, UpdateUserDto updatedUser)
     {
         User? user = context.Users.FirstOrDefault(u => u.Id == id);
@@ -105,7 +109,7 @@ public class UserService(
 
         return user;
     }
-    
+
     public async Task<User> UpdateUser(ClaimsPrincipal loggedInUser, UpdateUserDto updatedUser)
     {
         User? user = await userManager.GetUserAsync(loggedInUser);
@@ -116,7 +120,7 @@ public class UserService(
 
         return await UpdateUser(user.Id, updatedUser);
     }
-    
+
     public async Task<User> LoginUser(LoginUserDto loginData)
     {
         User? user = await userManager.FindByEmailAsync(loginData.Email)
@@ -139,11 +143,6 @@ public class UserService(
         }
 
         IList<string> roles = await userManager.GetRolesAsync(user);
-        List<Claim> userRoleClaims = roles
-            .Select(role => new Claim(ClaimTypes.Role, role))
-            .ToList();
-
-        IList<Claim> userClaims = await userManager.GetClaimsAsync(user);
 
         List<Claim> baseClaims =
         [
@@ -154,8 +153,21 @@ public class UserService(
 
         List<Claim> allClaims = [];
         allClaims.AddRange(baseClaims);
+
+        IList<Claim> userClaims = await userManager.GetClaimsAsync(user);
         allClaims.AddRange(userClaims);
-        allClaims.AddRange(userRoleClaims);
+
+        foreach (string roleName in roles)
+        {
+            allClaims.Add(new Claim(ClaimTypes.Role, roleName));
+
+            IdentityRole? role = await roleManager.FindByNameAsync(roleName);
+            if (role != null)
+            {
+                IList<Claim> roleClaims = await roleManager.GetClaimsAsync(role);
+                allClaims.AddRange(roleClaims);
+            }
+        }
 
         await signInManager.SignInWithClaimsAsync(
             user,
@@ -168,14 +180,14 @@ public class UserService(
 
         return user;
     }
-    
+
     public async Task<User> VerifyUser(User user)
     {
         user.EmailConfirmed = true;
         await userManager.UpdateAsync(user);
         return user;
     }
-    
+
     public async Task<bool> LogoutUser(ClaimsPrincipal loggedInUser)
     {
         User? user = await userManager.GetUserAsync(loggedInUser);
@@ -187,7 +199,7 @@ public class UserService(
         await signInManager.SignOutAsync();
         return true;
     }
-    
+
     public async Task<LoggedInUserResponse> GetLoggedInUser(ClaimsPrincipal loggedInUser)
     {
         User? user = await userManager.GetUserAsync(loggedInUser);
@@ -207,7 +219,7 @@ public class UserService(
 
         return loggedInUserResponse;
     }
-    
+
     public async Task<bool> DeleteUser(string id)
     {
         User? user = await context.Users.FirstOrDefaultAsync(u => u.Id == id);
@@ -219,7 +231,7 @@ public class UserService(
         IdentityResult result = await userManager.DeleteAsync(user);
         return result.Succeeded;
     }
-    
+
     public UserResponse CreateUserResponse(User user, IList<string> roles)
     {
         UserResponse userResponse = new()

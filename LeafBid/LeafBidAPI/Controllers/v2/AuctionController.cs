@@ -109,8 +109,9 @@ public class AuctionController(IAuctionService auctionService, IProductService p
     {
         try
         {
-            List<RegisteredProduct> registeredProducts = await auctionService.GetRegisteredProductsByAuctionId(auctionId);
-                                             
+            List<RegisteredProduct> registeredProducts =
+                await auctionService.GetRegisteredProductsByAuctionId(auctionId);
+
             List<RegisteredProductResponse> registeredProductResponses = registeredProducts
                 .Select(productService.CreateRegisteredProductResponse)
                 .ToList();

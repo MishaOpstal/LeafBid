@@ -1,27 +1,34 @@
-﻿using LeafBidAPI.DTOs.Product;
+﻿using LeafBidAPI.DTOs.AuctionSaleProduct;
+using LeafBidAPI.DTOs.Product;
 using LeafBidAPI.DTOs.RegisteredProduct;
 using LeafBidAPI.DTOs.User;
 using LeafBidAPI.Exceptions;
+using LeafBidAPI.Hubs;
 using LeafBidAPI.Interfaces;
 using LeafBidAPI.Models;
+using LeafBidAPI.Permissions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
 
 namespace LeafBidAPI.Controllers.v2;
 
 [Route("api/v{version:apiVersion}/[controller]")]
 [ApiController]
 [ApiVersion("2.0")]
-// [Authorize]
-[AllowAnonymous]
 [Produces("application/json")]
-public class ProductController(IProductService productService, IUserService userService) : ControllerBase
+public class ProductController(
+    IProductService productService,
+    IUserService userService,
+    IHubContext<AuctionHub> hubContext
+) : ControllerBase
 {
     /// <summary>
     /// Get all products.
     /// </summary>
     /// <returns>A list of all products.</returns>
     [HttpGet]
+    [Authorize(Policy = PolicyTypes.Products.View)]
     [ProducesResponseType(typeof(List<ProductResponse>), StatusCodes.Status200OK)]
     public async Task<ActionResult<List<ProductResponse>>> GetProducts()
     {
@@ -37,6 +44,7 @@ public class ProductController(IProductService productService, IUserService user
     /// </summary>
     /// <returns>A list of available products.</returns>
     [HttpGet("available")]
+    [Authorize(Policy = PolicyTypes.Products.View)]
     [ProducesResponseType(typeof(List<ProductResponse>), StatusCodes.Status200OK)]
     public async Task<ActionResult<List<ProductResponse>>> GetAvailableProducts()
     {
@@ -46,12 +54,13 @@ public class ProductController(IProductService productService, IUserService user
             .ToList();
         return Ok(productResponses);
     }
-    
+
     /// <summary>
     /// Get all available registered products.
     /// </summary>
     /// <returns>A list of available registered products.</returns>
     [HttpGet("available/registered")]
+    [Authorize(Policy = PolicyTypes.Products.View)]
     [ProducesResponseType(typeof(List<RegisteredProductResponse>), StatusCodes.Status200OK)]
     public async Task<ActionResult<List<RegisteredProductResponse>>> GetAvailableRegisteredProducts()
     {
@@ -68,6 +77,7 @@ public class ProductController(IProductService productService, IUserService user
     /// <param name="id">The product ID.</param>
     /// <returns>The requested product.</returns>
     [HttpGet("{id:int}")]
+    [Authorize(Policy = PolicyTypes.Products.View)]
     [ProducesResponseType(typeof(ProductResponse), StatusCodes.Status200OK)]
     public async Task<ActionResult<ProductResponse>> GetProductById(int id)
     {
@@ -82,6 +92,7 @@ public class ProductController(IProductService productService, IUserService user
     /// <param name="id">The registered product ID.</param>
     /// <returns>The requested registered product.</returns>
     [HttpGet("/registered/{id:int}")]
+    [Authorize(Policy = PolicyTypes.Products.View)]
     [ProducesResponseType(typeof(RegisteredProductResponse), StatusCodes.Status200OK)]
     public async Task<ActionResult<RegisteredProductResponse>> GetRegisteredProductById(int id)
     {
@@ -98,7 +109,7 @@ public class ProductController(IProductService productService, IUserService user
     /// <param name="productData">The product data.</param>
     /// <returns>The created product.</returns>
     [HttpPost]
-    [Authorize(Roles = "Auctioneer")]
+    [Authorize(Policy = PolicyTypes.Products.Manage)]
     [ProducesResponseType(typeof(ProductResponse), StatusCodes.Status201Created)]
     public async Task<ActionResult<ProductResponse>> CreateProduct([FromBody] CreateProductDto productData)
     {
@@ -124,7 +135,7 @@ public class ProductController(IProductService productService, IUserService user
     /// <returns>The created product.</returns>
     /// <exception cref="NotFoundException">Thrown when the main product cannot be found.</exception>
     [HttpPost("registeredCreate/{ProductId:int}")]
-    [Authorize(Roles = "Provider")]
+    [Authorize(Policy = PolicyTypes.Products.Manage)]
     [ProducesResponseType(typeof(RegisteredProductResponse), StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -135,15 +146,16 @@ public class ProductController(IProductService productService, IUserService user
         try
         {
             LoggedInUserResponse me = await userService.GetLoggedInUser(User);
-            
+
             RegisteredProduct registeredProduct = await productService.CreateRegisteredProduct(
                 productData,
                 productId,
                 me.UserData!.Id,
                 me.UserData.CompanyId!.Value
             );
-            
-            RegisteredProductResponse registeredProductResponse = productService.CreateRegisteredProductResponse(registeredProduct);
+
+            RegisteredProductResponse registeredProductResponse =
+                productService.CreateRegisteredProductResponse(registeredProduct);
             return CreatedAtAction(
                 actionName: nameof(GetProductById),
                 routeValues: new
@@ -166,7 +178,6 @@ public class ProductController(IProductService productService, IUserService user
         {
             return BadRequest(e.Message);
         }
-
     }
 
     /// <summary>
@@ -176,7 +187,7 @@ public class ProductController(IProductService productService, IUserService user
     /// <param name="updatedProduct">The updated product data.</param>
     /// <returns>The updated product.</returns>
     [HttpPut("{id:int}")]
-    [Authorize(Roles = "Provider")]
+    [Authorize(Policy = PolicyTypes.Products.Manage)]
     [ProducesResponseType(typeof(ProductResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<ProductResponse>> UpdateProduct(
@@ -196,12 +207,58 @@ public class ProductController(IProductService productService, IUserService user
     }
 
     /// <summary>
+    /// Buys a product from an auction.
+    /// </summary>
+    /// <param name="buyData">The purchase data.</param>
+    /// <returns>The updated registered product.</returns>
+    [HttpPost("buy")]
+    [Authorize(Policy = PolicyTypes.Products.Buy)]
+    [ProducesResponseType(typeof(RegisteredProduct), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<RegisteredProduct>> BuyProduct([FromBody] BuyProductDto buyData)
+    {
+        try
+        {
+            LoggedInUserResponse me = await userService.GetLoggedInUser(User);
+            if (me.UserData == null)
+            {
+                return Unauthorized("User data not found");
+            }
+
+            AuctionEventResponse result = await productService.BuyProduct(buyData, me.UserData.Id);
+
+            if (result.IsSuccess)
+            {
+                // Notify all clients in the auction group
+                await hubContext.Clients.Group(buyData.AuctionId.ToString()).SendAsync("ProductBought", new
+                {
+                    registeredProductId = result.RegisteredProduct.Id,
+                    stock = result.RegisteredProduct.Stock,
+                    quantityBought = buyData.Quantity,
+                    nextProductStartTime = result.NextProductStartTime
+                });
+            }
+
+            return Ok(result.RegisteredProduct);
+        }
+        catch (NotFoundException e)
+        {
+            return NotFound(e.Message);
+        }
+        catch (InvalidOperationException e)
+        {
+            return BadRequest(e.Message);
+        }
+    }
+
+    /// <summary>
     /// Delete a product by ID.
     /// </summary>
     /// <param name="id">The product ID.</param>
     /// <returns>No content if deletion succeeded.</returns>
     [HttpDelete("{id:int}")]
-    [Authorize(Roles = "Provider")]
+    [Authorize(Policy = PolicyTypes.Products.Manage)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     public async Task<IActionResult> DeleteProduct(int id)
     {

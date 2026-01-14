@@ -1,6 +1,7 @@
 using LeafBidAPI.Exceptions;
 using LeafBidAPI.Interfaces;
 using LeafBidAPI.Models;
+using LeafBidAPI.Permissions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -10,8 +11,6 @@ namespace LeafBidAPI.Controllers.v2;
 [ApiController]
 [ApiVersion("2.0")]
 [Route("api/v{version:apiVersion}/[controller]")]
-// [Authorize]
-[AllowAnonymous]
 [Produces("application/json")]
 public class RoleController(IRoleService roleService) : ControllerBase
 {
@@ -35,6 +34,7 @@ public class RoleController(IRoleService roleService) : ControllerBase
     /// <param name="roleName">The role name to check.</param>
     /// <returns><c>true</c> if the user has the role; otherwise <c>false</c>.</returns>
     [HttpGet("users/{userId}/has")]
+    [AllowAnonymous]
     [ProducesResponseType(typeof(bool), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<bool>> GetUserHasRole(
@@ -58,6 +58,7 @@ public class RoleController(IRoleService roleService) : ControllerBase
     /// <param name="roleName">The role name.</param>
     /// <returns>A list of users that have the given role.</returns>
     [HttpGet("{roleName}/users")]
+    [Authorize(Policy = PolicyTypes.Roles.ViewOthers)]
     [ProducesResponseType(typeof(IList<User>), StatusCodes.Status200OK)]
     public async Task<ActionResult<IList<User>>> GetUsersByRole([FromRoute] string roleName)
     {
@@ -70,8 +71,9 @@ public class RoleController(IRoleService roleService) : ControllerBase
     /// </summary>
     /// <param name="userId">The user ID.</param>
     /// <param name="roleNames">The roles to assign.</param>
-    /// <returns>No content if assignment succeeded.</returns>
+    /// <returns>No content if the assignment succeeded.</returns>
     [HttpPost("users/{userId}/roles")]
+    [Authorize(Policy = PolicyTypes.Roles.Manage)]
     [ProducesResponseType(typeof(IList<IdentityRole>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -97,6 +99,7 @@ public class RoleController(IRoleService roleService) : ControllerBase
     /// <param name="roleNames">The roles to revoke.</param>
     /// <returns>No content if revocation succeeded.</returns>
     [HttpDelete("users/{userId}/roles")]
+    [Authorize(Policy = PolicyTypes.Roles.Manage)]
     [ProducesResponseType(typeof(IList<IdentityRole>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]

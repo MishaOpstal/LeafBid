@@ -122,7 +122,7 @@ export default function RegisterPage() {
         password: "",
         passwordConfirmation: "",
         roles: [],
-        company: null
+        companyId: null
     });
 
     const [errors, setErrors] = useState<Record<string, string>>({});
@@ -157,7 +157,7 @@ export default function RegisterPage() {
     const selectedRoleName = registerData.roles?.[0] ?? null;
 
     const needsCompany =
-        selectedRoleName === "Provider" || selectedRoleName === "Buyer";
+        selectedRoleName === "Provider" || selectedRoleName === "Buyer" || selectedRoleName === "Auctioneer" || selectedRoleName ==="Admin";
 
     return (
         <main className={s.main}>
@@ -253,7 +253,7 @@ export default function RegisterPage() {
                             onSelect={(company) => {
                                 setRegisterData({
                                     ...registerData,
-                                    company: company.id
+                                    companyId: company.id
                                 });
                             }}
                         />

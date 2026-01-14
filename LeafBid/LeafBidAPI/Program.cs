@@ -21,9 +21,10 @@ namespace LeafBidAPI;
 
 public class Program
 {
-    public static void Main(string[] args)
+    public static async Task Main(string[] args)
     {
-        string allowedOrigins = "_allowedOrigins";
+        const string allowedOrigins = "_allowedOrigins";
+
         WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
         builder.WebHost.ConfigureKestrel(options =>
         {
@@ -43,7 +44,6 @@ public class Program
                     policy.WithOrigins("http://localhost:3000")
                         .AllowAnyHeader()
                         .AllowAnyMethod()
-                        // Needed to allow the browser to send/receive the refresh-token cookie
                         .AllowCredentials();
                 });
         });
@@ -93,17 +93,45 @@ public class Program
                 policy.RequireClaim(ApplicationClaimType.Permission, ProductPermissions.View);
                 policy.RequireClaim(ApplicationClaimType.Permission, ProductPermissions.Create);
                 policy.RequireClaim(ApplicationClaimType.Permission, ProductPermissions.Register);
+                policy.RequireClaim(ApplicationClaimType.Permission, ProductPermissions.Update);
+                policy.RequireClaim(ApplicationClaimType.Permission, ProductPermissions.Delete);
+            })
+            .AddPolicy(PolicyTypes.Companies.View, policy =>
+            {
+                policy.RequireClaim(ApplicationClaimType.Permission, CompanyPermissions.View);
+            })
+            .AddPolicy(PolicyTypes.Companies.Manage, policy =>
+            {
+                policy.RequireClaim(ApplicationClaimType.Permission, CompanyPermissions.View);
+                policy.RequireClaim(ApplicationClaimType.Permission, CompanyPermissions.Create);
+                policy.RequireClaim(ApplicationClaimType.Permission, CompanyPermissions.Update);
+            })
+            .AddPolicy(PolicyTypes.Roles.ViewOthers, policy =>
+            {
+                policy.RequireClaim(ApplicationClaimType.Permission, RolePermissions.ViewOthers);
+            })
+            .AddPolicy(PolicyTypes.Roles.Manage, policy =>
+            {
+                policy.RequireClaim(ApplicationClaimType.Permission, RolePermissions.ViewOthers);
+                policy.RequireClaim(ApplicationClaimType.Permission, RolePermissions.Manage);
+            })
+            .AddPolicy(PolicyTypes.Users.ViewOthers, policy =>
+            {
+                policy.RequireClaim(ApplicationClaimType.Permission, UserPermissions.ViewOthers);
+            })
+            .AddPolicy(PolicyTypes.Users.Manage, policy =>
+            {
+                policy.RequireClaim(ApplicationClaimType.Permission, UserPermissions.ViewOthers);
+                policy.RequireClaim(ApplicationClaimType.Permission, UserPermissions.Manage);
             });
-        
+
         builder.Services.AddControllers();
         builder.Services.AddRouting();
         builder.Services.AddSignalR();
         builder.Services.AddHttpClient();
 
         builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("EmailSettings"));
-        builder.Services.Configure<AuctionTimerSettings>(
-            builder.Configuration.GetSection("AuctionTimer")
-        );
+        builder.Services.Configure<AuctionTimerSettings>(builder.Configuration.GetSection("AuctionTimer"));
 
         builder.Services
             .AddOptions<AuctionTimerSettings>()
@@ -114,7 +142,6 @@ public class Program
                 "MinDurationForAuctionTimer must be positive"
             )
             .ValidateOnStart();
-
 
         builder.Services.AddIdentityCore<User>(options =>
             {
@@ -138,7 +165,7 @@ public class Program
             .AddSignInManager()
             .AddDefaultTokenProviders();
 
-        // Add Authentication (Bearer OR Identity.Application cookie)
+        // Add Authentication (Identity.Application cookie)
         builder.Services
             .AddAuthentication(IdentityConstants.ApplicationScheme)
             .AddIdentityCookies(identityCookies =>
@@ -146,12 +173,8 @@ public class Program
                 identityCookies.ApplicationCookie?.Configure(options =>
                 {
                     options.Cookie.Name = ".AspNetCore.Identity.Application";
-
-                    // For same-origin SPA calls (recommended) this is perfect.
                     options.Cookie.SameSite = SameSiteMode.Lax;
 
-                    // If you run ONLY http://localhost, keep SameAsRequest.
-                    // If you run HTTPS, this will become Secure automatically.
                     options.Cookie.SecurePolicy = builder.Environment.IsDevelopment()
                         ? CookieSecurePolicy.SameAsRequest
                         : CookieSecurePolicy.Always;
@@ -197,7 +220,7 @@ public class Program
             options.SubstituteApiVersionInUrl = true;
         });
 
-        // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
+        // Swagger/OpenAPI
         builder.Services.AddEndpointsApiExplorer();
         builder.Services.AddSwaggerGen(c =>
         {
@@ -214,81 +237,107 @@ public class Program
         if (app.Environment.IsDevelopment())
         {
             app.UseSwagger();
-            app.UseSwaggerUI(c => { c.SwaggerEndpoint("/swagger/v2/swagger.json", "LeafBidAPI V2"); });
+            app.UseSwaggerUI(c =>
+            {
+                c.SwaggerEndpoint("/swagger/v2/swagger.json", "LeafBidAPI V2");
+            });
         }
 
-        //Role seeding
+        // Role + role-claim seeding (FIXED)
         using (IServiceScope scope = app.Services.CreateScope())
         {
             RoleManager<IdentityRole> roleManager =
                 scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
+
             string[] roles = ["Admin", "Buyer", "Provider", "Auctioneer"];
-            foreach (string role in roles)
+
+            foreach (string roleName in roles)
             {
-                if (!roleManager.RoleExistsAsync(role).Result)
+                IdentityRole? roleEntity = await roleManager.FindByNameAsync(roleName);
+
+                if (roleEntity == null)
                 {
-                    roleManager.CreateAsync(new IdentityRole(role)).Wait();
+                    roleEntity = new IdentityRole(roleName);
+                    IdentityResult createResult = await roleManager.CreateAsync(roleEntity);
+
+                    if (!createResult.Succeeded)
+                    {
+                        continue;
+                    }
                 }
 
-                switch (role)
+                async Task AddPermissionAsync(string permission)
+                {
+                    IList<Claim> existingClaims = await roleManager.GetClaimsAsync(roleEntity);
+
+                    if (existingClaims.Any(c =>
+                            c.Type == ApplicationClaimType.Permission &&
+                            c.Value == permission))
+                    {
+                        return;
+                    }
+
+                    await roleManager.AddClaimAsync(
+                        roleEntity,
+                        new Claim(ApplicationClaimType.Permission, permission)
+                    );
+                }
+
+                switch (roleName)
                 {
                     case "Admin":
-                        roleManager.AddClaimAsync(new IdentityRole(role),
-                            new Claim(ApplicationClaimType.Permission, AuctionPermissions.View)).Wait();
-                        roleManager.AddClaimAsync(new IdentityRole(role),
-                            new Claim(ApplicationClaimType.Permission, AuctionPermissions.Create)).Wait();
-                        roleManager.AddClaimAsync(new IdentityRole(role),
-                            new Claim(ApplicationClaimType.Permission, AuctionPermissions.Update)).Wait();
-                        roleManager.AddClaimAsync(new IdentityRole(role),
-                            new Claim(ApplicationClaimType.Permission, AuctionPermissions.Start)).Wait();
-                        roleManager.AddClaimAsync(new IdentityRole(role),
-                            new Claim(ApplicationClaimType.Permission, AuctionPermissions.Stop)).Wait();
+                        await AddPermissionAsync(AuctionPermissions.View);
+                        await AddPermissionAsync(AuctionPermissions.Create);
+                        await AddPermissionAsync(AuctionPermissions.Update);
+                        await AddPermissionAsync(AuctionPermissions.Start);
+                        await AddPermissionAsync(AuctionPermissions.Stop);
 
-                        roleManager.AddClaimAsync(new IdentityRole(role),
-                            new Claim(ApplicationClaimType.Permission, AuctionSalePermissions.View)).Wait();
+                        await AddPermissionAsync(AuctionSalePermissions.View);
 
-                        roleManager.AddClaimAsync(new IdentityRole(role),
-                            new Claim(ApplicationClaimType.Permission, ProductPermissions.Buy)).Wait();
-                        roleManager.AddClaimAsync(new IdentityRole(role),
-                            new Claim(ApplicationClaimType.Permission, ProductPermissions.View)).Wait();
-                        roleManager.AddClaimAsync(new IdentityRole(role),
-                            new Claim(ApplicationClaimType.Permission, ProductPermissions.Create)).Wait();
-                        roleManager.AddClaimAsync(new IdentityRole(role),
-                            new Claim(ApplicationClaimType.Permission, ProductPermissions.Register)).Wait();
+                        await AddPermissionAsync(ProductPermissions.Buy);
+                        await AddPermissionAsync(ProductPermissions.View);
+                        await AddPermissionAsync(ProductPermissions.Create);
+                        await AddPermissionAsync(ProductPermissions.Register);
+                        await AddPermissionAsync(ProductPermissions.Update);
+                        await AddPermissionAsync(ProductPermissions.Delete);
+
+                        await AddPermissionAsync(CompanyPermissions.View);
+                        await AddPermissionAsync(CompanyPermissions.Create);
+                        await AddPermissionAsync(CompanyPermissions.Update);
+
+                        await AddPermissionAsync(RolePermissions.ViewOthers);
+                        await AddPermissionAsync(RolePermissions.Manage);
                         break;
+
                     case "Buyer":
-                        roleManager.AddClaimAsync(new IdentityRole(role),
-                            new Claim(ApplicationClaimType.Permission, AuctionPermissions.View)).Wait();
-                        roleManager.AddClaimAsync(new IdentityRole(role),
-                            new Claim(ApplicationClaimType.Permission, ProductPermissions.Buy)).Wait();
-                        roleManager.AddClaimAsync(new IdentityRole(role),
-                            new Claim(ApplicationClaimType.Permission, ProductPermissions.View)).Wait();
+                        await AddPermissionAsync(AuctionPermissions.View);
+                        await AddPermissionAsync(ProductPermissions.Buy);
+                        await AddPermissionAsync(ProductPermissions.View);
+                        await AddPermissionAsync(RolePermissions.ViewOthers);
                         break;
+
                     case "Provider":
-                        roleManager.AddClaimAsync(new IdentityRole(role),
-                            new Claim(ApplicationClaimType.Permission, AuctionPermissions.View)).Wait();
-                        roleManager.AddClaimAsync(new IdentityRole(role),
-                            new Claim(ApplicationClaimType.Permission, ProductPermissions.View)).Wait();
-                        roleManager.AddClaimAsync(new IdentityRole(role),
-                            new Claim(ApplicationClaimType.Permission, ProductPermissions.Create)).Wait();
-                        roleManager.AddClaimAsync(new IdentityRole(role),
-                            new Claim(ApplicationClaimType.Permission, ProductPermissions.Register)).Wait();
+                        await AddPermissionAsync(AuctionPermissions.View);
+                        await AddPermissionAsync(ProductPermissions.View);
+                        await AddPermissionAsync(ProductPermissions.Create);
+                        await AddPermissionAsync(ProductPermissions.Register);
+                        await AddPermissionAsync(ProductPermissions.Update);
+                        await AddPermissionAsync(ProductPermissions.Delete);
+
+                        await AddPermissionAsync(RolePermissions.ViewOthers);
                         break;
+
                     case "Auctioneer":
-                        roleManager.AddClaimAsync(new IdentityRole(role),
-                            new Claim(ApplicationClaimType.Permission, AuctionPermissions.View)).Wait();
-                        roleManager.AddClaimAsync(new IdentityRole(role),
-                            new Claim(ApplicationClaimType.Permission, AuctionPermissions.Create)).Wait();
-                        roleManager.AddClaimAsync(new IdentityRole(role),
-                            new Claim(ApplicationClaimType.Permission, AuctionPermissions.Update)).Wait();
-                        roleManager.AddClaimAsync(new IdentityRole(role),
-                            new Claim(ApplicationClaimType.Permission, AuctionPermissions.Start)).Wait();
-                        roleManager.AddClaimAsync(new IdentityRole(role),
-                            new Claim(ApplicationClaimType.Permission, AuctionPermissions.Stop)).Wait();
-                        roleManager.AddClaimAsync(new IdentityRole(role),
-                            new Claim(ApplicationClaimType.Permission, AuctionSalePermissions.View)).Wait();
-                        roleManager.AddClaimAsync(new IdentityRole(role),
-                            new Claim(ApplicationClaimType.Permission, ProductPermissions.View)).Wait();
+                        await AddPermissionAsync(AuctionPermissions.View);
+                        await AddPermissionAsync(AuctionPermissions.Create);
+                        await AddPermissionAsync(AuctionPermissions.Update);
+                        await AddPermissionAsync(AuctionPermissions.Start);
+                        await AddPermissionAsync(AuctionPermissions.Stop);
+
+                        await AddPermissionAsync(AuctionSalePermissions.View);
+                        await AddPermissionAsync(ProductPermissions.View);
+
+                        await AddPermissionAsync(RolePermissions.ViewOthers);
                         break;
                 }
             }
@@ -306,16 +355,14 @@ public class Program
         app.UseAuthentication();
         app.UseAuthorization();
 
-        // app.MapIdentityApi<User>();
         app.MapControllers();
         app.MapHub<AuctionHub>("/auctionHub");
         app.UseStaticFiles();
 
         // Check for seed commands
-        bool appliedAny = app.MapSeedCommandsAsync(args).Result;
+        bool appliedAny = await app.MapSeedCommandsAsync(args);
         if (appliedAny)
         {
-            // Prevent the app from continuing further.
             return;
         }
 

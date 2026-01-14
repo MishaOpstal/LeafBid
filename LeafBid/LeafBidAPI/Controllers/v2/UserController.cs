@@ -2,6 +2,7 @@ using LeafBidAPI.DTOs.User;
 using LeafBidAPI.Exceptions;
 using LeafBidAPI.Interfaces;
 using LeafBidAPI.Models;
+using LeafBidAPI.Permissions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -10,8 +11,6 @@ namespace LeafBidAPI.Controllers.v2;
 [Route("api/v{version:apiVersion}/[controller]")]
 [ApiController]
 [ApiVersion("2.0")]
-// [Authorize]
-[AllowAnonymous]
 [Produces("application/json")]
 public class UserController(IUserService userService, IRoleService roleService) : ControllerBase
 {
@@ -20,6 +19,7 @@ public class UserController(IUserService userService, IRoleService roleService) 
     /// </summary>
     /// <returns>A list of all users.</returns>
     [HttpGet]
+    [Authorize(Policy = PolicyTypes.Users.ViewOthers)]
     [ProducesResponseType(typeof(List<UserResponse>), StatusCodes.Status200OK)]
     public async Task<ActionResult<List<UserResponse>>> GetUsers()
     {
@@ -43,6 +43,7 @@ public class UserController(IUserService userService, IRoleService roleService) 
     /// <param name="id">The user ID.</param>
     /// <returns>The requested user.</returns>
     [HttpGet("{id}")]
+    [Authorize(Policy = PolicyTypes.Users.ViewOthers)]
     [ProducesResponseType(typeof(UserResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<UserResponse>> GetUser(string id)
@@ -80,7 +81,7 @@ public class UserController(IUserService userService, IRoleService roleService) 
                 createdUser,
                 await roleService.GetRolesForUser(createdUser)
             );
-            
+
             // Set the email verified to true
             await userService.VerifyUser(createdUser);
 
@@ -101,7 +102,7 @@ public class UserController(IUserService userService, IRoleService roleService) 
     }
 
     /// <summary>
-    /// Login a user.
+    /// Log in a user.
     /// </summary>
     /// <param name="login">The login credentials.</param>
     /// <returns>The logged-in user.</returns>
@@ -133,10 +134,11 @@ public class UserController(IUserService userService, IRoleService roleService) 
     }
 
     /// <summary>
-    /// Logout the current user.
+    /// Log out the current user.
     /// </summary>
     /// <returns>No content if logout succeeded.</returns>
     [HttpPost("logout")]
+    [Authorize]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     public async Task<IActionResult> LogoutUser()
@@ -157,6 +159,7 @@ public class UserController(IUserService userService, IRoleService roleService) 
     /// </summary>
     /// <returns>The currently logged-in user.</returns>
     [HttpGet("me")]
+    [Authorize]
     [ProducesResponseType(typeof(LoggedInUserResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<LoggedInUserResponse>> LoggedInUser()
@@ -179,6 +182,7 @@ public class UserController(IUserService userService, IRoleService roleService) 
     /// <param name="updatedUser">The updated user data.</param>
     /// <returns>The updated user.</returns>
     [HttpPut("{id}")]
+    [Authorize(Policy = PolicyTypes.Users.Manage)]
     [ProducesResponseType(typeof(UserResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -212,6 +216,7 @@ public class UserController(IUserService userService, IRoleService roleService) 
     /// <param name="updatedUser">The updated user data.</param>
     /// <returns>The updated user.</returns>
     [HttpPut]
+    [Authorize]
     [ProducesResponseType(typeof(UserResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<UserResponse>> UpdateUser([FromBody] UpdateUserDto updatedUser)
@@ -237,7 +242,7 @@ public class UserController(IUserService userService, IRoleService roleService) 
     /// <param name="id">The user ID.</param>
     /// <returns>No content if deletion succeeded.</returns>
     [HttpDelete("{id}")]
-    [Authorize(Roles = "Admin")]
+    [Authorize(Policy = PolicyTypes.Users.Manage)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> DeleteUser(string id)

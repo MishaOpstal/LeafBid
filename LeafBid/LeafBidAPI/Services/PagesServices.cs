@@ -3,20 +3,20 @@ using LeafBidAPI.DTOs.Page;
 using LeafBidAPI.DTOs.RegisteredProduct;
 using LeafBidAPI.Enums;
 using LeafBidAPI.Exceptions;
+using LeafBidAPI.Helpers;
 using LeafBidAPI.Interfaces;
 using LeafBidAPI.Models;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using LeafBidAPI.Helpers;
 
 namespace LeafBidAPI.Services;
 
 public class PagesServices(
     ApplicationDbContext context,
-    UserManager<User> userManager
+    IProductService productService
 ) : IPagesServices
 {
-    public async Task<List<GetAuctionWithProductsResponse>> GetClosestAuctionsWithProducts(ClockLocationEnum clockLocation)
+    public async Task<List<GetAuctionWithProductsResponse>> GetClosestAuctionsWithProducts(
+        ClockLocationEnum clockLocation)
     {
         List<Auction> auctions = await context.Auctions
             .Where(a => a.ClockLocationEnum == clockLocation && (a.IsVisible || a.IsLive))
@@ -28,7 +28,6 @@ public class PagesServices(
             throw new NotFoundException("Auctions not found for today at the specified clock location.");
         }
 
-        ProductService productService = new(context, userManager);
         List<GetAuctionWithProductsResponse> responses = [];
 
         foreach (Auction auction in auctions)
@@ -72,8 +71,6 @@ public class PagesServices(
             throw new NotFoundException("No registered products found for this auction.");
         }
 
-        ProductService productService = new(context, userManager);
-
         List<RegisteredProductResponse> productResponses =
             CreateRegisteredProductResponses(productService, registeredProducts);
 
@@ -97,7 +94,6 @@ public class PagesServices(
             throw new NotFoundException("No auctions found for today.");
         }
 
-        ProductService productService = new(context, userManager);
         List<GetAuctionWithProductsResponse> responses = [];
 
         foreach (Auction auction in auctions)
@@ -140,7 +136,7 @@ public class PagesServices(
     }
 
     private static List<RegisteredProductResponse> CreateRegisteredProductResponses(
-        ProductService productService,
+        IProductService productService,
         List<RegisteredProduct> registeredProducts)
     {
         List<RegisteredProductResponse> responses = [];

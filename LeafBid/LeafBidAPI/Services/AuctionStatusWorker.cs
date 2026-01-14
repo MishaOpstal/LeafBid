@@ -41,12 +41,12 @@ public class AuctionStatusWorker(
         using IServiceScope scope = scopeFactory.CreateScope();
 
         ApplicationDbContext context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-        IAuctionSaleProductService auctionSaleProductService =
-            scope.ServiceProvider.GetRequiredService<IAuctionSaleProductService>();
+        IProductService productService =
+            scope.ServiceProvider.GetRequiredService<IProductService>();
 
         AuctionHelper auctionHelper =
             scope.ServiceProvider.GetRequiredService<AuctionHelper>();
-        
+
         DateTime now = TimeHelper.GetAmsterdamTime();
         DateTime visibilityThreshold = now.AddHours(2);
 
@@ -74,7 +74,7 @@ public class AuctionStatusWorker(
             auction.IsVisible = true; // Ensure it's visible if it's live
             auction.NextProductStartTime = auction.StartDate; // Initialize the timer
             logger.LogInformation("Auction {AuctionId} is now Live.", auction.Id);
-            
+
             // Send out an AuctionStarted event
             await hubContext.Clients.Group(auction.Id.ToString()).SendAsync("AuctionStarted", new
             {
@@ -93,7 +93,7 @@ public class AuctionStatusWorker(
             {
                 continue;
             }
-            
+
             RegisteredProduct? activeProduct = await context.AuctionProducts
                 .Where(ap => ap.AuctionId == auction.Id && ap.RegisteredProduct!.Stock > 0)
                 .OrderBy(ap => ap.ServeOrder)
@@ -118,7 +118,7 @@ public class AuctionStatusWorker(
                 "Auction {AuctionId} product {ProductId} expired automatically (duration: {Duration}s, elapsed: {Elapsed}s).",
                 auction.Id, activeProduct.Id, duration, Math.Round(elapsed, 2));
 
-            AuctionEventResponse result = await auctionSaleProductService.ExpireProduct(activeProduct.Id, auction.Id);
+            AuctionEventResponse result = await productService.ExpireProduct(activeProduct.Id, auction.Id);
 
             if (result.IsSuccess)
             {
@@ -141,7 +141,7 @@ public class AuctionStatusWorker(
             auction.IsLive = false;
             auction.IsVisible = false;
             logger.LogInformation("Auction {AuctionId} is no longer Live (no stock remaining).", auction.Id);
-            
+
             // Send out an AuctionStopped event
             await hubContext.Clients.Group(auction.Id.ToString()).SendAsync("AuctionStopped", new
             {

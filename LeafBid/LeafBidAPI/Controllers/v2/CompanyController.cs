@@ -1,6 +1,7 @@
 using LeafBidAPI.Data;
 using LeafBidAPI.DTOs.Company;
 using LeafBidAPI.Models;
+using LeafBidAPI.Permissions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -10,7 +11,6 @@ namespace LeafBidAPI.Controllers.v2;
 [Route("api/v{version:apiVersion}/[controller]")]
 [ApiController]
 [ApiVersion("2.0")]
-[AllowAnonymous]
 [Produces("application/json")]
 public class CompanyController(ApplicationDbContext dbContext) : ControllerBase
 {
@@ -19,6 +19,7 @@ public class CompanyController(ApplicationDbContext dbContext) : ControllerBase
     /// </summary>
     /// <returns>A list of all companies.</returns>
     [HttpGet]
+    [AllowAnonymous]
     [ProducesResponseType(typeof(List<Auction>), StatusCodes.Status200OK)]
     public async Task<ActionResult<List<Company>>> GetCompanies()
     {
@@ -31,9 +32,9 @@ public class CompanyController(ApplicationDbContext dbContext) : ControllerBase
     /// </summary>
     /// <returns>an ok result</returns>
     [HttpPut("CreateCompany")]
-    [Authorize(Roles = "Admin")]
+    [Authorize(Policy = PolicyTypes.Companies.Manage)]
     [ProducesResponseType(typeof(Auction), StatusCodes.Status200OK)]
-    public async Task<ActionResult<Company>> CreateCompany( [FromBody] CreateCompanyRequest cCreateR)
+    public async Task<ActionResult<Company>> CreateCompany([FromBody] CreateCompanyRequest cCreateR)
     {
         Company company = new()
         {
@@ -43,12 +44,12 @@ public class CompanyController(ApplicationDbContext dbContext) : ControllerBase
             CountryCode = cCreateR.CountryCode,
             HouseNumber = cCreateR.HouseNumber,
             PostalCode = cCreateR.PostalCode,
-            HouseNumberSuffix = cCreateR.HouseNumberSuffix               
+            HouseNumberSuffix = cCreateR.HouseNumberSuffix
         };
 
         dbContext.Companies.Add(company);
-        await dbContext.SaveChangesAsync(); 
-            
+        await dbContext.SaveChangesAsync();
+
         return Ok();
     }
 }

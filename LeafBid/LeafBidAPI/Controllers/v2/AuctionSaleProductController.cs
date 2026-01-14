@@ -2,13 +2,11 @@
 using LeafBidAPI.DTOs.User;
 using LeafBidAPI.Enums;
 using LeafBidAPI.Exceptions;
-using LeafBidAPI.Hubs;
 using LeafBidAPI.Interfaces;
 using LeafBidAPI.Models;
 using LeafBidAPI.Permissions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.SignalR;
 
 namespace LeafBidAPI.Controllers.v2;
 
@@ -18,8 +16,7 @@ namespace LeafBidAPI.Controllers.v2;
 [Produces("application/json")]
 public class AuctionSaleProductController(
     IUserService userService,
-    IAuctionSaleProductService auctionSaleProductService,
-    IHubContext<AuctionHub> hubContext) : ControllerBase
+    IAuctionSaleProductService auctionSaleProductService) : ControllerBase
 {
     /// <summary>
     /// Get all auction sale products.
@@ -57,50 +54,12 @@ public class AuctionSaleProductController(
     }
 
     /// <summary>
-    /// Create a new auction sale product.
-    /// </summary>
-    /// <param name="auctionSaleProductData">The auction sale product data.</param>
-    /// <returns>The created auction sale product.</returns>
-    [HttpPost]
-    [Authorize(Roles = "Provider")]
-    [ProducesResponseType(typeof(AuctionSaleProduct), StatusCodes.Status201Created)]
-    public async Task<ActionResult<AuctionSaleProduct>> CreateAuctionSaleProducts(
-        [FromBody] CreateAuctionSaleProductDto auctionSaleProductData)
-    {
-        AuctionSaleProduct created = await auctionSaleProductService.CreateAuctionSaleProduct(auctionSaleProductData);
-
-        return CreatedAtAction(
-            actionName: nameof(GetAuctionSaleProduct),
-            routeValues: new { id = created.Id, version = "2.0" },
-            value: created
-        );
-    }
-
-    /// <summary>
-    /// Update an existing auction sale product.
-    /// </summary>
-    /// <param name="id">The auction sale product ID.</param>
-    /// <param name="updatedAuctionSaleProduct">The updated auction sale product data.</param>
-    /// <returns>The updated auction sale product.</returns>
-    [HttpPut("{id:int}")]
-    [Authorize(Roles = "Provider")]
-    [ProducesResponseType(typeof(AuctionSaleProduct), StatusCodes.Status200OK)]
-    public async Task<ActionResult<AuctionSaleProduct>> UpdateAuctionSaleProducts(
-        int id,
-        [FromBody] UpdateAuctionSaleProductDto updatedAuctionSaleProduct)
-    {
-        AuctionSaleProduct updated =
-            await auctionSaleProductService.UpdateAuctionSaleProduct(id, updatedAuctionSaleProduct);
-
-        return Ok(updated);
-    }
-    /// <summary>
     /// Get auction sale products history for a registered product.
     /// </summary>
     /// <param name="id">The registered product ID.</param>
     /// <returns>A list of recent auction sales for the specified registered product.</returns>
     [HttpGet("history/{id:int}")]
-    [Authorize]
+    [Authorize(Policy = PolicyTypes.Products.View)]
     [ProducesResponseType(typeof(AuctionSaleProduct), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> GetAuctionSaleProductsHistory(int id)
@@ -115,16 +74,15 @@ public class AuctionSaleProductController(
         {
             return NotFound(e.Message);
         }
-                
     }
-        
+
     /// <summary>
     /// Get auction sale products history for a registered product including company sales.
     /// </summary>
     /// <param name="id">The registered product ID.</param>
-    /// <returns>A list of recent auction sales for the specified registered product including company sales.</returns>
+    /// <returns>A list of recent auction sales for the specified registered product, including company sales.</returns>
     [HttpGet("history/{id:int}/company")]
-    [Authorize]
+    [Authorize(Policy = PolicyTypes.Products.View)]
     [ProducesResponseType(typeof(AuctionSaleProduct), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> GetAuctionSaleProductsHistoryCompany(int id)
@@ -139,16 +97,15 @@ public class AuctionSaleProductController(
         {
             return NotFound(e.Message);
         }
-                
     }
-    
+
     /// <summary>
     /// Get auction sale products history for a registered product excluding company sales.
     /// </summary>
     /// <param name="id">The registered product ID.</param>
-    /// <returns>A list of recent auction sales for the specified registered product excluding company sales.</returns>
+    /// <returns>A list of recent auction sales for the specified registered product, excluding company sales.</returns>
     [HttpGet("history/{id:int}/not-company")]
-    [Authorize]
+    [Authorize(Policy = PolicyTypes.Products.View)]
     [ProducesResponseType(typeof(AuctionSaleProduct), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> GetAuctionSaleProductsHistoryNotCompany(int id)
@@ -163,15 +120,14 @@ public class AuctionSaleProductController(
         {
             return NotFound(e.Message);
         }
-                
     }
-    
+
     /// <summary>
     /// Get auction sale products for the logged-in user.
     /// </summary>
     /// <returns>A list of auction sale products for the logged-in user.</returns>
     [HttpGet("me")]
-    [Authorize(Roles = "Buyer")]
+    [Authorize(Policy = PolicyTypes.Products.View)]
     [ProducesResponseType(typeof(AuctionSaleProductResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<AuctionSaleProductResponse>> GetAuctionSaleProductsByUserId()
@@ -183,8 +139,10 @@ public class AuctionSaleProductController(
             {
                 return Unauthorized("User data not found");
             }
+
             //grab auction sale product for the user
-            List<AuctionSaleProductResponse> products = await auctionSaleProductService.GetAuctionSaleProductsByUserId(me.UserData.Id);
+            List<AuctionSaleProductResponse> products =
+                await auctionSaleProductService.GetAuctionSaleProductsByUserId(me.UserData.Id);
             return Ok(products);
         }
         catch (NotFoundException e)
@@ -192,13 +150,13 @@ public class AuctionSaleProductController(
             return NotFound(e.Message);
         }
     }
-    
+
     /// <summary>
-    /// Get auction sale products for the logged-in user.
+    /// Get auction sale products for the logged-in user's company.
     /// </summary>
     /// <returns>A list of auction sale products for the logged-in user.</returns>
     [HttpGet("company")]
-    [Authorize(Roles = "Provider")]
+    [Authorize(Policy = PolicyTypes.Products.View)]
     [ProducesResponseType(typeof(AuctionSaleProductResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<AuctionSaleProductResponse>> GetAuctionSaleProductsByCompanyId()
@@ -210,12 +168,15 @@ public class AuctionSaleProductController(
             {
                 return Unauthorized("User data not found");
             }
+
             //grab auction sale product for the user
             if (me.UserData.CompanyId == null)
             {
                 return BadRequest("User does not belong to a company");
             }
-            List<AuctionSaleProductResponse> products = await auctionSaleProductService.GetAuctionSaleProductsByCompanyId(me.UserData.CompanyId.Value);
+
+            List<AuctionSaleProductResponse> products =
+                await auctionSaleProductService.GetAuctionSaleProductsByCompanyId(me.UserData.CompanyId.Value);
             return Ok(products);
         }
         catch (NotFoundException e)
@@ -223,8 +184,13 @@ public class AuctionSaleProductController(
             return NotFound(e.Message);
         }
     }
+
+    /// <summary>
+    /// Get auction sale products chart data for the logged-in user's company
+    /// </summary>
+    /// <returns>A list of auction sale products for the logged-in user.</returns>
     [HttpGet("chart")]
-    [Authorize(Roles = "Provider")]
+    [Authorize(Policy = PolicyTypes.Products.View)]
     [ProducesResponseType(typeof(AuctionSaleProductResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<SaleChartResponse>> GetSaleChartData()
@@ -239,54 +205,9 @@ public class AuctionSaleProductController(
         {
             return BadRequest("User does not belong to a company");
         }
-        
-        SaleChartResponse chartData = await auctionSaleProductService.GetSaleChartDataByCompany(me.UserData.CompanyId.Value);
+
+        SaleChartResponse chartData =
+            await auctionSaleProductService.GetSaleChartDataByCompany(me.UserData.CompanyId.Value);
         return Ok(chartData);
-    }
-
-    /// <summary>
-    /// Buys a product from an auction.
-    /// </summary>
-    /// <param name="buyData">The purchase data.</param>
-    /// <returns>The updated registered product.</returns>
-    [HttpPost("buy")]
-    [Authorize(Roles = "Buyer")]
-    [ProducesResponseType(typeof(RegisteredProduct), StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<ActionResult<RegisteredProduct>> BuyProduct([FromBody] BuyProductDto buyData)
-    {
-        try
-        {
-            LoggedInUserResponse me = await userService.GetLoggedInUser(User);
-            if (me.UserData == null)
-            {
-                return Unauthorized("User data not found");
-            }
-
-            AuctionEventResponse result = await auctionSaleProductService.BuyProduct(buyData, me.UserData.Id);
-
-            if (result.IsSuccess)
-            {
-                // Notify all clients in the auction group
-                await hubContext.Clients.Group(buyData.AuctionId.ToString()).SendAsync("ProductBought", new
-                {
-                    registeredProductId = result.RegisteredProduct.Id,
-                    stock = result.RegisteredProduct.Stock,
-                    quantityBought = buyData.Quantity,
-                    nextProductStartTime = result.NextProductStartTime
-                });
-            }
-
-            return Ok(result.RegisteredProduct);
-        }
-        catch (NotFoundException e)
-        {
-            return NotFound(e.Message);
-        }
-        catch (InvalidOperationException e)
-        {
-            return BadRequest(e.Message);
-        }
     }
 }

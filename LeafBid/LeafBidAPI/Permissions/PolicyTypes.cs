@@ -19,4 +19,22 @@ public static class PolicyTypes
         public const string Buy = "products.buy.policy";
         public const string Manage = "products.manage.policy";
     }
+    
+    public static class Companies
+    {
+        public const string View = "companies.view.policy";
+        public const string Manage = "companies.manage.policy";
+    }
+
+    public static class Roles
+    {
+        public const string ViewOthers = "roles.others.view";
+        public const string Manage = "roles.manage";
+    }
+
+    public static class Users
+    {
+        public const string ViewOthers = "users.others.view";
+        public const string Manage = "users.manage";
+    }
 }

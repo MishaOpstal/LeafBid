@@ -8,7 +8,7 @@ public class CreateAuctionSaleProductDto
 
     public required int AuctionSaleId { get; set; }
 
-    public required int ProductId { get; set; }
+    public required int RegisteredProductId { get; set; }
     public required int Quantity { get; set; }
-    public required int Price { get; set; }
+    public required decimal PricePerUnit { get; set; }
 }

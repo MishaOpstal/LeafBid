@@ -2,6 +2,7 @@
 using LeafBidAPI.Enums;
 using LeafBidAPI.Exceptions;
 using LeafBidAPI.Interfaces;
+using LeafBidAPI.Permissions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -13,8 +14,6 @@ namespace LeafBidAPI.Controllers.v2;
 [Route("api/v{version:apiVersion}/[controller]")]
 [ApiController]
 [ApiVersion("2.0")]
-// [Authorize]
-[AllowAnonymous]
 [Produces("application/json")]
 public class PagesController(IPagesServices pagesServices) : ControllerBase
 {
@@ -27,6 +26,8 @@ public class PagesController(IPagesServices pagesServices) : ControllerBase
     /// and the products belonging to that auction.
     /// </returns>
     [HttpGet("closest/{clockLocationEnum}")]
+    [Authorize(Policy = PolicyTypes.Auctions.View)]
+    [Authorize(Policy = PolicyTypes.Products.View)]
     [ProducesResponseType(typeof(GetAuctionWithProductsResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<GetAuctionWithProductsResponse>> GetClosestAuctionsWithProducts(
@@ -52,6 +53,8 @@ public class PagesController(IPagesServices pagesServices) : ControllerBase
     /// associated with that auction.
     /// </returns>
     [HttpGet("{auctionId:int}")]
+    [Authorize(Policy = PolicyTypes.Auctions.View)]
+    [Authorize(Policy = PolicyTypes.Products.View)]
     [ProducesResponseType(typeof(GetAuctionWithProductsResponse), StatusCodes.Status200OK)]
     public async Task<ActionResult<GetAuctionWithProductsResponse>> GetAuctionWithProductsById(int auctionId)
     {
@@ -71,6 +74,8 @@ public class PagesController(IPagesServices pagesServices) : ControllerBase
     /// </summary>
     /// <returns>A DTO containing the active auction and its products for the specified clock location.</returns>
     [HttpGet]
+    [Authorize(Policy = PolicyTypes.Auctions.View)]
+    [Authorize(Policy = PolicyTypes.Products.View)]
     [ProducesResponseType(typeof(GetAuctionWithProductsResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<GetAuctionWithProductsResponse>> GetAuctionsWithProductsPerClockLocation()

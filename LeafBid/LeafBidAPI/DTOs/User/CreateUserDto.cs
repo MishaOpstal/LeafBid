@@ -12,4 +12,5 @@ public class CreateUserDto
     public required string Password { get; set; }
     public required string PasswordConfirmation { get; set; }
     public string[]? Roles { get; set; }
+    public int? CompanyId { get; set; }
 }
