@@ -5,20 +5,38 @@ import Image from "next/image";
 import Link from "next/link";
 import { MoonFill, Sun } from "react-bootstrap-icons";
 import ThemeInitializer, { getTheme, toggleTheme } from "./Theme";
-import React, { useCallback, useEffect, useState, useRef } from "react";
-import { LoggedInResponse } from "@/types/User/Auth/LoggedInResponse";
+import React, { useEffect, useState } from "react";
 import { useRouter } from "nextjs-toploader/app";
 import { isUserInRole } from "@/utils/IsUserInRole";
 import { parseRole, Roles } from "@/enums/Roles";
-import {useAuth} from "@/utils/useAuth";
+import { useAuth } from "@/utils/useAuth";
 
-interface HeaderProps {
+interface HeaderProps
+{
     returnOption?: boolean;
 }
 
-export default function Header({ returnOption = false }: HeaderProps) {
+type Theme = "dark" | "light";
+
+export default function Header({ returnOption = false }: HeaderProps)
+{
     const { user, logout } = useAuth();
     const router = useRouter();
+
+    const [mounted, setMounted] = useState(false);
+    const [theme, setTheme] = useState<Theme>("light");
+
+    useEffect(() =>
+    {
+        setMounted(true);
+        setTheme(getTheme());
+    }, []);
+
+    const onToggleTheme = () =>
+    {
+        toggleTheme();
+        setTheme(getTheme());
+    };
 
     return (
         <header>
@@ -55,6 +73,26 @@ export default function Header({ returnOption = false }: HeaderProps) {
                             <Link href="/auction/add" className={s.link}>Veiling toevoegen</Link>
                             <Link href="/auction/dashboard" className={s.link}>Veilingmeester overzicht</Link>
                         </>
+                    )}
+
+                    {mounted && (
+                        theme === "light" ? (
+                            <Sun
+                                title="Switch to dark mode"
+                                onClick={onToggleTheme}
+                                className={s.themeToggle}
+                                role="button"
+                                tabIndex={0}
+                            />
+                        ) : (
+                            <MoonFill
+                                title="Switch to light mode"
+                                onClick={onToggleTheme}
+                                className={s.themeToggle}
+                                role="button"
+                                tabIndex={0}
+                            />
+                        )
                     )}
 
                     {user && (

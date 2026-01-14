@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useRouter } from "nextjs-toploader/app";
 import { LoggedInResponse } from "@/types/User/Auth/LoggedInResponse";
 
@@ -6,6 +6,8 @@ export function useAuth() {
     const router = useRouter();
     const [user, setUser] = useState<LoggedInResponse["userData"] | null>(null);
     const [loggedIn, setLoggedIn] = useState<boolean | null>(null);
+    const [isLoading, setIsLoading] = useState(true);
+    const hasCheckedAuth = useRef(false);
 
     const logout = useCallback(async () => {
         try {
@@ -34,7 +36,9 @@ export function useAuth() {
 
     const checkAuth = useCallback(async () => {
         if (localStorage.getItem("loggedIn") === "false") {
-            await logout();
+            setLoggedIn(false);
+            setUser(null);
+            setIsLoading(false);
             return;
         }
 
@@ -53,19 +57,24 @@ export function useAuth() {
             } else {
                 localStorage.setItem("loggedIn", "false");
                 localStorage.removeItem("userData");
-                await logout();
+                setUser(null);
+                setLoggedIn(false);
             }
         } catch (err) {
             console.error("Auth check failed:", err);
-            if (localStorage.getItem("loggedIn") === "false") {
-                await logout();
-            }
+            setLoggedIn(false);
+            setUser(null);
+        } finally {
+            setIsLoading(false);
         }
-    }, [logout]);
+    }, []); // No dependencies - stable function
 
     useEffect(() => {
-        checkAuth();
+        if (!hasCheckedAuth.current) {
+            hasCheckedAuth.current = true;
+            void checkAuth();
+        }
     }, [checkAuth]);
 
-    return { user, loggedIn, logout, checkAuth };
+    return { user, loggedIn, logout, checkAuth, isLoading };
 }

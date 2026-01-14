@@ -1,28 +1,77 @@
 'use client';
 
-import {useEffect} from "react";
+import { useEffect, useState } from 'react';
 
-export function getTheme(): 'dark' | 'light' {
-    const stored = localStorage.getItem('theme');
+type Theme = 'dark' | 'light';
+
+function isBrowser(): boolean
+{
+    return typeof window !== 'undefined' && typeof document !== 'undefined';
+}
+
+export function getTheme(): Theme
+{
+    if (!isBrowser())
+    {
+        return 'light';
+    }
+
+    const stored = window.localStorage.getItem('theme');
     return stored === 'dark' ? 'dark' : 'light';
 }
 
-export const toggleTheme = (): void => {
-    const currentTheme = getTheme();
-    const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
-    document.documentElement.setAttribute('data-theme', newTheme);
-    localStorage.setItem('theme', newTheme);
-};
+export function setTheme(theme: Theme): void
+{
+    if (!isBrowser())
+    {
+        return;
+    }
 
-export function initializeTheme(): void {
-    const theme = getTheme();
     document.documentElement.setAttribute('data-theme', theme);
+    window.localStorage.setItem('theme', theme);
 }
 
-export default function ThemeInitializer() {
-    useEffect(() => {
-        initializeTheme();
+export function toggleTheme(): void
+{
+    if (!isBrowser())
+    {
+        return;
+    }
+
+    const currentTheme = getTheme();
+    const newTheme: Theme = currentTheme === 'dark' ? 'light' : 'dark';
+    setTheme(newTheme);
+}
+
+export function initializeTheme(): void
+{
+    if (!isBrowser())
+    {
+        return;
+    }
+
+    const theme = getTheme();
+    setTheme(theme);
+}
+
+export default function ThemeInitializer()
+{
+    const [mounted, setMounted] = useState(false);
+
+    useEffect(() =>
+    {
+        setMounted(true);
     }, []);
+
+    useEffect(() =>
+    {
+        if (!mounted)
+        {
+            return;
+        }
+
+        initializeTheme();
+    }, [mounted]);
 
     return null;
 }
