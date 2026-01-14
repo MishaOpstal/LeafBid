@@ -4,6 +4,7 @@ using LeafBidAPI.DTOs.RegisteredProduct;
 using LeafBidAPI.Exceptions;
 using LeafBidAPI.Interfaces;
 using LeafBidAPI.Models;
+using LeafBidAPI.Permissions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -12,8 +13,6 @@ namespace LeafBidAPI.Controllers.v2;
 [Route("api/v{version:apiVersion}/[controller]")]
 [ApiController]
 [ApiVersion("2.0")]
-// [Authorize]
-[AllowAnonymous]
 [Produces("application/json")]
 public class AuctionController(IAuctionService auctionService, IProductService productService) : ControllerBase
 {
@@ -22,6 +21,7 @@ public class AuctionController(IAuctionService auctionService, IProductService p
     /// </summary>
     /// <returns>A list of all auctions.</returns>
     [HttpGet]
+    [Authorize(Policy = PolicyTypes.Auctions.View)]
     [ProducesResponseType(typeof(List<Auction>), StatusCodes.Status200OK)]
     public async Task<ActionResult<List<Auction>>> GetAuctions()
     {
@@ -35,6 +35,7 @@ public class AuctionController(IAuctionService auctionService, IProductService p
     /// <param name="id">The auction ID.</param>
     /// <returns>The requested auction.</returns>
     [HttpGet("{id:int}")]
+    [Authorize(Policy = PolicyTypes.Auctions.View)]
     [ProducesResponseType(typeof(Auction), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<Auction>> GetAuction(int id)
@@ -56,7 +57,7 @@ public class AuctionController(IAuctionService auctionService, IProductService p
     /// <param name="auctionData">The auction creation data.</param>
     /// <returns>The created auction.</returns>
     [HttpPost]
-    [Authorize(Roles = "Auctioneer")]
+    [Authorize(Policy = PolicyTypes.Auctions.Manage)]
     [ProducesResponseType(typeof(Auction), StatusCodes.Status201Created)]
     public async Task<ActionResult<Auction>> CreateAuction([FromBody] CreateAuctionDto auctionData)
     {
@@ -76,7 +77,7 @@ public class AuctionController(IAuctionService auctionService, IProductService p
     /// <param name="updatedAuction">The updated auction data.</param>
     /// <returns>The updated auction.</returns>
     [HttpPut("{id:int}")]
-    [Authorize]
+    [Authorize(Policy = PolicyTypes.Auctions.Manage)]
     [ProducesResponseType(typeof(Auction), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<Auction>> UpdateAuction(
@@ -100,6 +101,8 @@ public class AuctionController(IAuctionService auctionService, IProductService p
     /// <param name="auctionId">The auction ID.</param>
     /// <returns>A list of registered products belonging to the auction.</returns>
     [HttpGet("products/{auctionId:int}")]
+    [Authorize(Policy = PolicyTypes.Auctions.View)]
+    [Authorize(Policy = PolicyTypes.Products.View)]
     [ProducesResponseType(typeof(List<ProductResponse>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<List<ProductResponse>>> GetRegisteredProductsByAuctionId(int auctionId)

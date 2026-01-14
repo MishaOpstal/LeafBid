@@ -5,6 +5,7 @@ using LeafBidAPI.Exceptions;
 using LeafBidAPI.Hubs;
 using LeafBidAPI.Interfaces;
 using LeafBidAPI.Models;
+using LeafBidAPI.Permissions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
@@ -14,8 +15,6 @@ namespace LeafBidAPI.Controllers.v2;
 [Route("api/v{version:apiVersion}/[controller]")]
 [ApiController]
 [ApiVersion("2.0")]
-// [Authorize]
-[AllowAnonymous]
 [Produces("application/json")]
 public class AuctionSaleProductController(
     IUserService userService,
@@ -27,6 +26,7 @@ public class AuctionSaleProductController(
     /// </summary>
     /// <returns>A list of all auction sale products.</returns>
     [HttpGet]
+    [Authorize(Policy = PolicyTypes.AuctionSales.View)]
     [ProducesResponseType(typeof(List<AuctionSaleProduct>), StatusCodes.Status200OK)]
     public async Task<ActionResult<List<AuctionSaleProduct>>> GetAuctionSaleProducts()
     {
@@ -40,6 +40,7 @@ public class AuctionSaleProductController(
     /// <param name="id">The auction sale product ID.</param>
     /// <returns>The requested auction sale product.</returns>
     [HttpGet("{id:int}")]
+    [Authorize(Policy = PolicyTypes.AuctionSales.View)]
     [ProducesResponseType(typeof(AuctionSaleProduct), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<AuctionSaleProduct>> GetAuctionSaleProduct(int id)

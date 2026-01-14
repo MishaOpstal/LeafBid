@@ -1,22 +1,29 @@
 'use client'
 
-import Image from 'next/image';
-import Link from 'next/link';
-import s from '../page.module.css';
-import "bootstrap/dist/css/bootstrap-grid.min.css"
-import Form from "react-bootstrap/Form";
-import Button from "@/components/Input/Button";
 import {useRouter} from 'nextjs-toploader/app';
 import React, {useState} from "react";
-import {Register} from "@/types/User/Register";
+import s from '../page.module.css';
+import "bootstrap/dist/css/bootstrap-grid.min.css"
+
+import Image from 'next/image';
+import Link from 'next/link';
+import Form from "react-bootstrap/Form";
+
+import Button from "@/components/Input/Button";
 import RegisterFailedException, {isRegisterFailedException} from '@/exceptions/Auth/RegisterFailedException';
 import SearchableDropdown from "@/components/Input/SearchableDropdown";
-import {Role} from "@/types/User/Role";
 import RoleFetchFailedException from "@/exceptions/Auth/RoleFetchFailedException";
 import TextInput from "@/components/Input/TextInput";
 import ValidationFailedException, {isValidationFailedException} from "@/exceptions/ValidationFailedException";
+import CompanyFetchFailedException, {isCompanyFetchFailedException} from "@/exceptions/Company/CompanyFetchFailedException";
+
+import {Role} from "@/types/User/Role";
+import {Company} from "@/types/Company/Company";
+import {Register} from "@/types/User/Register";
+
 
 const roles: Role[] = [];
+const companies: Company[] = [];
 
 // Retrieve roles from the backend using fetch
 const fetchRoles = async () => {
@@ -33,6 +40,8 @@ const fetchRoles = async () => {
     roles.push(...data);
 }
 
+
+
 fetchRoles().catch(error => {
     if (isRegisterFailedException(error)) {
         console.error(error.getMessage());
@@ -40,6 +49,29 @@ fetchRoles().catch(error => {
         console.error("An unexpected error occurred while fetching roles.");
     }
 });
+
+// Retrieve companies from the backend using fetch
+const fetchCompanies = async () => {
+    const response = await fetch("http://localhost:5001/api/v2/Company", {
+        method: "GET",
+        headers: {"Content-Type": "application/json"},
+    });
+
+    if (!response.ok) {
+        throw CompanyFetchFailedException("Failed to fetch companies.");
+    }
+    const data = await response.json();
+    companies.push(...data);
+}
+
+fetchCompanies().catch(error => {
+    if (isRegisterFailedException(error)) {
+        console.error(error.getMessage());
+    } else {
+        console.error("An unexpected error occurred while fetching companies.");
+    }
+});
+
 
 export default function RegisterPage() {
     const router = useRouter();
@@ -89,7 +121,8 @@ export default function RegisterPage() {
         email: "",
         password: "",
         passwordConfirmation: "",
-        roles: []
+        roles: [],
+        company: null
     });
 
     const [errors, setErrors] = useState<Record<string, string>>({});
@@ -121,6 +154,11 @@ export default function RegisterPage() {
         return Object.keys(newErrors).length === 0;
     };
 
+    const selectedRoleName = registerData.roles?.[0] ?? null;
+
+    const needsCompany =
+        selectedRoleName === "Provider" || selectedRoleName === "Buyer";
+
     return (
         <main className={s.main}>
             <title>Register</title>
@@ -139,19 +177,23 @@ export default function RegisterPage() {
 
                 <Form noValidate className={s.form}>
                     {/* Username */}
-                    <TextInput label={"username"} name={"userName"} placeholder={"Naam"} value={registerData.userName}
-                               onChange={(e) => {
-                                   // Make sure there are only letters or digits in the username
-                                   e.target.value = e.target.value.replace(/[^a-zA-Z0-9]/g, '');
-                                   setRegisterData({...registerData, userName: e.target.value})
-                               }}/>
+                    <TextInput
+                        name={"userName"}
+                        label={"Gebruikersnaam"}
+                        placeholder={"KhalilBouter123"}
+                        value={registerData.userName}
+                        onChange={(e) => {
+                            // Make sure there are only letters or digits in the username
+                            e.target.value = e.target.value.replace(/[^a-zA-Z0-9]/g, '');
+                            setRegisterData({...registerData, userName: e.target.value})
+                        }}/>
                     {errors.userName && <div className={s.error}>{errors.userName}</div>}
 
                     {/* Email */}
                     <TextInput
-                        label={"email"}
                         name={"email"}
-                        placeholder={"E-mail"}
+                        label={"E-mail"}
+                        placeholder={"no-reply@leafbid.nl"}
                         value={registerData.email}
                         onChange={(e) => {
                             const value = e.target.value.replace(/\s/g, '');
@@ -162,25 +204,34 @@ export default function RegisterPage() {
 
                     {/* Password */}
                     <div className={s.passwordRow}>
-                        <TextInput label={"password"} name={"password"} placeholder={"Password"}
-                                   value={registerData.password}
-                                   onChange={(e) => setRegisterData({...registerData, password: e.target.value})}
-                                   secret={true}/>
+                        <TextInput
+                            name={"password"}
+                            label={"Wachtwoord"}
+                            placeholder={"Wachtwoord"}
+                            value={registerData.password}
+                            onChange={(e) => setRegisterData({
+                                ...registerData,
+                                password: e.target.value
+                            })}
+                            secret={true}/>
                         {errors.password && <div className={s.error}>{errors.password}</div>}
 
                         {/* Password Verify */}
-                        <TextInput label={"passwordConfirmation"} name={"passwordConfirmation"}
-                                   placeholder={"Bevestig Wachtwoord"}
-                                   value={registerData.passwordConfirmation}
-                                   onChange={(e) => setRegisterData({
-                                       ...registerData,
-                                       passwordConfirmation: e.target.value
-                                   })} secret={true}/>
+                        <TextInput
+                            name={"passwordConfirmation"}
+                            label={"Wachtwoord verifiëren"}
+                            placeholder={"Wachtwoord verifiëren"}
+                            value={registerData.passwordConfirmation}
+                            onChange={(e) => setRegisterData({
+                                ...registerData,
+                                passwordConfirmation: e.target.value
+                            })} secret={true}/>
                         {errors.passwordConfirmation && <div className={s.error}>{errors.passwordConfirmation}</div>}
                     </div>
 
                     <SearchableDropdown
                         label="Selecteer rol"
+                        placeholder="Zoek naar rol..."
                         items={roles}
                         displayKey="name"
                         valueKey="id"
@@ -188,9 +239,25 @@ export default function RegisterPage() {
                             ...registerData,
                             roles: [e.name]
                         })}
-                        placeholder="Zoek naar rol..."
                     />
+
                     {errors.roles && <div className={s.error}>{errors.roles}</div>}
+
+                    {needsCompany && (
+                        <SearchableDropdown
+                            label="Selecteer een bedrijf"
+                            placeholder="Zoek naar bedrijf..."
+                            items={companies}
+                            displayKey="name"
+                            valueKey="id"
+                            onSelect={(company) => {
+                                setRegisterData({
+                                    ...registerData,
+                                    company: company.id
+                                });
+                            }}
+                        />
+                    )}
 
                     {/* Submit */}
                     <Button

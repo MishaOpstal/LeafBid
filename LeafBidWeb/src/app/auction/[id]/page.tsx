@@ -22,11 +22,11 @@ export default function AuctionPage() {
 
     const [auction, setAuction] = useState<AuctionPageResult | null>(null);
     const [loading, setLoading] = useState(true);
+    const [toasts, setToasts] = useState<Array<{ toastId: string; id: number; name: string; picture: string; companyName: string }>>([]);
+
 
     const [currentPricePerUnit, setCurrentPricePerUnit] = useState<number | null>(null);
     const [now, setNow] = useState(() => getServerNow());
-
-    const toastList = useRef<Array<{ id: number; name: string; picture: string; companyName: string }>>([]);
 
     useEffect(() => {
         const interval = setInterval(() => {
@@ -79,14 +79,20 @@ export default function AuctionPage() {
                 throw new Error(errorText || "Failed to buy product");
             }
 
-            if (currentProduct.product) {
-                toastList.current.push({
+            const product = currentProduct.product;
+            if (!product) return;
+
+            setToasts(prev => [
+                ...prev,
+                {
+                    toastId: crypto.randomUUID(), // << uniek
                     id: currentProduct.id,
-                    name: currentProduct.product.name,
-                    picture: currentProduct.product.picture ? currentProduct.product.picture : "",
-                    companyName: currentProduct.company ? currentProduct.company.name : ""
-                });
-            }
+                    name: product.name,
+                    picture: product.picture ?? "",
+                    companyName: currentProduct.company?.name ?? ""
+                }
+            ]);
+
 
             // We don't necessarily need to update the state here as SignalR will broadcast it,
             // but for immediate feedback we can.
@@ -106,7 +112,7 @@ export default function AuctionPage() {
             .build();
 
         connection.on("AuctionStarted", (data: { auctionId: number }) => {
-            console.log("Real-time update: Auction started", data);
+            // console.log("Real-time update: Auction started", data);
             setAuction(prev => {
                 if (!prev) return null;
                 return {
@@ -120,7 +126,7 @@ export default function AuctionPage() {
             auctionId: number,
             reason: string
         }) => {
-            console.log("Real-time update: Auction stopped", data);
+            // console.log("Real-time update: Auction stopped", data);
             setAuction(prev => {
                 if (!prev) return null;
                 return {
@@ -137,7 +143,7 @@ export default function AuctionPage() {
             nextProductStartTime: string
         }) => {
             try {
-                console.log("Real-time update: Product bought", data);
+                // console.log("Real-time update: Product bought", data);
 
                 setAuction(prev => {
                     if (!prev) return null;
@@ -164,7 +170,7 @@ export default function AuctionPage() {
 
         connection.on("ProductExpired", (data: { registeredProductId: number, nextProductStartTime: string }) => {
             try {
-                console.log("Real-time update: Product expired", data);
+                // console.log("Real-time update: Product expired", data);
 
                 setAuction(prev => {
                     if (!prev) return null;
@@ -187,7 +193,7 @@ export default function AuctionPage() {
 
         connection.start()
             .then(() => {
-                console.log("SignalR Connected");
+                // console.log("SignalR Connected");
                 void connection.invoke("JoinAuction", id);
             })
             .catch(err => console.error("SignalR Connection Error: ", err));
@@ -313,6 +319,11 @@ export default function AuctionPage() {
     const countdownMessage =
         messages.find(({ cond }) => cond())?.msg() ?? "";
 
+    function closeToast(toastId: string) {
+        setToasts(prev => prev.filter(t => t.toastId !== toastId));
+    }
+
+
     return (
         <>
             <Header returnOption={true}/>
@@ -362,18 +373,15 @@ export default function AuctionPage() {
             </main>
 
             <ToastContainer position="bottom-end">
-                {toastList.current.map((item, index) => (
-                    <Toast key={`${item.id}-${index}`}>
-                        <Toast.Header>
-                            <Image
-                                src={item.picture}
-                                className="rounded me-2"
-                                alt={item.name}
-                                width={20}
-                                height={20}
-                            />
+                {toasts.map((item, index) => (
+                    <Toast
+                        key={item.toastId}
+                        onClose={() => closeToast(item.toastId)}
+                        show={true}
+                    >
+
+                    <Toast.Header closeButton>
                             <strong className="me-auto">{item.name} gekocht!</strong>
-                            <small className="text-muted">{item.companyName}</small>
                         </Toast.Header>
 
                         <Toast.Body>
@@ -388,6 +396,7 @@ export default function AuctionPage() {
                     </Toast>
                 ))}
             </ToastContainer>
+
         </>
     );
 }

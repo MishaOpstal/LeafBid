@@ -7,7 +7,8 @@
     padding: 20px;
 }
 
-/* Linkerkant: plaatje + tekstblokken onder elkaar */
+/* Left side: Image + textblocks below each other */
+/* TODO */
 .links {
     width: 50%;
     display: flex;
@@ -15,9 +16,8 @@
     gap: 20px;
 }
 
-/* Afbeelding bovenaan */
-
-
+/* Image above */
+/* TODO */
 .plaatje{
     max-width:300px;
     height: auto;
@@ -27,14 +27,16 @@
     align-self: center;
 }
 
-/* InfoVeld-blokken onder afbeelding */
+/* InfoField-blocks below image */
+/* TODO */
 .tekstblokken {
     display: flex;
     flex-direction: column;
     gap: 15px;
 }
 
-/* Rechterkant: BigInfoVeld */
+/* Right side: info block */
+/* TODO */
 .infoblok {
     padding: 0 20px 20px;
     border-radius: 12px;

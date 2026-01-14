@@ -90,6 +90,15 @@
     color-scheme: dark;
 }
 
+::-webkit-calendar-picker-indicator {
+    cursor: pointer;
+    filter: invert(1);
+}
+
+:root[data-theme="dark"] ::-webkit-calendar-picker-indicator {
+    filter: invert(0);
+
+}
 
 html,
 body {
@@ -165,6 +174,14 @@ body {
 }
 .form-control::placeholder {
     color: var(--muted-text);
+}
+
+.toast {
+    --bs-toast-color: var(--text);
+    --bs-toast-bg: var(--background);
+    --bs-toast-border-color: var(--primary);
+    --bs-toast-header-color: var(--background);
+    --bs-toast-header-bg: var(--primary);
 }
 
 * {

@@ -24,19 +24,21 @@ const SelectableButtonGroup: React.FC<SelectableButtonGroupProps> = ({
         value ?? (options.length > 0 ? options[0] : "")
     );
 
-    // keep internal state synced when parent updates externally
+    // Keep internal state synced when parent updates externally
     useEffect(() => {
         if (value !== undefined && value !== selected) {
             setSelected(value);
         }
-    }, [selected, value]);
+    }, [value]); // Only depend on value, not selected
 
-    // notify parent of selection changes
-    useEffect(() => {
-        if (onChange && selected) {
-            onChange(name, selected);
+    // Handle button click - only call onChange here, not in useEffect
+    const handleSelect = (option: string) => {
+        setSelected(option);
+        // Call onChange immediately when user clicks, not in useEffect
+        if (onChange) {
+            onChange(name, option);
         }
-    }, [name, onChange, selected]);
+    };
 
     return (
         <ButtonGroup aria-label={`${name} options`} className="mb-3">
@@ -47,7 +49,7 @@ const SelectableButtonGroup: React.FC<SelectableButtonGroupProps> = ({
                         selected === option ? variantActive : variantInactive
                     }
                     active={selected === option}
-                    onClick={() => setSelected(option)}
+                    onClick={() => handleSelect(option)}
                     style={{
                         filter:
                             selected === option

@@ -6,7 +6,7 @@ import ToevoegenLayout from "@/app/layouts/add/layout";
 import Form from "react-bootstrap/Form";
 import OrderedMultiSelect from "@/components/Input/OrderedMultiSelect";
 import {Location} from "@/types/Auction/Location";
-import React, {useEffect, useState} from "react";
+import React, {useEffect, useState, useCallback, useMemo} from "react";
 import DateSelect from "@/components/Input/DateSelect";
 import SearchableDropdown from "@/components/Input/SearchableDropdown";
 import Button from "@/components/Input/Button";
@@ -39,7 +39,6 @@ const createEmptyAuction = (): Auction => ({
 
 export default function Home() {
     const [auctionData, setAuctionData] = useState<Auction>(() => createEmptyAuction());
-
     const [registeredProducts, setRegisteredProducts] = useState<RegisteredProduct[]>([]);
     const [errors, setErrors] = useState<Record<string, string>>({});
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -88,26 +87,27 @@ export default function Home() {
         return Object.keys(newErrors).length === 0;
     };
 
-    const handleDateSelect = (date: string | null) => {
+    // Memoize handlers to prevent unnecessary re-renders
+    const handleDateSelect = useCallback((date: string | null) => {
         setAuctionData((prev) => ({...prev, startDate: date ?? ""}));
-    };
+    }, []);
 
-    const handleLocatieSelect = (loc: Location) => {
+    const handleLocatieSelect = useCallback((loc: Location) => {
         setAuctionData((prev) => ({
             ...prev,
-            clockLocationEnum: loc.locatieId, // or map to your enum if needed
+            clockLocationEnum: loc.locatieId,
         }));
-    };
+    }, []);
 
-    const handleProductsSelect = (selected: RegisteredProduct[]) => {
+    const handleProductsSelect = useCallback((selected: RegisteredProduct[]) => {
         setAuctionData((prev) => ({...prev, registeredProducts: selected}));
-    };
+    }, []);
 
-    const handlePriceUpdate = (updated: RegisteredProduct[]) => {
+    const handlePriceUpdate = useCallback((updated: RegisteredProduct[]) => {
         setAuctionData((prev) => ({...prev, registeredProducts: updated}));
-    };
+    }, []);
 
-    const handleSubmit = async (e: React.FormEvent) => {
+    const handleSubmit = useCallback(async (e: React.FormEvent) => {
         e.preventDefault();
         setMessage("");
         if (!validate()) {
@@ -151,7 +151,14 @@ export default function Home() {
         } finally {
             setIsSubmitting(false);
         }
-    };
+    }, [auctionData, validate]); // Note: validate function needs to be stable or memoized too
+
+    // Memoize sorted products to avoid re-sorting on every render
+    const sortedRegisteredProducts = useMemo(() => {
+        return [...registeredProducts].sort((a, b) =>
+            a.product!.name.localeCompare(b.product!.name)
+        );
+    }, [registeredProducts]);
 
     return (
         <ToevoegenLayout>
@@ -191,7 +198,7 @@ export default function Home() {
                     <section className={s.section}>
                         <h3 className={s.h3}>Gekoppelde Producten</h3>
                         <OrderedMultiSelect
-                            items={[...registeredProducts].sort((a, b) => a.product!.name.localeCompare(b.product!.name))} //dit sorteert de lijst alfabetisch
+                            items={sortedRegisteredProducts}
                             value={auctionData.registeredProducts}
                             onChange={handleProductsSelect}
                             showBadges={false}

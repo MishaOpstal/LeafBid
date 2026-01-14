@@ -1,4 +1,4 @@
-import React, {useCallback} from "react";
+import React, {useState, useCallback} from "react";
 import {Form, Table} from "react-bootstrap";
 import s from "./ProductPriceTable.module.css";
 import {RegisteredProduct} from "@/types/Product/RegisteredProducts";
@@ -19,20 +19,46 @@ const ProductPriceTable: React.FC<ProductPriceTableProps> = ({
                                                                  onChange,
                                                                  height = 300,
                                                              }) => {
-    // Safely update price per product
-    const handlePriceChange = useCallback(
-        (registeredProductId: number, newValue: number) => {
-            const parsed = parseFloat(String(newValue));
-            const price = isNaN(parsed) || parsed < 0 ? 0 : parsed;
+    // Local state for input values during editing to avoid constant parent updates
+    const [localPrices, setLocalPrices] = useState<Record<number, string>>({});
 
-            const updated = registeredProducts.map((rp) =>
-                rp.id === registeredProductId ? {...rp, maxPrice: price} : rp
-            );
+    // Handle input change - updates local state only
+    const handleInputChange = useCallback((registeredProductId: number, value: string) => {
+        setLocalPrices(prev => ({
+            ...prev,
+            [registeredProductId]: value
+        }));
+    }, []);
 
-            onChange?.(updated);
-        },
-        [registeredProducts, onChange]
-    );
+    // Handle blur - validates, formats, and updates parent
+    const handleBlur = useCallback((registeredProductId: number, value: string) => {
+        if (!onChange) return;
+
+        const registeredProduct = registeredProducts.find(rp => rp.id === registeredProductId);
+        if (!registeredProduct) return;
+
+        const parsed = parseFloat(value);
+        let price = isNaN(parsed) || parsed < 0 ? 0 : parseFloat(parsed.toFixed(2));
+
+        // Ensure price is not below minPrice
+        if (registeredProduct.minPrice !== undefined && price < registeredProduct.minPrice) {
+            price = registeredProduct.minPrice;
+        }
+
+        // Update parent only when user finishes editing
+        const updated = registeredProducts.map((rp) =>
+            rp.id === registeredProductId ? {...rp, maxPrice: price} : rp
+        );
+
+        onChange(updated);
+
+        // Clear local state for this field
+        setLocalPrices(prev => {
+            const next = {...prev};
+            delete next[registeredProductId];
+            return next;
+        });
+    }, [onChange, registeredProducts]);
 
     return (
         <div className={s.wrapper} style={{maxHeight: height}}>
@@ -48,27 +74,17 @@ const ProductPriceTable: React.FC<ProductPriceTableProps> = ({
                     registeredProducts.map((registeredProduct) => (
                         <tr key={registeredProduct.id}>
                             <td className={s.productName}>
-                                {registeredProduct.product.name}
+                                {registeredProduct.product!.name}
                             </td>
                             <td className={s.priceCell}>
                                 <Form.Control
                                     type="number"
                                     step="0.01"
-                                    min="0"
-                                    value={registeredProduct.maxPrice?.toString() ?? ""}
+                                    min={registeredProduct.minPrice}
+                                    value={localPrices[registeredProduct.id] ?? registeredProduct.maxPrice?.toString() ?? ""}
                                     placeholder="0.00"
-                                    onChange={(e) => {
-                                        // Allow typing any valid number (still sends numeric to parent)
-                                        const val = parseFloat(e.target.value);
-                                        handlePriceChange(registeredProduct.id, parseFloat(val.toFixed(2)) || 0);
-                                    }}
-                                    onBlur={(e) => {
-                                        // Format to 2 decimals only when leaving the field
-                                        const val = parseFloat(e.target.value);
-                                        if (!isNaN(val)) {
-                                            handlePriceChange(registeredProduct.id, parseFloat(val.toFixed(2)));
-                                        }
-                                    }}
+                                    onChange={(e) => handleInputChange(registeredProduct.id, e.target.value)}
+                                    onBlur={(e) => handleBlur(registeredProduct.id, e.target.value)}
                                     className={s.priceInput}
                                 />
                             </td>

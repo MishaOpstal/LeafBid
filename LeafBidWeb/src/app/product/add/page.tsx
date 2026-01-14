@@ -7,15 +7,9 @@ import TextInput from "@/components/Input/TextInput";
 import FileInput from "@/components/Input/FileInput";
 import TextAreaInput from "@/components/Input/TextAreaInput";
 import Button from "@/components/Input/Button";
-import React, {useState} from "react";
+import React, {useEffect, useState} from "react";
 import {isUserInRole} from "@/utils/IsUserInRole";
 import {parseRole, Roles} from "@/enums/Roles";
-
-// Check if a user has an Auctioneer role
-if (!isUserInRole(parseRole(Roles.Auctioneer))) {
-    // Redirect to dashboard
-    window.location.href = "/";
-}
 
 export default function ProductForm() {
     const [formData, setFormData] = useState({
@@ -29,9 +23,20 @@ export default function ProductForm() {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [message, setMessage] = useState("");
 
+    // Check if a user has an Auctioneer role
+    useEffect(() => {
+        if (!isUserInRole(parseRole(Roles.Auctioneer))) {
+            // Redirect to dashboard
+            if (typeof window !== 'undefined') {
+                window.location.href = "/";
+            }
+        }
+    }, []);
+
     const validate = (): boolean => {
         const newErrors: Record<string, string> = {};
         if (!formData.name) newErrors.name = "Product naam is verplicht.";
+        if (!formData.species) newErrors.species = "Soort is verplicht.";
         setErrors(newErrors);
         return Object.keys(newErrors).length === 0;
     };
@@ -50,6 +55,10 @@ export default function ProductForm() {
             }));
             return;
         }
+        setErrors((prev) => {
+            const {picture, ...rest} = prev;
+            return rest;
+        });
         setFormData((prev) => ({...prev, picture: file}));
     };
 
@@ -103,6 +112,7 @@ export default function ProductForm() {
                 picture: null,
                 description: "",
             });
+            setErrors({});
         } catch (error) {
             console.error(error);
             setMessage("Er is iets misgegaan bij het versturen van het formulier.");

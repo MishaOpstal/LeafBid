@@ -1,4 +1,5 @@
 using System.Reflection;
+using System.Security.Claims;
 using LeafBidAPI.Configuration;
 using LeafBidAPI.Data;
 using LeafBidAPI.Data.extensions;
@@ -8,6 +9,7 @@ using LeafBidAPI.Helpers;
 using LeafBidAPI.Hubs;
 using LeafBidAPI.Interfaces;
 using LeafBidAPI.Models;
+using LeafBidAPI.Permissions;
 using LeafBidAPI.Services;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Identity;
@@ -32,7 +34,7 @@ public class Program
         builder.Services.AddDataProtection()
             .PersistKeysToFileSystem(new DirectoryInfo("/app/dpkeys"))
             .SetApplicationName("LeafBidAPI");
-        
+
         builder.Services.AddCors(options =>
         {
             options.AddPolicy(name: allowedOrigins,
@@ -59,7 +61,40 @@ public class Program
 
         builder.Services.AddDbContext<ApplicationDbContext>(options =>
             options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
-        builder.Services.AddAuthorization();
+
+        builder.Services.AddAuthorizationBuilder()
+            .AddPolicy(PolicyTypes.Auctions.View, policy =>
+            {
+                policy.RequireClaim(ApplicationClaimType.Permission, AuctionPermissions.View);
+            })
+            .AddPolicy(PolicyTypes.Auctions.Manage, policy =>
+            {
+                policy.RequireClaim(ApplicationClaimType.Permission, AuctionPermissions.View);
+                policy.RequireClaim(ApplicationClaimType.Permission, AuctionPermissions.Create);
+                policy.RequireClaim(ApplicationClaimType.Permission, AuctionPermissions.Update);
+                policy.RequireClaim(ApplicationClaimType.Permission, AuctionPermissions.Start);
+                policy.RequireClaim(ApplicationClaimType.Permission, AuctionPermissions.Stop);
+            })
+            .AddPolicy(PolicyTypes.AuctionSales.View, policy =>
+            {
+                policy.RequireClaim(ApplicationClaimType.Permission, AuctionSalePermissions.View);
+            })
+            .AddPolicy(PolicyTypes.Products.View, policy =>
+            {
+                policy.RequireClaim(ApplicationClaimType.Permission, ProductPermissions.View);
+            })
+            .AddPolicy(PolicyTypes.Products.Buy, policy =>
+            {
+                policy.RequireClaim(ApplicationClaimType.Permission, ProductPermissions.View);
+                policy.RequireClaim(ApplicationClaimType.Permission, ProductPermissions.Buy);
+            })
+            .AddPolicy(PolicyTypes.Products.Manage, policy =>
+            {
+                policy.RequireClaim(ApplicationClaimType.Permission, ProductPermissions.View);
+                policy.RequireClaim(ApplicationClaimType.Permission, ProductPermissions.Create);
+                policy.RequireClaim(ApplicationClaimType.Permission, ProductPermissions.Register);
+            });
+        
         builder.Services.AddControllers();
         builder.Services.AddRouting();
         builder.Services.AddSignalR();
@@ -69,7 +104,7 @@ public class Program
         builder.Services.Configure<AuctionTimerSettings>(
             builder.Configuration.GetSection("AuctionTimer")
         );
-        
+
         builder.Services
             .AddOptions<AuctionTimerSettings>()
             .Bind(builder.Configuration)
@@ -139,7 +174,7 @@ public class Program
         {
             builder.Services.AddTransient<IEmailSender<User>, EmailSenderService>();
         }
-        
+
         builder.Services.ConfigureSeedersEngine();
         builder.Services.AddSeeder<CompanySeeder>();
         builder.Services.AddSeeder<UserSeeder>();
@@ -155,7 +190,7 @@ public class Program
             options.ReportApiVersions = true;
         });
 
-        // Set-up versioning for Swagger
+        // Set up versioning for Swagger
         builder.Services.AddVersionedApiExplorer(options =>
         {
             options.GroupNameFormat = "'v'VVV"; // format: 'v'major[.minor][.patch]
@@ -179,22 +214,82 @@ public class Program
         if (app.Environment.IsDevelopment())
         {
             app.UseSwagger();
-            app.UseSwaggerUI(c =>
-            {
-                c.SwaggerEndpoint("/swagger/v2/swagger.json", "LeafBidAPI V2");
-            });
+            app.UseSwaggerUI(c => { c.SwaggerEndpoint("/swagger/v2/swagger.json", "LeafBidAPI V2"); });
         }
 
         //Role seeding
         using (IServiceScope scope = app.Services.CreateScope())
         {
-            RoleManager<IdentityRole> roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
+            RoleManager<IdentityRole> roleManager =
+                scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
             string[] roles = ["Admin", "Buyer", "Provider", "Auctioneer"];
             foreach (string role in roles)
             {
                 if (!roleManager.RoleExistsAsync(role).Result)
                 {
                     roleManager.CreateAsync(new IdentityRole(role)).Wait();
+                }
+
+                switch (role)
+                {
+                    case "Admin":
+                        roleManager.AddClaimAsync(new IdentityRole(role),
+                            new Claim(ApplicationClaimType.Permission, AuctionPermissions.View)).Wait();
+                        roleManager.AddClaimAsync(new IdentityRole(role),
+                            new Claim(ApplicationClaimType.Permission, AuctionPermissions.Create)).Wait();
+                        roleManager.AddClaimAsync(new IdentityRole(role),
+                            new Claim(ApplicationClaimType.Permission, AuctionPermissions.Update)).Wait();
+                        roleManager.AddClaimAsync(new IdentityRole(role),
+                            new Claim(ApplicationClaimType.Permission, AuctionPermissions.Start)).Wait();
+                        roleManager.AddClaimAsync(new IdentityRole(role),
+                            new Claim(ApplicationClaimType.Permission, AuctionPermissions.Stop)).Wait();
+
+                        roleManager.AddClaimAsync(new IdentityRole(role),
+                            new Claim(ApplicationClaimType.Permission, AuctionSalePermissions.View)).Wait();
+
+                        roleManager.AddClaimAsync(new IdentityRole(role),
+                            new Claim(ApplicationClaimType.Permission, ProductPermissions.Buy)).Wait();
+                        roleManager.AddClaimAsync(new IdentityRole(role),
+                            new Claim(ApplicationClaimType.Permission, ProductPermissions.View)).Wait();
+                        roleManager.AddClaimAsync(new IdentityRole(role),
+                            new Claim(ApplicationClaimType.Permission, ProductPermissions.Create)).Wait();
+                        roleManager.AddClaimAsync(new IdentityRole(role),
+                            new Claim(ApplicationClaimType.Permission, ProductPermissions.Register)).Wait();
+                        break;
+                    case "Buyer":
+                        roleManager.AddClaimAsync(new IdentityRole(role),
+                            new Claim(ApplicationClaimType.Permission, AuctionPermissions.View)).Wait();
+                        roleManager.AddClaimAsync(new IdentityRole(role),
+                            new Claim(ApplicationClaimType.Permission, ProductPermissions.Buy)).Wait();
+                        roleManager.AddClaimAsync(new IdentityRole(role),
+                            new Claim(ApplicationClaimType.Permission, ProductPermissions.View)).Wait();
+                        break;
+                    case "Provider":
+                        roleManager.AddClaimAsync(new IdentityRole(role),
+                            new Claim(ApplicationClaimType.Permission, AuctionPermissions.View)).Wait();
+                        roleManager.AddClaimAsync(new IdentityRole(role),
+                            new Claim(ApplicationClaimType.Permission, ProductPermissions.View)).Wait();
+                        roleManager.AddClaimAsync(new IdentityRole(role),
+                            new Claim(ApplicationClaimType.Permission, ProductPermissions.Create)).Wait();
+                        roleManager.AddClaimAsync(new IdentityRole(role),
+                            new Claim(ApplicationClaimType.Permission, ProductPermissions.Register)).Wait();
+                        break;
+                    case "Auctioneer":
+                        roleManager.AddClaimAsync(new IdentityRole(role),
+                            new Claim(ApplicationClaimType.Permission, AuctionPermissions.View)).Wait();
+                        roleManager.AddClaimAsync(new IdentityRole(role),
+                            new Claim(ApplicationClaimType.Permission, AuctionPermissions.Create)).Wait();
+                        roleManager.AddClaimAsync(new IdentityRole(role),
+                            new Claim(ApplicationClaimType.Permission, AuctionPermissions.Update)).Wait();
+                        roleManager.AddClaimAsync(new IdentityRole(role),
+                            new Claim(ApplicationClaimType.Permission, AuctionPermissions.Start)).Wait();
+                        roleManager.AddClaimAsync(new IdentityRole(role),
+                            new Claim(ApplicationClaimType.Permission, AuctionPermissions.Stop)).Wait();
+                        roleManager.AddClaimAsync(new IdentityRole(role),
+                            new Claim(ApplicationClaimType.Permission, AuctionSalePermissions.View)).Wait();
+                        roleManager.AddClaimAsync(new IdentityRole(role),
+                            new Claim(ApplicationClaimType.Permission, ProductPermissions.View)).Wait();
+                        break;
                 }
             }
         }
@@ -207,7 +302,7 @@ public class Program
 
         app.UseRouting();
         app.UseCors(allowedOrigins);
-        
+
         app.UseAuthentication();
         app.UseAuthorization();
 
@@ -223,7 +318,7 @@ public class Program
             // Prevent the app from continuing further.
             return;
         }
-        
+
         app.Run();
     }
 }

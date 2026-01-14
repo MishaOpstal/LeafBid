@@ -6,13 +6,16 @@ import Form from "react-bootstrap/Form";
 import TextInput from "@/components/Input/TextInput";
 import NumberInput from "@/components/Input/NumberInput";
 import Button from "@/components/Input/Button";
-import React, {useEffect, useState} from "react";
+import React, {useCallback, useEffect, useMemo, useState} from "react";
 import SelectableButtonGroup from "@/components/Input/SelectableButtonGroup";
 import SearchableDropdown from "@/components/Input/SearchableDropdown";
 import DateSelect from "@/components/Input/DateSelect";
 import {isUserInRole} from "@/utils/IsUserInRole";
 import {parseRole, Roles} from "@/enums/Roles";
 import {Product} from "@/types/Product/Product";
+
+// Constants - defined outside component to prevent recreation on every render
+const MEASUREMENT_OPTIONS = ["Pot grootte", "Stem lengte"];
 
 // Check if a user has a Provider role
 if (!isUserInRole(parseRole(Roles.Provider))) {
@@ -45,23 +48,30 @@ export default function ProductForm() {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [message, setMessage] = useState("");
 
-    useEffect(() => {
-        (async () => {
-            try {
-                const res = await fetch("http://localhost:5001/api/v2/Product/available", {
-                    method: "GET",
-                    credentials: "include",
-                });
-                if (!res.ok) {
-                    throw new Error("Failed to fetch products");
-                }
+    // Memoize sorted products to prevent recreation on every render
+    const sortedProducts = useMemo(() => {
+        return [...products].sort((a, b) => a.name.localeCompare(b.name));
+    }, [products]);
 
-                const data: Product[] = await res.json();
-                setProducts(data);
-            } catch (error) {
-                console.error("Error fetching products:", error);
+    const fetchAvailableProducts = async () => {
+        try {
+            const res = await fetch("http://localhost:5001/api/v2/Product/available", {
+                method: "GET",
+                credentials: "include",
+            });
+            if (!res.ok) {
+                throw new Error("Failed to fetch products");
             }
-        })();
+
+            const data: Product[] = await res.json();
+            setProducts(data);
+        } catch (error) {
+            console.error("Error fetching products:", error);
+        }
+    }
+
+    useEffect(() => {
+        void fetchAvailableProducts();
     }, []);
 
     const validate = (): boolean => {
@@ -85,7 +95,6 @@ export default function ProductForm() {
     const handleDateSelect = (date: string | null) => {
         setFormData((prev) => ({...prev, harvestedAt: date ?? ""}));
     };
-
 
     const submitForm = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -156,7 +165,7 @@ export default function ProductForm() {
 
                 <SearchableDropdown
                     label="Product"
-                    items={[...products].sort((a, b) => a.name.localeCompare(b.name))}
+                    items={sortedProducts}
                     displayKey="name"
                     valueKey="id"
                     onSelect={handleProductSelect}
@@ -214,7 +223,7 @@ export default function ProductForm() {
 
                 <SelectableButtonGroup
                     name="measurementType"
-                    options={["Pot grootte", "Stem lengte"]}
+                    options={MEASUREMENT_OPTIONS}
                     value={formData.measurementType}
                     onChange={(name, value) =>
                         setFormData((prev) => ({...prev, [name]: value}))

@@ -5,6 +5,11 @@
     color: var(--text);
 }
 
+.statusText {
+    color: var(--muted-text); /* Uses your variable from globals.css */
+    font-size: 0.85rem;
+}
+
 .image {
     border-radius: 9px 0 0 9px;
     object-fit: cover;

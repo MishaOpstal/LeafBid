@@ -1,7 +1,30 @@
 .link{
-    font-size: 1.5rem;
+    color: var(--text);
+    font-size: 1.2rem;
+    line-height: 1.2;
+    background: unset;
+    border: none;
 }
 
+.link:hover {
+    color: var(--primary);
+    transform: translateY(-.001px);
+}
+
+.link::after {
+    content: '';
+    position: absolute;
+    width: 0;
+    height: 2px;
+    bottom: 0px;
+    left: 0;
+    background-color: #4CAF50;
+    transition: width 0.3s ease;
+}
+
+.link:hover::after {
+    width: 100%;
+}
 
 .logoWrapper {
     position: relative;

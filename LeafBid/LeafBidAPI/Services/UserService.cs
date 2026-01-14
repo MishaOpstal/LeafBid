@@ -119,25 +119,49 @@ public class UserService(
     
     public async Task<User> LoginUser(LoginUserDto loginData)
     {
-        // Check for email, then username if email wasn't found.
         User? user = await userManager.FindByEmailAsync(loginData.Email)
-            ?? await userManager.FindByNameAsync(loginData.Email);
+                     ?? await userManager.FindByNameAsync(loginData.Email);
+
         if (user == null)
         {
             throw new NotFoundException("User not found");
         }
 
-        SignInResult result = await signInManager.PasswordSignInAsync(
+        SignInResult result = await signInManager.CheckPasswordSignInAsync(
             user,
             loginData.Password,
-            loginData.Remember,
-            false
+            lockoutOnFailure: false
         );
 
         if (!result.Succeeded)
         {
             throw new UnauthorizedException("Invalid credentials");
         }
+
+        IList<string> roles = await userManager.GetRolesAsync(user);
+        List<Claim> userRoleClaims = roles
+            .Select(role => new Claim(ClaimTypes.Role, role))
+            .ToList();
+
+        IList<Claim> userClaims = await userManager.GetClaimsAsync(user);
+
+        List<Claim> baseClaims =
+        [
+            new(ClaimTypes.NameIdentifier, user.Id),
+            new(ClaimTypes.Email, user.Email ?? string.Empty),
+            new(ClaimTypes.Name, user.UserName ?? string.Empty)
+        ];
+
+        List<Claim> allClaims = [];
+        allClaims.AddRange(baseClaims);
+        allClaims.AddRange(userClaims);
+        allClaims.AddRange(userRoleClaims);
+
+        await signInManager.SignInWithClaimsAsync(
+            user,
+            isPersistent: loginData.Remember,
+            additionalClaims: allClaims
+        );
 
         user.LastLogin = DateTime.UtcNow;
         await userManager.UpdateAsync(user);

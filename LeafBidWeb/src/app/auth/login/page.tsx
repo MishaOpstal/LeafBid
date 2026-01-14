@@ -19,6 +19,7 @@ export default function LoginPage() {
 
     const router = useRouter();
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    const userNameRegex = /^[a-zA-Z0-9]+$/;
 
     const handleSubmit = async (e: React.FormEvent) => {
         try {
@@ -56,12 +57,6 @@ export default function LoginPage() {
                 throw LoginFailedException("login mislukt.");
             }
 
-            const data = await response.json();
-            window.accessToken = data.accessToken;
-
-            if (typeof data.expiresIn === "number") {
-                window.accessTokenExpiresAt = Date.now() + data.expiresIn * 1000;
-            }
         } finally {
             setIsSubmitting(false);
         }
@@ -81,9 +76,12 @@ export default function LoginPage() {
         const newErrors: Record<string, string> = {};
 
         if (!loginData.email) {
-            newErrors.email = "Email is verplicht.";
-        } else if (!emailRegex.test(loginData.email)) {
-            newErrors.email = "Voer een geldig e-mailadres in.";
+            newErrors.email = "E-mail is verplicht.";
+        } else if (
+            !emailRegex.test(loginData.email) &&
+            !userNameRegex.test(loginData.email)
+        ) {
+            newErrors.email = "Voer een geldig e-mailadres of gebruikersnaam in.";
         }
 
         if (!loginData.password) {
@@ -114,9 +112,9 @@ export default function LoginPage() {
                 <Form noValidate className={s.form}>
                     {/* Email */}
                     <TextInput
-                        label={"email"}
                         name={"email"}
-                        placeholder={"E-mail"}
+                        label={"E-mail or Username"}
+                        placeholder={"no-reply@leafbid.nl"}
                         value={loginData.email}
                         onChange={(e) => {
                             const value = e.target.value.replace(/\s/g, '');
@@ -126,19 +124,25 @@ export default function LoginPage() {
                     {errors.email && <div className={s.error}>{errors.email}</div>}
 
                     {/* Password */}
-                    <TextInput label={"password"} name={"password"} placeholder={"Password"}
-                               value={loginData.password}
-                               onChange={(e) => setLoginData({...loginData, password: e.target.value})}
-                               secret={true}/>
+                    <TextInput
+                        name={"password"}
+                        label={"Wachtwoord"}
+                        placeholder={"Wachtwoord"}
+                        value={loginData.password}
+                        onChange={(e) => setLoginData({
+                            ...loginData,
+                            password: e.target.value
+                        })}
+                        secret={true}/>
                     {errors.password && <div className={s.error}>{errors.password}</div>}
 
                     {/* Remember me */}
                     <Form.Label className={`form-check-label ${s.check}`} htmlFor="remember">
                         <Form.Control
+                            name="remember"
                             className={`form-check-input ${s.checkInput} p-0`}
                             type="checkbox"
                             id="remember"
-                            name="remember"
                             checked={loginData.remember}
                             onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                                 setLoginData({

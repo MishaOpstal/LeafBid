@@ -64,7 +64,7 @@ const DashboardPanel: React.FC<DashboardPanelProps> = ({
                             // standard compact card
                             <>
                                 <Card.Title className="mb-0">{kloklocatie}</Card.Title>
-                                <small className="text-muted">{auctionStatus}</small>
+                                <small className={s.statusText}>{auctionStatus}</small>
                             </>
                         )}
                     </div>
