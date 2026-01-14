@@ -1,6 +1,6 @@
 ﻿'use client';
 
-import InfoVeld from "@/components/UpcomingProduct/UpcomingProduct";
+import UpcomingProduct from "@/components/UpcomingProduct/UpcomingProduct";
 import AuctionedProduct from "@/components/AuctionedProduct/AuctionedProduct";
 import Header from "@/components/Header/Header";
 import AuctionTimer from '@/components/AuctionTimer/AuctionTimer';
@@ -354,7 +354,7 @@ export default function AuctionPage() {
                     <div className={s.textBlocks}>
                         {nextProducts.length > 0 ? (
                             nextProducts.map((rp) => (
-                                <InfoVeld key={rp.id} registeredProduct={rp}/>
+                                <UpcomingProduct key={rp.id} registeredProduct={rp}/>
                             ))
                         ) : (
                             <p>Geen volgende producten</p>

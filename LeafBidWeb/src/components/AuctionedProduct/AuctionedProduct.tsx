@@ -67,7 +67,7 @@ export default function AuctionedProduct({ registeredProduct, currentPricePerUni
                 <h2>{registeredProduct.product!.name}</h2>
                 <p>Aantal: {registeredProduct.stock}</p>
                 <p>Geoogst: {parseDate(registeredProduct.harvestedAt ?? "")}</p>
-                <p>Leverancier: {registeredProduct.providerUserName}</p>
+                <p>Leverancier: {registeredProduct.company!.name}</p>
                 <p>Regio Oorsprong: {registeredProduct.region}</p>
             </div>
 
