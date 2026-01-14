@@ -36,6 +36,12 @@ namespace LeafBidAPI.Migrations
                     b.Property<bool>("IsLive")
                         .HasColumnType("bit");
 
+                    b.Property<bool>("IsVisible")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime?>("NextProductStartTime")
+                        .HasColumnType("datetime2");
+
                     b.Property<DateTime>("StartDate")
                         .HasColumnType("datetime2");
 
@@ -56,9 +62,6 @@ namespace LeafBidAPI.Migrations
                         .HasColumnType("int");
 
                     b.Property<int>("RegisteredProductId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("AuctionStock")
                         .HasColumnType("int");
 
                     b.Property<int>("ServeOrder")

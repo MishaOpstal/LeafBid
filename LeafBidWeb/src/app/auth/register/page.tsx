@@ -5,20 +5,20 @@ import Link from 'next/link';
 import s from '../page.module.css';
 import "bootstrap/dist/css/bootstrap-grid.min.css"
 import Form from "react-bootstrap/Form";
-import Button from "@/components/input/Button";
-import {useRouter} from 'next/navigation';
+import Button from "@/components/Input/Button";
+import {useRouter} from 'nextjs-toploader/app';
 import React, {useState} from "react";
 import {Register} from "@/types/User/Register";
 import RegisterFailedException, {isRegisterFailedException} from '@/exceptions/Auth/RegisterFailedException';
-import SearchableDropdown from "@/components/input/SearchableDropdown";
+import SearchableDropdown from "@/components/Input/SearchableDropdown";
 import {Role} from "@/types/User/Role";
 import RoleFetchFailedException from "@/exceptions/Auth/RoleFetchFailedException";
-import TextInput from "@/components/input/TextInput";
+import TextInput from "@/components/Input/TextInput";
 import ValidationFailedException, {isValidationFailedException} from "@/exceptions/ValidationFailedException";
 
 const roles: Role[] = [];
 
-// Retrieve roles from backend using fetch
+// Retrieve roles from the backend using fetch
 const fetchRoles = async () => {
     const response = await fetch("http://localhost:5001/api/v2/Role", {
         method: "GET",
@@ -43,6 +43,8 @@ fetchRoles().catch(error => {
 
 export default function RegisterPage() {
     const router = useRouter();
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
     const handleSubmit = async (e: React.FormEvent) => {
         try {
             await submitForm(e);
@@ -101,6 +103,8 @@ export default function RegisterPage() {
         }
         if (!registerData.email) {
             newErrors.email = "Email is verplicht.";
+        } else if (!emailRegex.test(registerData.email)) {
+            newErrors.email = "Voer een geldig e-mailadres in.";
         }
         if (!registerData.password) {
             newErrors.password = "Wachtwoord is verplicht.";
@@ -131,7 +135,7 @@ export default function RegisterPage() {
                     />
                 </div>
 
-                <h1 id="loginTitle" className={s.title}>Welkom bij Leafbid</h1>
+                <h1 id="loginTitle" className={s.title}>Welkom bij LeafBid</h1>
 
                 <Form noValidate className={s.form}>
                     {/* Username */}
@@ -141,14 +145,20 @@ export default function RegisterPage() {
                                    e.target.value = e.target.value.replace(/[^a-zA-Z0-9]/g, '');
                                    setRegisterData({...registerData, userName: e.target.value})
                                }}/>
+                    {errors.userName && <div className={s.error}>{errors.userName}</div>}
 
                     {/* Email */}
-                    <TextInput label={"email"} name={"email"} placeholder={"E-mail"} value={registerData.email}
-                               onChange={(e) => {
-                                   // Make sure there are only letters, digits, @ and . in the email
-                                   e.target.value = e.target.value.replace(/[^a-zA-Z0-9@.]/g, '');
-                                   setRegisterData({...registerData, email: e.target.value})
-                               }}/>
+                    <TextInput
+                        label={"email"}
+                        name={"email"}
+                        placeholder={"E-mail"}
+                        value={registerData.email}
+                        onChange={(e) => {
+                            const value = e.target.value.replace(/\s/g, '');
+                            setRegisterData({...registerData, email: value});
+                        }}
+                    />
+                    {errors.email && <div className={s.error}>{errors.email}</div>}
 
                     {/* Password */}
                     <div className={s.passwordRow}>
@@ -156,6 +166,7 @@ export default function RegisterPage() {
                                    value={registerData.password}
                                    onChange={(e) => setRegisterData({...registerData, password: e.target.value})}
                                    secret={true}/>
+                        {errors.password && <div className={s.error}>{errors.password}</div>}
 
                         {/* Password Verify */}
                         <TextInput label={"passwordConfirmation"} name={"passwordConfirmation"}
@@ -165,6 +176,7 @@ export default function RegisterPage() {
                                        ...registerData,
                                        passwordConfirmation: e.target.value
                                    })} secret={true}/>
+                        {errors.passwordConfirmation && <div className={s.error}>{errors.passwordConfirmation}</div>}
                     </div>
 
                     <SearchableDropdown
@@ -178,6 +190,7 @@ export default function RegisterPage() {
                         })}
                         placeholder="Zoek naar rol..."
                     />
+                    {errors.roles && <div className={s.error}>{errors.roles}</div>}
 
                     {/* Submit */}
                     <Button
@@ -185,8 +198,11 @@ export default function RegisterPage() {
                         type="button"
                         label="Registreren"
                         onClick={handleSubmit}
+                        disabled={isSubmitting}
                     />
                 </Form>
+
+                {message && <div className={s.message}>{message}</div>}
 
                 <p className={s.registerLine}>
                     <Link href="/auth/login" className={s.registerLink}>

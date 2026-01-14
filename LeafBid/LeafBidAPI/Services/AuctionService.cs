@@ -43,10 +43,10 @@ public class AuctionService(
             throw new UnauthorizedAccessException("User does not have the required role to create an auction");
         }
 
-        foreach (RegisteredProduct registeredProduct in auctionData.RegisteredProducts)
+        foreach (RegisteredProductForAuctionRequest registeredProductForAuction in auctionData.RegisteredProductsForAuction)
         {
             AuctionProduct? auctionProducts =
-                await context.AuctionProducts.FirstOrDefaultAsync(a => a.RegisteredProductId == registeredProduct.Id);
+                await context.AuctionProducts.FirstOrDefaultAsync(a => a.RegisteredProductId == registeredProductForAuction.Id);
             if (auctionProducts != null)
             {
                 throw new ProductAlreadyAssignedException("Registered product already assigned");
@@ -64,20 +64,27 @@ public class AuctionService(
         await context.SaveChangesAsync();
 
         int counter = 1;
-        foreach (RegisteredProduct registeredProduct in auctionData.RegisteredProducts)
+        foreach (RegisteredProductForAuctionRequest registeredProductForAuction in auctionData.RegisteredProductsForAuction)
         {
             AuctionProduct auctionProduct = new()
             {
                 AuctionId = auction.Id,
-                RegisteredProductId = registeredProduct.Id,
+                RegisteredProductId = registeredProductForAuction.Id,
                 ServeOrder = counter++,
-                AuctionStock = registeredProduct.Stock
             };
 
             context.AuctionProducts.Add(auctionProduct);
+            
+            RegisteredProduct? registeredProduct = await context.RegisteredProducts.FirstOrDefaultAsync(rp => rp.Id == registeredProductForAuction.Id);
+            if (registeredProduct == null)
+            {
+                throw new NotFoundException("Registered product not found");
+            }
+            
+            registeredProduct.MaxPrice = registeredProductForAuction.MaxPrice;
+            context.RegisteredProducts.Update(registeredProduct);
         }
 
-        context.RegisteredProducts.UpdateRange(auctionData.RegisteredProducts);
         await context.SaveChangesAsync();
 
         return auction;
@@ -94,6 +101,8 @@ public class AuctionService(
 
         auction.StartDate = updatedAuction.StartTime;
         auction.ClockLocationEnum = updatedAuction.ClockLocationEnum;
+        auction.IsLive = false;
+        auction.IsVisible = false;
 
         await context.SaveChangesAsync();
         return auction;
@@ -102,7 +111,7 @@ public class AuctionService(
     public async Task<List<RegisteredProduct>> GetRegisteredProductsByAuctionId(int auctionId)
     {
         List<RegisteredProduct?> registeredProducts = await context.AuctionProducts
-            .Where(ap => ap.AuctionId == auctionId)
+            .Where(ap => ap.AuctionId == auctionId && ap.RegisteredProduct!.Stock > 0)
             .OrderBy(ap => ap.ServeOrder)
             .Include(ap => ap.RegisteredProduct)
             .ThenInclude(rp => rp!.Product)

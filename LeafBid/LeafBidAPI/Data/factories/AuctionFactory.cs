@@ -29,13 +29,15 @@ public class AuctionFactory(
             )
             .RuleFor(
                 a => a.StartDate,
-                f => _auctionSales.Count == 0
-                    ? f.Date.Past(8, DateTime.UtcNow)
-                    : f.Date.Between(f.Date.Past(8, DateTime.UtcNow), f.Date.Future())
+                f => f.Date.Between(DateTime.UtcNow.AddMinutes(-5), DateTime.UtcNow.AddHours(4))
             )
             .RuleFor(
                 a => a.IsLive,
-                (f, a) => a.StartDate >= DateTime.UtcNow
+                (f, a) => a.StartDate <= DateTime.UtcNow
+            )
+            .RuleFor(
+                a => a.IsVisible,
+                (f, a) => a.StartDate <= DateTime.UtcNow.AddHours(1)
             )
             .RuleFor(
                 a => a.ClockLocationEnum,

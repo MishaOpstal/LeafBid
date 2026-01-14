@@ -1,0 +1,9 @@
+.transparentButton {
+    background-color: transparent;
+    color: black;
+    border: none;
+}
+
+.icon-global{
+    color: var(--background);
+}

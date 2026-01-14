@@ -1,7 +1,7 @@
-import ProductTable from "@/components/productTable/productTable";
-import Header from "@/components/header/header";
+import ProductTable from "@/components/ProductTable/ProductTable";
+import Header from "@/components/Header/Header";
 import { Roles } from "@/enums/Roles";
-import Chart from "@/components/chart/chart";
+import Chart from "@/components/Chart/Chart";
 export default function Page() {
     return (
         <>

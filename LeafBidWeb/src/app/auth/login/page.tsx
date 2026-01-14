@@ -6,19 +6,20 @@ import s from '../page.module.css';
 import "bootstrap/dist/css/bootstrap-grid.min.css"
 import Form from "react-bootstrap/Form";
 import Button from "react-bootstrap/Button";
-import {useRouter} from 'next/navigation';
+import {useRouter} from 'nextjs-toploader/app';
 import React, {useState} from "react";
 import LoginFailedException, {isLoginFailedException} from "@/exceptions/Auth/LoginFailedException";
 import ValidationFailedException, {isValidationFailedException} from "@/exceptions/ValidationFailedException";
 import {Login} from "@/types/User/Login";
-import TextInput from "@/components/input/TextInput";
-import {toggleTheme} from "@/components/header/theme";
+import TextInput from "@/components/Input/TextInput";
+import {toggleTheme} from "@/components/Header/Theme";
 
 export default function LoginPage() {
     toggleTheme();
 
-
     const router = useRouter();
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
     const handleSubmit = async (e: React.FormEvent) => {
         try {
             await submitForm(e);
@@ -46,7 +47,7 @@ export default function LoginPage() {
         try {
             const response = await fetch("http://localhost:5001/api/v2/User/login", {
                 method: "POST",
-                headers: { "Content-Type": "application/json" },
+                headers: {"Content-Type": "application/json"},
                 credentials: "include",
                 body: JSON.stringify(loginData),
             });
@@ -78,9 +79,13 @@ export default function LoginPage() {
 
     const validate = (): boolean => {
         const newErrors: Record<string, string> = {};
+
         if (!loginData.email) {
             newErrors.email = "Email is verplicht.";
+        } else if (!emailRegex.test(loginData.email)) {
+            newErrors.email = "Voer een geldig e-mailadres in.";
         }
+
         if (!loginData.password) {
             newErrors.password = "Wachtwoord is verplicht.";
         }
@@ -104,22 +109,28 @@ export default function LoginPage() {
                     />
                 </div>
 
-                <h1 id="loginTitle" className={s.title}>Welkom bij Leafbid</h1>
+                <h1 id="loginTitle" className={s.title}>Welkom bij LeafBid</h1>
 
                 <Form noValidate className={s.form}>
                     {/* Email */}
-                    <TextInput label={"email"} name={"email"} placeholder={"E-mail"} value={loginData.email}
-                               onChange={(e) => {
-                                   // Make sure there are only letters, digits, @ and . in the email
-                                   e.target.value = e.target.value.replace(/[^a-zA-Z0-9@.]/g, '');
-                                   setLoginData({...loginData, email: e.target.value})
-                               }}/>
+                    <TextInput
+                        label={"email"}
+                        name={"email"}
+                        placeholder={"E-mail"}
+                        value={loginData.email}
+                        onChange={(e) => {
+                            const value = e.target.value.replace(/\s/g, '');
+                            setLoginData({...loginData, email: value});
+                        }}
+                    />
+                    {errors.email && <div className={s.error}>{errors.email}</div>}
 
                     {/* Password */}
                     <TextInput label={"password"} name={"password"} placeholder={"Password"}
                                value={loginData.password}
                                onChange={(e) => setLoginData({...loginData, password: e.target.value})}
                                secret={true}/>
+                    {errors.password && <div className={s.error}>{errors.password}</div>}
 
                     {/* Remember me */}
                     <Form.Label className={`form-check-label ${s.check}`} htmlFor="remember">
@@ -140,9 +151,16 @@ export default function LoginPage() {
                     </Form.Label>
 
                     {/* Submit */}
-                    <Form.Control as={Button} type="submit" value="Inloggen"
-                                  onClick={handleSubmit}>Inloggen</Form.Control>
+                    <Form.Control
+                        as={Button}
+                        type="submit"
+                        value="Inloggen"
+                        onClick={handleSubmit}
+                        disabled={isSubmitting}
+                    >Inloggen</Form.Control>
                 </Form>
+
+                {message && <div className={s.message}>{message}</div>}
 
                 <p className={s.registerLine}>
                     <Link href="/auth/register" className={s.registerLink}>

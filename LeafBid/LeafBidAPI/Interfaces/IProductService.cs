@@ -61,24 +61,13 @@ public interface IProductService
     /// <param name="registeredProductData"></param>
     /// <param name="productId"></param>
     /// <param name="userId"></param>
+    /// <param name="companyId"></param>
     /// <returns>The created product for the supplier.</returns>
     /// <exception cref="Exception">
-    /// Thrown when product cannot be created
+    /// Thrown when the product cannot be created
     /// </exception>
     Task<RegisteredProduct> CreateRegisteredProduct(CreateRegisteredProductEndpointDto registeredProductData,
         int productId, string userId, int companyId);
-
-
-    /// <summary>
-    /// Add a user created product (this includes data that can differ per user)
-    ///</summary>
-    /// <param name="productId">A valid product id.</param>
-    /// <param name="registeredProductData">The unique product information.</param>
-    /// <returns>The created registered product.</returns>
-    /// <exception cref="Exception">
-    /// Thrown when user invalid or something idk.
-    /// </exception>
-    Task<RegisteredProduct> AddProduct(int productId, CreateRegisteredProductDto registeredProductData);
 
     /// <summary>
     /// Update an existing product by ID.

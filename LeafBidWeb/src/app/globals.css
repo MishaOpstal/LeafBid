@@ -1,9 +1,73 @@
 @import "bootstrap/dist/css/bootstrap.min.css";
 @import "react-bootstrap-icons";
 
+/* Typed CSS Custom Properties (helps IDEs + enables better transitions) */
+@property --primary {
+    syntax: "<color>";
+    inherits: true;
+    initial-value: rgba(92, 152, 59, 1);
+}
+
+@property --primary-hover {
+    syntax: "<color>";
+    inherits: true;
+    initial-value: rgba(37, 99, 44, 1);
+}
+
+
+@property --accent-soft {
+    syntax: "<color>";
+    inherits: true;
+    initial-value: rgba(201, 233, 181, 1);
+}
+
+@property --background {
+    syntax: "<color>";
+    inherits: true;
+    initial-value: rgba(255, 255, 255, 1);
+}
+
+@property --secondary-background {
+    syntax: "<color>";
+    inherits: true;
+    initial-value: rgba(199, 245, 169, 1);
+}
+
+@property --secondary-border {
+    syntax: "<color>";
+    inherits: true;
+    initial-value: rgba(199, 245, 169, 1);
+}
+
+@property --surface {
+    syntax: "<color>";
+    inherits: true;
+    initial-value: rgba(255, 255, 255, 0.01);
+}
+
+@property --text {
+    syntax: "<color>";
+    inherits: true;
+    initial-value: rgba(27, 27, 27, 1);
+}
+
+@property --muted-text {
+    syntax: "<color>";
+    inherits: true;
+    initial-value: rgba(106, 106, 106, 1);
+}
+
+@property --faded {
+    syntax: "<color>";
+    inherits: true;
+    initial-value: rgba(199, 245, 169, 0.3);
+}
+
 :root {
     --primary: rgba(92, 152, 59, 1);
     --primary-hover: rgba(37, 99, 44, 1);
+    --secondary-border: rgba(199, 245, 169, 1);
+    --secondary-background: rgba(199, 245, 169, 1);
     --accent-soft: rgba(201, 233, 181, 1);
     --background: rgba(255, 255, 255, 1);
     --surface: rgba(255, 255, 255, 0.01);
@@ -15,6 +79,8 @@
 :root[data-theme="dark"] {
     --primary: rgba(92, 152, 59, 1);
     --primary-hover: rgba(37, 99, 44, 1);
+    --secondary-border: rgba(199, 245, 169, 1);
+    --secondary-background: rgba(199, 245, 169, 1);
     --accent-soft: rgba(199, 245, 169, 1);
     --background: rgba(15, 18, 16, 1);
     --surface: rgba(27, 31, 28, 0.01);
@@ -47,7 +113,6 @@ body {
     --bs-table-bg: var(--background);
     --bs-table-striped-color: var(--text);
     --bs-table-striped-bg: var(--faded);
-
 }
 
 .table > thead > tr > th {

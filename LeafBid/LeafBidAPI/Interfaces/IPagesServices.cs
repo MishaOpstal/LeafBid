@@ -18,7 +18,7 @@ public interface IPagesServices
     /// Thrown when no auction is found for the specified clock location,
     /// or when no products are found for the located auction.
     /// </exception>
-    Task<List<GetAuctionWithProductsDto>> GetAuctionWithProducts(ClockLocationEnum clockLocation);
+    Task<List<GetAuctionWithProductsResponse>> GetClosestAuctionsWithProducts(ClockLocationEnum clockLocation);
 
     /// <summary>
     /// Get a specific auction and its products by auction ID.
@@ -32,13 +32,13 @@ public interface IPagesServices
     /// Thrown when no auction is found with the specified ID,
     /// or when no products are found for the located auction.
     /// </exception>
-    Task<GetAuctionWithProductsDto> GetAuctionWithProductsById(int auctionId);
+    Task<GetAuctionWithProductsResponse> GetAuctionWithProductsById(int auctionId);
 
     /// <summary>
     /// Get the  active auctions.
     /// </summary>
     /// <returns>A DTO containing the active auction and its products for each clock location.</returns>
     /// <exception cref="NotFoundException">Thrown when no active auction is found for any clock location.</exception>
-    Task<List<GetAuctionWithProductsDto>> GetAuctionPerActiveClockLocation();
+    Task<List<GetAuctionWithProductsResponse>> GetAuctionsWithProductsPerClockLocation();
 
 }

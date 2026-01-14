@@ -1,72 +1,91 @@
-﻿"use client";
+"use client";
 
-import s from "@/app/layouts/toevoegen/page.module.css";
-import ToevoegenLayout from "@/app/layouts/toevoegen/layout";
+import s from "@/app/layouts/add/page.module.css";
+import ToevoegenLayout from "@/app/layouts/add/layout";
 import Form from "react-bootstrap/Form";
-import TextInput from "@/components/input/TextInput";
-import FileInput from "@/components/input/FileInput";
-import TextAreaInput from "@/components/input/TextAreaInput";
-import Button from "@/components/input/Button";
-import React, { useState } from "react";
-import {isUserInRole} from "@/app/auth/utils/isUserInRole";
+import TextInput from "@/components/Input/TextInput";
+import NumberInput from "@/components/Input/NumberInput";
+import Button from "@/components/Input/Button";
+import React, {useEffect, useState} from "react";
+import SelectableButtonGroup from "@/components/Input/SelectableButtonGroup";
+import SearchableDropdown from "@/components/Input/SearchableDropdown";
+import DateSelect from "@/components/Input/DateSelect";
+import {isUserInRole} from "@/utils/IsUserInRole";
+import {parseRole, Roles} from "@/enums/Roles";
+import {Product} from "@/types/Product/Product";
 
-// Check if user has a Auctioneer role
-if (!isUserInRole("Auctioneer") && !isUserInRole("Admin")) {
+// Check if a user has a Provider role
+if (!isUserInRole(parseRole(Roles.Provider))) {
     // Redirect to dashboard
-    window.location.href = "/";
+    if (typeof window !== 'undefined') {
+        window.location.href = "/";
+    }
 }
 
 export default function ProductForm() {
     const [formData, setFormData] = useState({
-
-        name: "", //required
-        description: "", //optional
-        picture: null as File | null, //optional
-        species: "", //required
+        minPrice: "", //required
+        weight: "", //required
+        region: "", //required
+        potSize: "", //either required or stemLength
+        stemLength: "", //either required or potSize
+        measurementType: "Pot grootte", //Pot Size or Stem Length toggle
+        stock: "", //required
+        harvestedAt: "", //required
+        productId: "", //required
     });
 
+    let ProductId = null;
+    if (typeof window !== 'undefined') {
+        ProductId = localStorage.getItem("productId") ?? "";
+    }
+
+    const [products, setProducts] = useState<Product[]>([]);
     const [errors, setErrors] = useState<Record<string, string>>({});
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [message, setMessage] = useState("");
 
+    useEffect(() => {
+        (async () => {
+            try {
+                const res = await fetch("http://localhost:5001/api/v2/Product/available", {
+                    method: "GET",
+                    credentials: "include",
+                });
+                if (!res.ok) {
+                    throw new Error("Failed to fetch products");
+                }
+
+                const data: Product[] = await res.json();
+                setProducts(data);
+            } catch (error) {
+                console.error("Error fetching products:", error);
+            }
+        })();
+    }, []);
+
     const validate = (): boolean => {
         const newErrors: Record<string, string> = {};
-        if (!formData.name) newErrors.name = "Product naam is verplicht.";
+        if (!formData.productId) newErrors.productId = "Product productId is verplicht.";
         setErrors(newErrors);
         return Object.keys(newErrors).length === 0;
     };
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-        const { name, value } = e.target;
-        setFormData((prev) => ({ ...prev, [name]: value }));
+        const {name, value} = e.target;
+        setFormData((prev) => ({...prev, [name]: value}));
+    };
+
+    const handleProductSelect = (product: Product) => {
+        setFormData((prev) => ({...prev, productId: product.id.toString()}));
+        // Also update localStorage if that's where you intend to persist it for the submitForm call
+        localStorage.setItem("productId", product.id.toString());
     };
 
     const handleDateSelect = (date: string | null) => {
-        setFormData((prev) => ({ ...prev, harvestedAt: date ?? "" }));
+        setFormData((prev) => ({...prev, harvestedAt: date ?? ""}));
     };
 
-    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const file = e.target.files?.[0] ?? null;
-        if (file && !file.type.startsWith("image/")) {
-            setErrors((prev) => ({
-                ...prev,
-                picture: "Alleen afbeeldingsbestanden zijn toegestaan.",
-            }));
-            return;
-        }
-        setFormData((prev) => ({ ...prev, picture: file }));
-    };
-
-    const fileToBase64 = (file: File): Promise<string> =>
-        new Promise((resolve, reject) => {
-            const reader = new FileReader();
-            reader.onload = () => {
-                if (typeof reader.result === "string") resolve(reader.result);
-                else reject("Bestand kon niet worden geconverteerd naar Base64.");
-            };
-            reader.onerror = () => reject("Fout bij het lezen van bestand.");
-            reader.readAsDataURL(file);
-        });
 
     const submitForm = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -76,39 +95,51 @@ export default function ProductForm() {
         setIsSubmitting(true);
 
         try {
-            let pictureBase64: string | null = null;
 
-            if (formData.picture) {
-                pictureBase64 = await fileToBase64(formData.picture);
-            }
 
             const userData = localStorage.getItem("userData");
             const userId = userData ? JSON.parse(userData).id : null;
 
             const payload = {
-                name: formData.name,
-                description: formData.description,
-                species: formData.species,
-                picture: pictureBase64, // Base64 string or null
+                minPrice: parseFloat(formData.minPrice),
+                weight: parseFloat(formData.weight),
+                region: formData.region,
+                potSize:
+                    formData.measurementType === "Pot grootte"
+                        ? parseFloat(formData.potSize)
+                        : null,
+                stemLength:
+                    formData.measurementType === "Stem lengte"
+                        ? parseFloat(formData.stemLength)
+                        : null,
+                stock: parseInt(formData.stock),
+                harvestedAt: formData.harvestedAt,
+                userId: userId,
             };
 
-            const response = await fetch("http://localhost:5001/api/v2/Product", {
+
+            const response = await fetch(`http://localhost:5001/api/v2/Product/registeredCreate/${ProductId}`, {
                 method: "POST",
-                headers: { "Content-Type": "application/json" },
+                headers: {"Content-Type": "application/json"},
                 credentials: "include",
                 body: JSON.stringify(payload),
             });
 
-            const data = await response.json();
-
-            if (!response.ok) throw new Error(`Server returned ${response.status}`);
+            if (!response.ok) {
+                throw new Error(`Server returned ${response.status}`);
+            }
 
             setMessage("Product succesvol toegevoegd!");
             setFormData({
-                name: "",
-                species: "",
-                picture: null,
-                description: "",
+                minPrice: "",
+                weight: "",
+                region: "",
+                potSize: "",
+                stemLength: "",
+                measurementType: "Pot grootte",
+                stock: "",
+                harvestedAt: "",
+                productId: "",
             });
         } catch (error) {
             console.error(error);
@@ -121,33 +152,107 @@ export default function ProductForm() {
     return (
         <ToevoegenLayout>
             <Form className={s.form} onSubmit={submitForm}>
-                <h1>Product soort maken</h1>
+                <h1>Product registreren</h1>
+
+                <SearchableDropdown
+                    label="Product"
+                    items={[...products].sort((a, b) => a.name.localeCompare(b.name))}
+                    displayKey="name"
+                    valueKey="id"
+                    onSelect={handleProductSelect}
+                    placeholder="Selecteer product"
+                />
+                {errors.productId && <div className={s.error}>{errors.productId}</div>}
+
+                <NumberInput
+                    label="Aantal"
+                    name="stock"
+                    placeholder="aantal"
+                    step={1}
+                    value={formData.stock}
+                    onChange={handleChange}
+                />
+                {errors.stock && <div className={s.error}>{errors.stock}</div>}
+
+                <NumberInput
+                    label="Minimale Prijs"
+                    name="minPrice"
+                    placeholder="min. prijs"
+                    step={0.01}
+                    value={formData.minPrice}
+                    onChange={handleChange}
+                    prefix="€"
+                />
+                {errors.minPrice && <div className={s.error}>{errors.minPrice}</div>}
+
+                <NumberInput
+                    label="Gewicht"
+                    name="weight"
+                    placeholder="gewicht"
+                    step={0.01}
+                    value={formData.weight}
+                    onChange={handleChange}
+                    postfix="kg"
+                />
+                {errors.weight && <div className={s.error}>{errors.weight}</div>}
 
                 <TextInput
-                    label="Product Naam"
-                    name="name"
-                    placeholder="naam"
-                    value={formData.name}
+                    label="Regio"
+                    name="region"
+                    placeholder="regio"
+                    value={formData.region}
                     onChange={handleChange}
                 />
+                {errors.region && <div className={s.error}>{errors.region}</div>}
 
-                <TextInput
-                    label="Soort"
-                    name="species"
-                    placeholder="soort"
-                    value={formData.species}
-                    onChange={handleChange}
+                <DateSelect
+                    label="Oogst Datum"
+                    placeholder="Selecteer startdatum"
+                    onSelect={handleDateSelect}
                 />
+                {errors.harvestedAt && <div className={s.error}>{errors.harvestedAt}</div>}
 
-                <FileInput label="Plaatje" name="picture" onChange={handleFileChange} />
-
-                <TextAreaInput
-                    label="Product Informatie"
-                    name="description"
-                    placeholder="product informatie"
-                    value={formData.description}
-                    onChange={handleChange}
+                <SelectableButtonGroup
+                    name="measurementType"
+                    options={["Pot grootte", "Stem lengte"]}
+                    value={formData.measurementType}
+                    onChange={(name, value) =>
+                        setFormData((prev) => ({...prev, [name]: value}))
+                    }
                 />
+                {errors.measurementType && <div className={s.error}>{errors.measurementType}</div>}
+
+                {formData.measurementType === "Pot grootte" && (
+                    <>
+                        <NumberInput
+                            label="Pot grootte"
+                            name="potSize"
+                            placeholder="pot grootte"
+                            step={0.1}
+                            value={formData.potSize}
+                            onChange={handleChange}
+                            postfix="cm"
+                        />
+
+                        {errors.potSize && <div className={s.error}>{errors.potSize}</div>}
+                    </>
+                )}
+
+                {formData.measurementType === "Stem lengte" && (
+                    <>
+                        <NumberInput
+                            label="Stam lengte"
+                            name="stemLength"
+                            placeholder="stam lengte"
+                            step={0.1}
+                            value={formData.stemLength}
+                            onChange={handleChange}
+                            postfix="cm"
+                        />
+
+                        {errors.stemLength && <div className={s.error}>{errors.stemLength}</div>}
+                    </>
+                )}
 
                 <Button
                     variant="primary"
@@ -156,7 +261,7 @@ export default function ProductForm() {
                     disabled={isSubmitting}
                 />
 
-                {message && <p style={{ marginTop: "1rem" }}>{message}</p>}
+                {message && <p style={{marginTop: "1rem"}}>{message}</p>}
             </Form>
         </ToevoegenLayout>
     );
