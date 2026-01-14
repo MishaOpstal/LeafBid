@@ -20,20 +20,20 @@
     align-self: center;
 }
 
-.tekstContainer {
+.textContainer {
     color: var(--muted-text);
     display: flex;
     flex-direction: column;
     gap: 6px;
 }
 
-.naam {
+.name {
     font-size: 24px;
     font-weight: 600;
     margin: 0;
 }
 
-.prijs {
+.price {
     font-size: 20px;
     font-weight: 500;
     margin: 0;
@@ -41,7 +41,7 @@
     opacity: 0.8;
 }
 
-.knop {
+.button {
     background-color: var(--primary);
     color: var(--bs-white);
     line-height: 18px;

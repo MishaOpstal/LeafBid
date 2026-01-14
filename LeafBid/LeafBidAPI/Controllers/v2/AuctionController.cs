@@ -25,7 +25,7 @@ public class AuctionController(IAuctionService auctionService, IProductService p
     [ProducesResponseType(typeof(List<Auction>), StatusCodes.Status200OK)]
     public async Task<ActionResult<List<Auction>>> GetAuctions()
     {
-        List<Auction> auctions = await auctionService.GetAuctions();
+        List<Auction> auctions = await auctionService.GetAuctions(User);
         return Ok(auctions);
     }
 
@@ -42,7 +42,7 @@ public class AuctionController(IAuctionService auctionService, IProductService p
     {
         try
         {
-            Auction auction = await auctionService.GetAuctionById(id);
+            Auction auction = await auctionService.GetAuctionById(id, User);
             return Ok(auction);
         }
         catch (NotFoundException e)
@@ -68,6 +68,54 @@ public class AuctionController(IAuctionService auctionService, IProductService p
             routeValues: new { id = created.Id, version = "2.0" },
             value: created
         );
+    }
+    
+    /// <summary>
+    /// Forcibly start an auction by setting the StartDate to 10 seconds in the future
+    /// </summary>
+    /// <param name="id">The auction ID</param>
+    /// <returns>The started auction</returns>
+    [HttpPut("start/{id:int}")]
+    [Authorize(Policy = PolicyTypes.Auctions.Manage)]
+    [ProducesResponseType(typeof(Auction), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<Auction>> StartAuction(int id)
+    {
+        try
+        {
+            Auction started = await auctionService.StartAuction(id);
+            return Ok(started);
+        }
+        catch (NotFoundException e)
+        {
+            return NotFound(e.Message);
+        }
+    }
+    
+    /// <summary>
+    /// Forcibly stop and (soft)delete the given auction
+    /// </summary>
+    /// <param name="id">The auction ID</param>
+    /// <returns>The stopped auction</returns>.
+    [HttpDelete("stop/{id:int}")]
+    [Authorize(Policy = PolicyTypes.Auctions.Manage)]
+    [ProducesResponseType(typeof(bool), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<bool>> StopAuction(int id)
+    {
+        try
+        {
+            bool started = await auctionService.StopAuction(id);
+            return Ok(started);
+        }
+        catch (AuctionAlreadyFinishedException)
+        {
+            return BadRequest("Auction is already finished.");
+        }
+        catch (NotFoundException e)
+        {
+            return NotFound(e.Message);
+        }
     }
 
     /// <summary>

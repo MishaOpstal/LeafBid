@@ -8,7 +8,7 @@ import s from "./page.module.css";
 import {AuctionPageResult} from "@/types/Auction/AuctionPageResult";
 import {getServerNow, getServerOffset, setServerTimeOffset} from "@/utils/Time";
 import config from "@/Config";
-import History from "@/components/Popups/History";
+import History from "@/components/History/History";
 
 import {useParams} from "next/navigation";
 import {useCallback, useEffect, useRef, useState} from "react";
@@ -66,7 +66,7 @@ export default function AuctionPage() {
         const currentProduct = auction.registeredProducts[0];
 
         try {
-            const res = await fetch(`${config.apiUrl}/AuctionSaleProduct/buy`, {
+            const res = await fetch(`${config.apiUrl}/Product/buy`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -119,12 +119,17 @@ export default function AuctionPage() {
         connection.on("AuctionStarted", () => {
             // console.log("Real-time update: Auction started", data);
             setAuction(prev => {
-                if (!prev) return null;
+                if (!prev){
+                    return null;
+                }
+
                 return {
                     ...prev,
                     auction: {...prev.auction, isLive: true}
                 };
             });
+
+            location.reload();
         });
 
         connection.on("AuctionStopped", () => {
@@ -389,9 +394,9 @@ export default function AuctionPage() {
                         <Toast.Body>
                             Bekijk de prijshistorie hier:{" "}
                             <History
-                                RegisteredProductID={item.id}
-                                Name={item.name}
-                                Picture={item.picture}
+                                registeredProductID={item.id}
+                                name={item.name}
+                                picture={item.picture}
                                 companyName={item.companyName}
                             />
                         </Toast.Body>

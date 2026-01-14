@@ -57,7 +57,7 @@ public class PagesServices(
     public async Task<GetAuctionWithProductsResponse> GetAuctionWithProductsById(int auctionId)
     {
         Auction? auction = await context.Auctions
-            .FirstOrDefaultAsync(a => a.Id == auctionId && (a.IsVisible || a.IsLive));
+            .FirstOrDefaultAsync(a => a.Id == auctionId);
 
         if (auction == null)
         {
@@ -85,7 +85,6 @@ public class PagesServices(
     public async Task<List<GetAuctionWithProductsResponse>> GetAuctionsWithProductsPerClockLocation()
     {
         List<Auction> auctions = await context.Auctions
-            .Where(a => a.IsVisible || a.IsLive)
             .OrderBy(a => a.ClockLocationEnum)
             .ToListAsync();
 
@@ -98,7 +97,7 @@ public class PagesServices(
 
         foreach (Auction auction in auctions)
         {
-            List<RegisteredProduct> registeredProducts = await GetRegisteredProductsForAuction(auction.Id);
+            List<RegisteredProduct> registeredProducts = await GetRegisteredProductsForAuction(auction.Id, true);
             if (registeredProducts.Count == 0)
             {
                 continue;
@@ -120,10 +119,10 @@ public class PagesServices(
             .ToList();
     }
 
-    private async Task<List<RegisteredProduct>> GetRegisteredProductsForAuction(int auctionId)
+    private async Task<List<RegisteredProduct>> GetRegisteredProductsForAuction(int auctionId, bool includeEmptyStock = false)
     {
         return await context.AuctionProducts
-            .Where(ap => ap.AuctionId == auctionId && ap.RegisteredProduct!.Stock > 0)
+            .Where(ap => ap.AuctionId == auctionId && (includeEmptyStock || ap.RegisteredProduct!.Stock > 0))
             .Include(ap => ap.RegisteredProduct)
             .ThenInclude(rp => rp!.Product)
             .Include(ap => ap.RegisteredProduct)

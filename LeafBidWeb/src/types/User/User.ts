@@ -6,6 +6,7 @@
     email: string;
     normalizedEmail: string;
     emailConfirmed: boolean;
+    companyId: string|null;
     lockoutEnd: string|null;
     lockoutEnabled: boolean;
     accessFailedCount: number;

@@ -2,12 +2,12 @@
 import styles from './AuctionView.module.css';
 import Header from "@/components/Header/Header";
 import DashboardPanel from "@/components/DashboardPanel/DashboardPanel";
-import {useEffect, useState} from "react";
+import {useEffect, useMemo, useState} from "react";
 import {ClockLocation, parseClockLocation} from "@/enums/ClockLocation";
 
 import {AuctionPageResult} from "@/types/Auction/AuctionPageResult";
 import {resolveImageSrc} from "@/utils/Image";
-import {setServerTimeOffset} from "@/utils/Time";
+import {getServerNow, setServerTimeOffset} from "@/utils/Time";
 import {useRouter} from "nextjs-toploader/app";
 import Button from "@/components/Button/Button";
 
@@ -16,14 +16,17 @@ export default function AuctionView() {
     const [auctions, setAuctions] = useState<AuctionPageResult[]>([]);
     const [loading, setLoading] = useState(true);
 
+    const now = getServerNow();
+
+    // Fetch auctions from the server
     useEffect(() => {
-        const fetchAuctions = async (): Promise<void> => {
+        const loadAuctions = async (): Promise<void> => {
             setLoading(true);
 
             try {
                 const res = await fetch("http://localhost:5001/api/v2/Pages", {
                     method: "GET",
-                    credentials: "include",
+                    credentials: "include"
                 });
 
                 if (!res.ok) {
@@ -32,33 +35,7 @@ export default function AuctionView() {
                 }
 
                 const data: AuctionPageResult[] = await res.json();
-
-                const visibleOrLive = data.filter(
-                    (page) => page.auction.isLive || page.auction.isVisible
-                );
-
-                // One live or upcoming auction per clock location
-                const uniqueByClock = Object.values(ClockLocation)
-                    .filter((v): v is number => typeof v === "number")
-                    .map((clockId) => {
-                        // Prefer live over just visible
-                        return (
-                            visibleOrLive.find(
-                                (p) =>
-                                    p.auction.clockLocationEnum === clockId &&
-                                    p.auction.isLive
-                            ) ??
-                            visibleOrLive.find(
-                                (p) =>
-                                    p.auction.clockLocationEnum === clockId
-                            )
-                        );
-                    })
-                    .filter(
-                        (p): p is AuctionPageResult => Boolean(p)
-                    );
-
-                setAuctions(uniqueByClock);
+                setAuctions(data);
 
                 if (data.length > 0) {
                     setServerTimeOffset(data[0].serverTime);
@@ -70,8 +47,64 @@ export default function AuctionView() {
             }
         };
 
-        void fetchAuctions();
+        void loadAuctions();
     }, []);
+
+    const currentAndUpcomingAuctions = useMemo(
+        () => {
+            const serverTime = getServerNow();
+
+            const eligible = auctions.filter((a) => {
+                const start = new Date(a.auction.startDate);
+
+                if (a.auction.isLive) {
+                    return true;
+                }
+
+                return start > serverTime;
+            });
+
+            const byClockLocation = new Map<string | number, (typeof auctions)[number]>();
+
+            for (const auctionItem of eligible) {
+                const key = auctionItem.auction.clockLocationEnum;
+                const existing = byClockLocation.get(key);
+
+                if (!existing) {
+                    byClockLocation.set(key, auctionItem);
+                    continue;
+                }
+
+                const existingIsLive = existing.auction.isLive;
+                const candidateIsLive = auctionItem.auction.isLive;
+
+                // Prefer a live auction over a non-live auction
+                if (!existingIsLive && candidateIsLive) {
+                    byClockLocation.set(key, auctionItem);
+                    continue;
+                }
+
+                if (existingIsLive && !candidateIsLive) {
+                    continue;
+                }
+
+                // If both are live or both are non-live, pick the earliest startDate
+                const existingTime = new Date(existing.auction.startDate).getTime();
+                const candidateTime = new Date(auctionItem.auction.startDate).getTime();
+
+                if (candidateTime < existingTime) {
+                    byClockLocation.set(key, auctionItem);
+                }
+            }
+
+            return Array.from(byClockLocation.values()).sort((a, b) => {
+                const aDate = new Date(a.auction.startDate);
+                const bDate = new Date(b.auction.startDate);
+                return aDate.getTime() - bDate.getTime();
+            });
+        },
+        [auctions, now]
+    );
 
     useEffect(() => {
         const ids = auctions.map(a => a.auction.id);
@@ -83,7 +116,7 @@ export default function AuctionView() {
         <>
             <main className={styles.main}>
                 <div className={styles.page}>
-                    <h1 className={styles.huidigeVeilingen}>Veilingen Dashboard</h1>
+                    <h1 className={styles.huidigeVeilingen}>Huidige Veilingen:</h1>
 
                     <div className={styles.panels}>
                         {loading ? (
@@ -92,10 +125,10 @@ export default function AuctionView() {
                                     <DashboardPanel key={i} loading={true} title="Laden..."/>
                                 ))}
                             </>
-                        ) : auctions.length === 0 ? (
+                        ) : currentAndUpcomingAuctions.length === 0 ? (
                             <p>Geen veilingen gevonden. Kom later terug.</p>
                         ) : (
-                            auctions.map((page) => {
+                            currentAndUpcomingAuctions.map((page) => {
                                 const auction = page.auction;
                                 const reg = page.registeredProducts[0];
                                 const product = reg?.product;

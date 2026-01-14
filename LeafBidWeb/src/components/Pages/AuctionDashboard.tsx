@@ -1,9 +1,8 @@
-'use client';
+"use client";
 
 import styles from "@/app/auction/view/page.module.css";
-import Header from "@/components/Header/Header";
 import DashboardPanel from "@/components/DashboardPanel/DashboardPanel";
-import React, {useEffect, useState} from "react";
+import React, {useEffect, useMemo, useState} from "react";
 import {parseClockLocation} from "@/enums/ClockLocation";
 import Link from "next/link";
 import {AuctionPageResult} from "@/types/Auction/AuctionPageResult";
@@ -49,17 +48,41 @@ export default function AuctionDashboard() {
         void loadAuctions();
     }, []);
 
+    // Send a start request to /api/v2/Auction/start/{id} if the startAuction function is called
+    const startAuction = (id: number) => {
+        void fetch(`http://localhost:5001/api/v2/Auction/start/${id}`, {
+            method: "PUT",
+            credentials: "include"
+        });
+
+        location.reload();
+    }
+
+    // Send a stop request to /api/v2/Auction/stop/{id} if the stopAuction function is called
+    const stopAuction = (id: number) => {
+        void fetch(`http://localhost:5001/api/v2/Auction/stop/${id}`, {
+            method: "DELETE",
+            credentials: "include"
+        });
+
+        location.reload();
+    }
 
     const now = getServerNow();
 
-    const currentAuctions = auctions.filter(a => a.auction.isLive);
-
-    const upcomingAuctions = auctions.filter(
-        a => a.auction.isVisible && !a.auction.isLive && new Date(a.auction.startDate) > now
+    const currentAuctions = useMemo(
+        () => auctions.filter(a => a.auction.isLive),
+        [auctions]
     );
 
-    const pastAuctions = auctions.filter(
-        a => !a.auction.isLive && new Date(a.auction.startDate) <= now
+    const upcomingAuctions = useMemo(
+        () => auctions.filter(a => !a.auction.isLive && new Date(a.auction.startDate) > now),
+        [auctions, now]
+    );
+
+    const pastAuctions = useMemo(
+        () => auctions.filter(a => !a.auction.isLive && new Date(a.auction.startDate) <= now),
+        [auctions, now]
     );
 
     return (
@@ -67,7 +90,7 @@ export default function AuctionDashboard() {
 
             <main className={styles.main}>
                 <div className={styles.page}>
-                    <h1 className={`${styles.huidigeVeilingen} mb-4`}>Veilingmeester Dashboard</h1>
+                    <h1 className={`${styles.huidigeVeilingen} mb-4`}>Veiling dashboard</h1>
                     <Button
                         variant="primary"
                         type="submit"
@@ -99,6 +122,8 @@ export default function AuctionDashboard() {
                                             kloklocatie={parseClockLocation(auction.clockLocationEnum)}
                                             imageSrc={product?.picture}
                                             auctionStatus={new Date(auction.startDate).toLocaleString()}
+                                            isLive={auction.isLive}
+                                            onStopAuction={() => stopAuction(auction.id!)}
                                         />
                                     </Link>
                                 );
@@ -130,6 +155,9 @@ export default function AuctionDashboard() {
                                             kloklocatie={parseClockLocation(auction.clockLocationEnum)}
                                             imageSrc={product?.picture}
                                             auctionStatus={new Date(auction.startDate).toLocaleString()}
+                                            isLive={auction.isLive}
+                                            isFinished={false}
+                                            onStartAuction={() => startAuction(auction.id!)}
                                         />
                                     </Link>
                                 );
@@ -158,6 +186,8 @@ export default function AuctionDashboard() {
                                             kloklocatie={parseClockLocation(auction.clockLocationEnum)}
                                             imageSrc={product?.picture}
                                             auctionStatus={new Date(auction.startDate).toLocaleString()}
+                                            isLive={auction.isLive}
+                                            isFinished={true}
                                         />
                                     </Link>
                                 );

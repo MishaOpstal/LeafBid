@@ -2,6 +2,7 @@ using System.Security.Claims;
 using LeafBidAPI.Data;
 using LeafBidAPI.DTOs.Auction;
 using LeafBidAPI.Exceptions;
+using LeafBidAPI.Helpers;
 using LeafBidAPI.Interfaces;
 using LeafBidAPI.Models;
 using Microsoft.AspNetCore.Identity;
@@ -13,17 +14,34 @@ public class AuctionService(
     ApplicationDbContext context,
     UserManager<User> userManager) : IAuctionService
 {
-    public async Task<List<Auction>> GetAuctions()
+    public async Task<List<Auction>> GetAuctions(ClaimsPrincipal user)
     {
-        return await context.Auctions.ToListAsync();
+        bool canSeeDeleted =
+            user.IsInRole("Auctioneer") ||
+            user.IsInRole("Admin");
+        
+        IQueryable<Auction> query = context.Auctions;
+        
+        if (!canSeeDeleted)
+        {
+            query = query.Where(a => a.DeletedAt == null);
+        }
+
+        return await query.ToListAsync();
     }
     
-    public async Task<Auction> GetAuctionById(int id)
+    public async Task<Auction> GetAuctionById(int id, ClaimsPrincipal user)
     {
         Auction? auction = await context.Auctions.FirstOrDefaultAsync(a => a.Id == id);
         if (auction == null)
         {
             throw new NotFoundException("Auction not found");
+        }
+        
+        // Check whether the user is an auctioneer or admin
+        if (auction.DeletedAt != null && (!user.IsInRole("Auctioneer") || !user.IsInRole("Admin")))
+        {
+            throw new UnauthorizedAccessException("User is not authorized to access this auction");
         }
 
         return auction;
@@ -35,12 +53,6 @@ public class AuctionService(
         if (currentUser == null)
         {
             throw new NotFoundException("User not found");
-        }
-
-        IList<string> roles = await userManager.GetRolesAsync(currentUser);
-        if (!roles.Contains("Auctioneer"))
-        {
-            throw new UnauthorizedAccessException("User does not have the required role to create an auction");
         }
 
         foreach (RegisteredProductForAuctionRequest registeredProductForAuction in auctionData.RegisteredProductsForAuction)
@@ -90,6 +102,47 @@ public class AuctionService(
         return auction;
     }
     
+    public async Task<Auction> StartAuction(int id)
+    {
+        Auction? auction = await context.Auctions.FirstOrDefaultAsync(a => a.Id == id);
+
+        if (auction == null)
+        {
+            throw new NotFoundException("Auction not found");
+        }
+
+        if (auction.IsLive)
+        {
+            throw new AuctionAlreadyStartedAtClockLocationException("Auction already started");
+        }
+
+        // Set the StartDate to 10 seconds from now
+        auction.StartDate = TimeHelper.GetAmsterdamTime().AddSeconds(10);
+        
+        await context.SaveChangesAsync();
+
+        return auction;
+    }
+
+    public async Task<bool> StopAuction(int id)
+    {
+        Auction? auction = await context.Auctions.FirstOrDefaultAsync(a => a.Id == id);
+        if (auction == null)
+        {
+            throw new NotFoundException("Auction not found");
+        }
+
+        // If the auction is from the past
+        if (auction.StartDate < TimeHelper.GetAmsterdamTime() && !auction.IsLive)
+        {
+            throw new AuctionAlreadyFinishedException("Auction already finished");
+        }
+        
+        auction.DeletedAt = TimeHelper.GetAmsterdamTime();
+        await context.SaveChangesAsync();
+        return true;
+    }
+
     public async Task<Auction> UpdateAuction(int id, UpdateAuctionDto updatedAuction)
     {
         Auction? auction = await context.Auctions.FirstOrDefaultAsync(a => a.Id == id);

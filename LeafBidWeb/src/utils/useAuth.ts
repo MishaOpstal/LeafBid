@@ -17,7 +17,9 @@ export function useAuth() {
                 headers: { "Content-Type": "application/json" },
             });
 
-            if (!res.ok) throw new Error("Logout mislukt");
+            if (!res.ok) {
+                throw new Error("Logout mislukt");
+            }
         } catch (err) {
             console.error("Logout error:", err);
         } finally {
@@ -39,7 +41,6 @@ export function useAuth() {
             setLoggedIn(false);
             setUser(null);
             setIsLoading(false);
-            return;
         }
 
         try {
@@ -49,6 +50,13 @@ export function useAuth() {
             });
 
             if (!res.ok) {
+                if (res.status === 401) {
+                    localStorage.setItem("loggedIn", "false");
+                    localStorage.removeItem("userData");
+                    setUser(null);
+                    setLoggedIn(false);
+                    router.push("/auth/login");
+                }
                 return;
             }
 

@@ -144,43 +144,45 @@ public class AuctionSaleProductService(ApplicationDbContext context)
             .Include(auctionSaleProduct => auctionSaleProduct.RegisteredProduct)
             .ThenInclude(rp => rp!.Product)
             .Include(auctionSaleProduct => auctionSaleProduct.AuctionSale)
+            .Include(auctionSaleProduct => auctionSaleProduct.RegisteredProduct!)
+            .ThenInclude(registeredProduct => registeredProduct.Company!)
             .ToListAsync();
         List<AuctionSaleProductResponse> responseList = list.Select(asp => new AuctionSaleProductResponse
         {
-            Name = asp.RegisteredProduct?.Product?.Name ?? "Unknown Product",
-            Picture = asp.RegisteredProduct?.Product?.Picture ?? string.Empty,
             Price = asp.Price,
             Quantity = asp.Quantity,
-            Date = asp.AuctionSale?.Date ?? DateTime.MinValue
+            Date = asp.AuctionSale?.Date ?? DateTime.MinValue,
+            RegisteredProduct = asp.RegisteredProduct!,
+            Product = asp.RegisteredProduct!.Product!,
+            Company = asp.RegisteredProduct!.Company!
         }).ToList();
         return responseList;
     }
 
     public async Task<List<AuctionSaleProductResponse>> GetAuctionSaleProductsByCompanyId(int companyId)
     {
-        List<AuctionSaleProductResponse> responseList = await context.AuctionSaleProducts
+        List<AuctionSaleProduct> list = await context.AuctionSaleProducts
             .Where(asp => asp.RegisteredProduct != null && asp.RegisteredProduct.CompanyId == companyId)
-            .GroupBy(asp => new
-            {
-                asp.RegisteredProductId,
-                asp.AuctionSale!.AuctionId,
-                ProductName = asp.RegisteredProduct!.Product!.Name,
-                ProductPicture = asp.RegisteredProduct.Product.Picture
-            })
-            .Select(g => new AuctionSaleProductResponse
-            {
-                Name = g.Key.ProductName,
-                Picture = g.Key.ProductPicture ?? string.Empty,
-                Price = g.Sum(x => x.Price),
-                Quantity = g.Sum(x => x.Quantity),
-                Date = g.Max(x => x.AuctionSale!.Date)
-            })
+            .Include(auctionSaleProduct => auctionSaleProduct.RegisteredProduct)
+            .ThenInclude(rp => rp!.Product)
+            .Include(auctionSaleProduct => auctionSaleProduct.AuctionSale)
+            .Include(auctionSaleProduct => auctionSaleProduct.RegisteredProduct!)
+            .ThenInclude(registeredProduct => registeredProduct.Company!)
             .ToListAsync();
+
+        List<AuctionSaleProductResponse> responseList = list.Select(asp => new AuctionSaleProductResponse
+        {
+            Price = asp.Price,
+            Quantity = asp.Quantity,
+            Date = asp.AuctionSale?.Date ?? DateTime.MinValue,
+            RegisteredProduct = asp.RegisteredProduct!,
+            Product = asp.RegisteredProduct!.Product!,
+            Company = asp.RegisteredProduct!.Company!
+        }).ToList();
 
         return responseList;
     }
-
-
+    
     public async Task<SaleChartResponse> GetSaleChartDataByCompany(int companyId)
     {
         List<AuctionSaleProduct> data = await context.AuctionSaleProducts

@@ -7,9 +7,9 @@ import s from "./History.module.css";
 import Image from "next/image";
 
 type HistoryProps = {
-    RegisteredProductID: number;
-    Name: string;
-    Picture: string;
+    registeredProductID: number;
+    name: string;
+    picture: string;
     companyName: string;
 }
 
@@ -42,19 +42,22 @@ export default function History(HistoryProps: HistoryProps) {
     const [loading, setLoading] = useState(false);
 
     const fetchData = async () => {
-        if (loading) return;
+        if (loading) {
+            return;
+        }
+
         setLoading(true);
 
         try {
             const resCompany = await fetch(
-                `http://localhost:5001/api/v2/AuctionSaleProduct/history/${HistoryProps.RegisteredProductID}/company`,
+                `http://localhost:5001/api/v2/AuctionSaleProduct/history/${HistoryProps.registeredProductID}/company`,
                 {method: "GET", credentials: "include"}
             );
             const company = await resCompany.json();
             setCompanyData(company);
 
             const resNotCompany = await fetch(
-                `http://localhost:5001/api/v2/AuctionSaleProduct/history/${HistoryProps.RegisteredProductID}/not-company`,
+                `http://localhost:5001/api/v2/AuctionSaleProduct/history/${HistoryProps.registeredProductID}/not-company`,
                 {method: "GET", credentials: "include"}
             );
             const notCompany = await resNotCompany.json();
@@ -71,14 +74,14 @@ export default function History(HistoryProps: HistoryProps) {
 
     return (
         <>
-            <Button variant="primary" onClick={fetchData} popoverTarget={"history"}>
+            <Button variant="primary" onClick={fetchData} popoverTarget={`history-${HistoryProps.registeredProductID}`}>
                 {loading ? "Loading..." : "Show History Data"}
             </Button>
 
-            <div id="history" className={s.popover} popover={"auto"}>
+            <div id={`history-${HistoryProps.registeredProductID}`} className={s.popover} popover={"auto"}>
                 <div className={s.productInfo}>
-                    <Image src={HistoryProps.Picture} alt={HistoryProps.Name} width={50} height={50}/>
-                    <h3>{HistoryProps.Name}</h3>
+                    <Image src={HistoryProps.picture} alt={HistoryProps.name} width={50} height={50}/>
+                    <h3>{HistoryProps.name}</h3>
 
                 </div>
                 <p>Laatste 10 aankopen</p>
@@ -87,7 +90,7 @@ export default function History(HistoryProps: HistoryProps) {
                         <Table striped className={s.historyTable}>
                             <thead>
                             <tr>
-                                <th>Aanbieder: {HistoryProps.Name}</th>
+                                <th>Aanbieder: {HistoryProps.name}</th>
                             </tr>
                             </thead>
                             <tbody>

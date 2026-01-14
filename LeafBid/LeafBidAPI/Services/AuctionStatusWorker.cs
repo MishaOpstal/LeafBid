@@ -56,7 +56,7 @@ public class AuctionStatusWorker(
             .Where(a => context.AuctionProducts.Any(ap => ap.AuctionId == a.Id && ap.RegisteredProduct!.Stock > 0))
             .ToListAsync();
 
-        foreach (Auction auction in auctionsToMakeVisible)
+        foreach (Auction auction in auctionsToMakeVisible.Where(auction => auction.DeletedAt == null))
         {
             auction.IsVisible = true;
             logger.LogInformation("Auction {AuctionId} is now Visible.", auction.Id);
@@ -68,18 +68,42 @@ public class AuctionStatusWorker(
             .Where(a => context.AuctionProducts.Any(ap => ap.AuctionId == a.Id && ap.RegisteredProduct!.Stock > 0))
             .ToListAsync();
 
-        foreach (Auction auction in auctionsToStart)
+        foreach (Auction auction in auctionsToStart.Where(auction => auction.DeletedAt == null))
         {
-            auction.IsLive = true;
-            auction.IsVisible = true; // Ensure it's visible if it's live
-            auction.NextProductStartTime = auction.StartDate; // Initialize the timer
-            logger.LogInformation("Auction {AuctionId} is now Live.", auction.Id);
+            // Check if an auction at the same clock location is already live,
+            // if so, push the startdate of this auction forwards to 30 minutes
+            Auction? existingLiveAuction = await context.Auctions
+                .Where(a => a.IsLive && a.ClockLocationEnum == auction.ClockLocationEnum)
+                .FirstOrDefaultAsync();
 
-            // Send out an AuctionStarted event
-            await hubContext.Clients.Group(auction.Id.ToString()).SendAsync("AuctionStarted", new
+            if (existingLiveAuction == null)
             {
-                auctionId = auction.Id
-            });
+                auction.IsLive = true;
+                auction.IsVisible = true; // Ensure it's visible if it's live
+                auction.NextProductStartTime = auction.StartDate; // Initialize the timer
+                logger.LogInformation("Auction {AuctionId} is now Live.", auction.Id);
+
+                // Send out an AuctionStarted event
+                await hubContext.Clients.Group(auction.Id.ToString()).SendAsync("AuctionStarted", new
+                {
+                    auctionId = auction.Id
+                });
+            }
+
+            auction.StartDate = TimeHelper.GetAmsterdamTime().AddMinutes(30);
+        }
+        
+        // Make sure all deleted auctions are not live or visible
+        List<Auction> deletedAuctions = await context.Auctions.Where(a => a.DeletedAt != null).ToListAsync();
+        foreach (Auction auction in deletedAuctions)
+        {
+            auction.IsLive = false;
+            auction.IsVisible = false;
+            
+            // Remove all associated AuctionProducts from the deleted auction
+            await context.AuctionProducts.Where(ap => ap.AuctionId == auction.Id).ExecuteDeleteAsync();
+            
+            await context.SaveChangesAsync();
         }
 
         // 1.5 Process Expirations for live auctions

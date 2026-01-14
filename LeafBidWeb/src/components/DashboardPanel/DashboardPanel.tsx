@@ -4,7 +4,9 @@ import React from 'react';
 import {Card} from 'react-bootstrap';
 import Placeholder from "react-bootstrap/Placeholder";
 import {parsePrice} from "@/types/Product/RegisteredProducts";
+import {Button } from 'react-bootstrap';
 import s from "./DashboardPanel.module.css";
+
 
 type DashboardPanelProps = {
     title?: string;
@@ -16,7 +18,12 @@ type DashboardPanelProps = {
     aankomendProductStartprijs?: number;
     loading?: boolean;
     compact?: boolean;
-    children?: React.ReactNode;
+    isLive?: boolean;
+    isFinished?: boolean;
+    activeClockLocations?: string[];
+    onStartAuction?: () => void;
+    onStopAuction?: () => void;
+    onError?: (msg: string) => void;
 };
 const DashboardPanel: React.FC<DashboardPanelProps> = ({
                                                            title,
@@ -26,9 +33,14 @@ const DashboardPanel: React.FC<DashboardPanelProps> = ({
                                                            huidigePrijs,
                                                            aankomendProductNaam,
                                                            aankomendProductStartprijs,
-                                                           children,
                                                            loading = false,
                                                            compact = false,
+                                                           isLive,
+                                                           isFinished,
+                                                           activeClockLocations,
+                                                           onStartAuction,
+                                                           onStopAuction,
+                                                           onError
                                                        }) => {
 // compacte kaart
     if (compact) {
@@ -69,12 +81,41 @@ const DashboardPanel: React.FC<DashboardPanelProps> = ({
                         )}
                     </div>
 
-                    {/* Right side: children */}
                     <div className="d-flex gap-2">
                         {loading ? (
-                            <Placeholder.Button variant="secondary" xs={2}/>
+                            <Placeholder.Button variant="secondary" xs={2} />
                         ) : (
-                            children
+                            <>
+                                {!isFinished && (
+                                    !isLive ? (
+                                        <Button
+                                            variant="success"
+                                            size="sm"
+                                            onClick={() => {
+                                                const alreadyActive = activeClockLocations?.includes(kloklocatie ?? "");
+
+                                                if (alreadyActive) {
+                                                    onError?.(`Er draait al een veiling op ${kloklocatie}.`);
+                                                    return;
+                                                }
+
+                                                onStartAuction?.();
+                                            }}
+                                        >
+                                            Start
+                                        </Button>
+                                    ) : (
+                                        <Button
+                                            variant="danger"
+                                            size="sm"
+                                            onClick={() => onStopAuction?.()}
+                                            className={"btn-danger"}
+                                        >
+                                            Stop
+                                        </Button>
+                                    )
+                                )}
+                            </>
                         )}
                     </div>
                 </Card.Body>
@@ -82,7 +123,7 @@ const DashboardPanel: React.FC<DashboardPanelProps> = ({
         );
     }
 
-// Standaard kaart
+    // Standaard kaart
     return (
         <Card className={`d-flex flex-column flex-md-row ${s.card}`}>
             <Card.Img

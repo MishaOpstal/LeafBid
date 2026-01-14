@@ -44,4 +44,9 @@ public class Auction
     
     [JsonIgnore]
     public User? User { get; set; }
+    
+    /// <summary>
+    /// Deleted at date. Present when the auction was forcibly removed by an auctioneer.
+    /// </summary>
+    public DateTime? DeletedAt { get; set; }
 }

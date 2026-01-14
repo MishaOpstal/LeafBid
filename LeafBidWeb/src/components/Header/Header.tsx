@@ -59,6 +59,11 @@ export default function Header({ returnOption = false }: HeaderProps)
                 )}
 
                 <div className={s.navigationContainer}>
+                    {user && isUserInRole(parseRole(Roles.Buyer)) && (
+                        <Link href="/history" className={s.link}>
+                            Product geschiedenis
+                        </Link>
+                    )}
                     {user && isUserInRole(parseRole(Roles.Provider)) && (
                         <Link href="/product/register" className={s.link}>
                             Product registreren
@@ -68,7 +73,7 @@ export default function Header({ returnOption = false }: HeaderProps)
                     {user && isUserInRole(parseRole(Roles.Auctioneer)) && (
                         <>
                             <Link href="/product/add" className={s.link}>Product aanmaken</Link>
-                            <Link href="/auction/dashboard" className={s.link}>Veilingmeester overzicht</Link>
+                            <Link href="/auction/dashboard" className={s.link}>Veiling dashboard</Link>
                         </>
                     )}
 
