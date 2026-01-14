@@ -8,8 +8,7 @@
 }
 
 /* Left side: Image + textblocks below each other */
-/* TODO */
-.links {
+.left {
     width: 50%;
     display: flex;
     flex-direction: column;
@@ -17,8 +16,7 @@
 }
 
 /* Image above */
-/* TODO */
-.plaatje{
+.image{
     max-width:300px;
     height: auto;
     border-radius: 50%;
@@ -28,16 +26,14 @@
 }
 
 /* InfoField-blocks below image */
-/* TODO */
-.tekstblokken {
+.textBlocks {
     display: flex;
     flex-direction: column;
     gap: 15px;
 }
 
 /* Right side: info block */
-/* TODO */
-.infoblok {
+.infoBlock {
     padding: 0 20px 20px;
     border-radius: 12px;
     width: 50%;

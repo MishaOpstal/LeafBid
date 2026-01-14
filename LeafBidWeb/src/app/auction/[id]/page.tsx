@@ -14,7 +14,6 @@ import {useParams} from "next/navigation";
 import {useCallback, useEffect, useRef, useState} from "react";
 import * as signalR from "@microsoft/signalr";
 import {Toast, ToastContainer} from "react-bootstrap";
-import Image from "next/image";
 
 export default function AuctionPage() {
     const params = useParams();
@@ -22,7 +21,13 @@ export default function AuctionPage() {
 
     const [auction, setAuction] = useState<AuctionPageResult | null>(null);
     const [loading, setLoading] = useState(true);
-    const [toasts, setToasts] = useState<Array<{ toastId: string; id: number; name: string; picture: string; companyName: string }>>([]);
+    const [toasts, setToasts] = useState<Array<{
+        toastId: string;
+        id: number;
+        name: string;
+        picture: string;
+        companyName: string
+    }>>([]);
 
 
     const [currentPricePerUnit, setCurrentPricePerUnit] = useState<number | null>(null);
@@ -111,7 +116,7 @@ export default function AuctionPage() {
             .withAutomaticReconnect()
             .build();
 
-        connection.on("AuctionStarted", (data: { auctionId: number }) => {
+        connection.on("AuctionStarted", () => {
             // console.log("Real-time update: Auction started", data);
             setAuction(prev => {
                 if (!prev) return null;
@@ -122,10 +127,7 @@ export default function AuctionPage() {
             });
         });
 
-        connection.on("AuctionStopped", (data: {
-            auctionId: number,
-            reason: string
-        }) => {
+        connection.on("AuctionStopped", () => {
             // console.log("Real-time update: Auction stopped", data);
             setAuction(prev => {
                 if (!prev) return null;
@@ -312,12 +314,12 @@ export default function AuctionPage() {
     const shouldDisplayMessage = !isLive || isPaused;
 
     const messages = [
-        { cond: () => !isLive, msg: () => `Veiling begint over ${formatCountdown(startCountdown)}` },
-        { cond: () => isPaused, msg: () => `Veiling gepauzeerd. Start opnieuw in ${pauseCountdown} seconden...` }
+        {cond: () => !isLive, msg: () => `Veiling begint over ${formatCountdown(startCountdown)}`},
+        {cond: () => isPaused, msg: () => `Veiling gepauzeerd. Start opnieuw in ${pauseCountdown} seconden...`}
     ];
 
     const countdownMessage =
-        messages.find(({ cond }) => cond())?.msg() ?? "";
+        messages.find(({cond}) => cond())?.msg() ?? "";
 
     function closeToast(toastId: string) {
         setToasts(prev => prev.filter(t => t.toastId !== toastId));
@@ -328,7 +330,7 @@ export default function AuctionPage() {
         <>
             <Header returnOption={true}/>
             <main className={s.main}>
-                <div className={s.links}>
+                <div className={s.left}>
                     <div className="App">
                         <AuctionTimer
                             key={currentProduct.id}
@@ -349,7 +351,7 @@ export default function AuctionPage() {
 
                     <h3 className="fw-bold">Volgende Producten:</h3>
 
-                    <div className={s.tekstblokken}>
+                    <div className={s.textBlocks}>
                         {nextProducts.length > 0 ? (
                             nextProducts.map((rp) => (
                                 <InfoVeld key={rp.id} registeredProduct={rp}/>
@@ -360,7 +362,7 @@ export default function AuctionPage() {
                     </div>
                 </div>
 
-                <div className={s.infoblok}>
+                <div className={s.infoBlock}>
                     <h3 className="fw-bold mb-2">Huidig Product:</h3>
                     <AuctionedProduct
                         registeredProduct={currentProduct}
@@ -373,14 +375,14 @@ export default function AuctionPage() {
             </main>
 
             <ToastContainer position="bottom-end">
-                {toasts.map((item, index) => (
+                {toasts.map((item) => (
                     <Toast
                         key={item.toastId}
                         onClose={() => closeToast(item.toastId)}
                         show={true}
                     >
 
-                    <Toast.Header closeButton>
+                        <Toast.Header closeButton>
                             <strong className="me-auto">{item.name} gekocht!</strong>
                         </Toast.Header>
 
