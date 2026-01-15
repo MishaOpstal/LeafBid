@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from "react";
+import React, {useEffect, useMemo, useState} from "react";
 import {Form, Row} from "react-bootstrap";
 import s from "./DateSelect.module.css";
 
@@ -7,13 +7,46 @@ interface DateSelectProps {
     placeholder?: string;
     onSelect: (date: string | null) => void;
     delay?: number;
-    defaultValue?: string; // optional ISO datetime for initial state
+    defaultValue?: string;
     useTime?: boolean;
+    disallowPast?: boolean;
 }
 
-/**
- * A reusable Bootstrap date (+time) selector with debounced change events.
- */
+const getTodayISO = (d: Date): string => {
+    return d.toISOString().slice(0, 10);
+};
+
+const getHHMM = (d: Date): string => {
+    return d.toTimeString().slice(0, 5);
+};
+
+const getNextMinuteHHMM = (from: Date): string => {
+    const d: Date = new Date(from);
+    d.setSeconds(0, 0);
+    d.setMinutes(d.getMinutes() + 5);
+    return getHHMM(d);
+};
+
+const isTimeBeforeOrEqual = (a: string, b: string): boolean => {
+    return a <= b;
+};
+
+const parseLocalDateOrDateTime = (dateISO: string, timeHHMM?: string): Date => {
+    // dateISO: YYYY-MM-DD, timeHHMM: HH:mm (optional)
+    const year: number = Number(dateISO.slice(0, 4));
+    const month: number = Number(dateISO.slice(5, 7));
+    const day: number = Number(dateISO.slice(8, 10));
+
+    if (!timeHHMM) {
+        return new Date(year, month - 1, day, 0, 0, 0, 0);
+    }
+
+    const hour: number = Number(timeHHMM.slice(0, 2));
+    const minute: number = Number(timeHHMM.slice(3, 5));
+
+    return new Date(year, month - 1, day, hour, minute, 0, 0);
+};
+
 const DateSelect: React.FC<DateSelectProps> = ({
                                                    label,
                                                    placeholder = "Select date...",
@@ -21,31 +54,129 @@ const DateSelect: React.FC<DateSelectProps> = ({
                                                    delay = 300,
                                                    defaultValue = "",
                                                    useTime = false,
+                                                   disallowPast = false,
                                                }) => {
     const [date, setDate] = useState<string>("");
     const [time, setTime] = useState<string>("");
+
+    // This is the key: a ticking "now" so min stays fresh.
+    const [nowTick, setNowTick] = useState<number>(() => Date.now());
+
+    const nowDate: Date = useMemo(() => new Date(nowTick), [nowTick]);
+    const todayISO: string = useMemo(() => getTodayISO(nowDate), [nowDate]);
+
+    const dateMin: string | undefined = disallowPast ? todayISO : undefined;
+
+    const timeMin: string | undefined =
+        disallowPast && useTime && date === todayISO
+            ? getNextMinuteHHMM(nowDate)
+            : undefined;
 
     // Initialize if defaultValue (ISO string like "2025-11-11T14:30")
     useEffect(() => {
         if (defaultValue) {
             const [d, t] = defaultValue.split("T");
             setDate(d);
-            if (useTime && t) setTime(t.slice(0, 5)); // keep HH:mm
+
+            if (useTime && t) {
+                setTime(t.slice(0, 5));
+            }
         }
     }, [defaultValue, useTime]);
 
+    // Keep "now" moving while we care about min time (today + disallowPast + useTime).
+    useEffect(() => {
+        if (!disallowPast || !useTime) {
+            return;
+        }
+
+        const interval: number = window.setInterval(() => {
+            setNowTick(Date.now());
+        }, 10_000);
+
+        return () => {
+            window.clearInterval(interval);
+        };
+    }, [disallowPast, useTime]);
+
+    // Clamp time if it becomes invalid (e.g. user left the page open and min moved forward).
+    useEffect(() => {
+        if (!disallowPast || !useTime) {
+            return;
+        }
+
+        if (!date || date !== todayISO) {
+            return;
+        }
+
+        if (!timeMin) {
+            return;
+        }
+
+        if (time && isTimeBeforeOrEqual(time, timeMin)) {
+            setTime(timeMin);
+        }
+    }, [date, time, timeMin, todayISO, disallowPast, useTime]);
+
+    const handleDateChange = (newDate: string) => {
+        setDate(newDate);
+
+        if (!disallowPast || !useTime) {
+            return;
+        }
+
+        if (newDate === todayISO && timeMin) {
+            if (time && isTimeBeforeOrEqual(time, timeMin)) {
+                setTime(timeMin);
+            }
+        }
+    };
+
+    const handleTimeChange = (newTime: string) => {
+        if (!disallowPast || !useTime || !date) {
+            setTime(newTime);
+            return;
+        }
+
+        if (date === todayISO && timeMin) {
+            // Compare against the actual minimum allowed time (next minute), not current HH:mm.
+            if (isTimeBeforeOrEqual(newTime, timeMin)) {
+                setTime(timeMin);
+                return;
+            }
+        }
+
+        setTime(newTime);
+    };
+
     // Debounce change callback
     useEffect(() => {
-        const handler = setTimeout(() => {
-            if (date) {
-                const result = useTime && time ? `${date}T${time}` : date;
-                onSelect(result);
-            } else {
+        const handler: number = window.setTimeout(() => {
+            if (!date) {
                 onSelect(null);
+                return;
             }
+
+            const result: string = useTime && time ? `${date}T${time}` : date;
+
+            if (disallowPast) {
+                const now: Date = new Date();
+                const selected: Date = useTime && time
+                    ? parseLocalDateOrDateTime(date, time)
+                    : parseLocalDateOrDateTime(date);
+
+                if (selected <= now) {
+                    return;
+                }
+            }
+
+            onSelect(result);
         }, delay);
-        return () => clearTimeout(handler);
-    }, [date, time, delay, onSelect, useTime]);
+
+        return () => {
+            window.clearTimeout(handler);
+        };
+    }, [date, time, delay, onSelect, useTime, disallowPast]);
 
     return (
         <Form.Label className="mb-3">
@@ -55,14 +186,18 @@ const DateSelect: React.FC<DateSelectProps> = ({
                     type="date"
                     value={date}
                     placeholder={placeholder}
-                    onChange={(e) => setDate(e.target.value)}
+                    min={dateMin}
+                    onChange={(e) => handleDateChange(e.target.value)}
                     className={`${s.formControl} ${s.dateControl}`}
                 />
+
                 {useTime && (
                     <Form.Control
                         type="time"
                         value={time}
-                        onChange={(e) => setTime(e.target.value)}
+                        min={timeMin}
+                        step={60}
+                        onChange={(e) => handleTimeChange(e.target.value)}
                         className={`${s.formControl} ${s.timeControl}`}
                     />
                 )}

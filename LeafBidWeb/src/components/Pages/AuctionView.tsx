@@ -1,22 +1,18 @@
 'use client';
 import styles from './AuctionView.module.css';
-import Header from "@/components/Header/Header";
 import DashboardPanel from "@/components/DashboardPanel/DashboardPanel";
 import {useEffect, useMemo, useState} from "react";
-import {ClockLocation, parseClockLocation} from "@/enums/ClockLocation";
+import {parseClockLocation} from "@/enums/ClockLocation";
 
 import {AuctionPageResult} from "@/types/Auction/AuctionPageResult";
 import {resolveImageSrc} from "@/utils/Image";
 import {getServerNow, setServerTimeOffset} from "@/utils/Time";
 import {useRouter} from "nextjs-toploader/app";
-import Button from "@/components/Button/Button";
 
 export default function AuctionView() {
     const router = useRouter();
     const [auctions, setAuctions] = useState<AuctionPageResult[]>([]);
     const [loading, setLoading] = useState(true);
-
-    const now = getServerNow();
 
     // Fetch auctions from the server
     useEffect(() => {
@@ -30,7 +26,11 @@ export default function AuctionView() {
                 });
 
                 if (!res.ok) {
-                    console.error("Failed to fetch auctions");
+                    if (res.status !== 404) {
+                        console.error("Failed to fetch auctions");
+                        return;
+                    }
+
                     return;
                 }
 
@@ -67,7 +67,7 @@ export default function AuctionView() {
             const byClockLocation = new Map<string | number, (typeof auctions)[number]>();
 
             for (const auctionItem of eligible) {
-                const key = auctionItem.auction.clockLocationEnum;
+                const key = auctionItem.auction!.clockLocationEnum!;
                 const existing = byClockLocation.get(key);
 
                 if (!existing) {
@@ -103,7 +103,7 @@ export default function AuctionView() {
                 return aDate.getTime() - bDate.getTime();
             });
         },
-        [auctions, now]
+        [auctions]
     );
 
     useEffect(() => {
@@ -149,7 +149,7 @@ export default function AuctionView() {
                                         <DashboardPanel
                                             loading={false}
                                             title={product?.name ?? `Veiling #${auction.id}`}
-                                            kloklocatie={parseClockLocation(auction.clockLocationEnum)}
+                                            kloklocatie={parseClockLocation(auction.clockLocationEnum!)}
                                             imageSrc={resolveImageSrc(product?.picture)}
                                             auctionStatus={auctionStatus}
                                             huidigePrijs={reg?.minPrice}

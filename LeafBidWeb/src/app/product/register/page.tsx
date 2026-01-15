@@ -168,9 +168,17 @@ export default function ProductForm() {
                     items={sortedProducts}
                     displayKey="name"
                     valueKey="id"
-                    onSelect={handleProductSelect}
+                    value={formData.productId ? formData.productId : null}
+                    onSelect={(product) => {
+                        handleProductSelect(product);
+                        setFormData((prev) => ({
+                            ...prev,
+                            productId: String(product.id),
+                        }));
+                    }}
                     placeholder="Selecteer product"
                 />
+
                 {errors.productId && <div className={s.error}>{errors.productId}</div>}
 
                 <NumberInput
@@ -178,6 +186,7 @@ export default function ProductForm() {
                     name="stock"
                     placeholder="aantal"
                     step={1}
+                    min={1}
                     value={formData.stock}
                     onChange={handleChange}
                 />
@@ -188,6 +197,7 @@ export default function ProductForm() {
                     name="minPrice"
                     placeholder="min. prijs"
                     step={0.01}
+                    min={0.01}
                     value={formData.minPrice}
                     onChange={handleChange}
                     prefix="€"
@@ -199,6 +209,7 @@ export default function ProductForm() {
                     name="weight"
                     placeholder="gewicht"
                     step={0.01}
+                    min={0.01}
                     value={formData.weight}
                     onChange={handleChange}
                     postfix="kg"
@@ -238,6 +249,7 @@ export default function ProductForm() {
                             name="potSize"
                             placeholder="pot grootte"
                             step={0.1}
+                            min={0.1}
                             value={formData.potSize}
                             onChange={handleChange}
                             postfix="cm"
@@ -254,6 +266,7 @@ export default function ProductForm() {
                             name="stemLength"
                             placeholder="stam lengte"
                             step={0.1}
+                            min={0.1}
                             value={formData.stemLength}
                             onChange={handleChange}
                             postfix="cm"

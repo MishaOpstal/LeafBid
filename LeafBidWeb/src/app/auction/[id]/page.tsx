@@ -338,15 +338,20 @@ export default function AuctionPage() {
                 <div className={s.left}>
                     <div className="App">
                         <AuctionTimer
-                            key={currentProduct.id}
-                            onFinished={onAuctionTimerFinished}
-                            onPriceChange={setCurrentPricePerUnit}
-                            maxPrice={maxPrice}
-                            minPrice={minPrice}
+                            product={currentProduct}
+                            settings={{
+                                MinDurationForAuctionTimer: 30,
+                                UseMaxDurationForAuctionTimer: false,
+                                MaxDurationForAuctionTimer: 300,
+                            }}
                             isPaused={isPaused}
                             startDate={auction.auction.nextProductStartTime}
                             timeOffset={getServerOffset()}
+
+                            onFinished={onAuctionTimerFinished}
+                            onPriceChange={setCurrentPricePerUnit}
                         />
+
                         {shouldDisplayMessage && (
                             <div className="alert alert-info mt-2">
                                 {countdownMessage}

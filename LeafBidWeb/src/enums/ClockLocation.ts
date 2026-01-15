@@ -6,6 +6,8 @@
 }
 
 export function parseClockLocation(clockLocation: number) {
+    console.log(`parsing clock location for: ${clockLocation}`);
+
     switch (clockLocation) {
         case ClockLocation.Naaldwijk:
             return "Naaldwijk";

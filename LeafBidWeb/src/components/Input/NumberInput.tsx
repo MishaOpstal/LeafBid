@@ -7,6 +7,7 @@ interface NumberInputProps {
     placeholder?: string;
     value?: number | string;
     step?: number | "any";
+    min?: number;
     onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
 
     // NEW:
@@ -20,6 +21,7 @@ const NumberInput: React.FC<NumberInputProps> = ({
                                                      placeholder,
                                                      value,
                                                      step = 1,
+                                                     min = 0,
                                                      onChange,
                                                      prefix,
                                                      postfix
@@ -30,6 +32,7 @@ const NumberInput: React.FC<NumberInputProps> = ({
             name={name}
             placeholder={placeholder}
             step={step}
+            min={min}
             value={value}
             onChange={onChange}
         />

@@ -9,6 +9,7 @@ import {AuctionPageResult} from "@/types/Auction/AuctionPageResult";
 import {getServerNow, setServerTimeOffset} from "@/utils/Time";
 import Button from "@/components/Input/Button";
 import {useRouter} from "nextjs-toploader/app";
+import {resolveImageSrc} from "@/utils/Image";
 
 
 export default function AuctionDashboard() {
@@ -28,7 +29,10 @@ export default function AuctionDashboard() {
                 });
 
                 if (!res.ok) {
-                    console.error("Failed to fetch auctions");
+                    if (res.status !== 404) {
+                        console.error("Failed to fetch auctions");
+                        return;
+                    }
                     return;
                 }
 
@@ -119,8 +123,8 @@ export default function AuctionDashboard() {
                                             compact
                                             loading={false}
                                             title={product?.name ?? `Veiling #${auction.id}`}
-                                            kloklocatie={parseClockLocation(auction.clockLocationEnum)}
-                                            imageSrc={product?.picture}
+                                            kloklocatie={parseClockLocation(auction.clockLocationEnum!)}
+                                            imageSrc={resolveImageSrc(product?.picture)}
                                             auctionStatus={new Date(auction.startDate).toLocaleString()}
                                             isLive={auction.isLive}
                                             onStopAuction={() => stopAuction(auction.id!)}
@@ -152,8 +156,8 @@ export default function AuctionDashboard() {
                                             compact
                                             loading={false}
                                             title={product?.name ?? `Veiling #${auction.id}`}
-                                            kloklocatie={parseClockLocation(auction.clockLocationEnum)}
-                                            imageSrc={product?.picture}
+                                            kloklocatie={parseClockLocation(auction.clockLocationEnum!)}
+                                            imageSrc={resolveImageSrc(product?.picture)}
                                             auctionStatus={new Date(auction.startDate).toLocaleString()}
                                             isLive={auction.isLive}
                                             isFinished={false}
@@ -183,8 +187,8 @@ export default function AuctionDashboard() {
                                             compact
                                             loading={false}
                                             title={product?.name ?? `Veiling #${auction.id}`}
-                                            kloklocatie={parseClockLocation(auction.clockLocationEnum)}
-                                            imageSrc={product?.picture}
+                                            kloklocatie={parseClockLocation(auction.clockLocationEnum!)}
+                                            imageSrc={resolveImageSrc(product?.picture)}
                                             auctionStatus={new Date(auction.startDate).toLocaleString()}
                                             isLive={auction.isLive}
                                             isFinished={true}

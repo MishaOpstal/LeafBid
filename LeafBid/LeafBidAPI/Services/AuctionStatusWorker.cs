@@ -91,6 +91,7 @@ public class AuctionStatusWorker(
             }
 
             auction.StartDate = TimeHelper.GetAmsterdamTime().AddMinutes(30);
+            context.Auctions.Update(auction);
         }
         
         // Make sure all deleted auctions are not live or visible
@@ -99,6 +100,7 @@ public class AuctionStatusWorker(
         {
             auction.IsLive = false;
             auction.IsVisible = false;
+            auction.NextProductStartTime = null;
             
             // Remove all associated AuctionProducts from the deleted auction
             await context.AuctionProducts.Where(ap => ap.AuctionId == auction.Id).ExecuteDeleteAsync();

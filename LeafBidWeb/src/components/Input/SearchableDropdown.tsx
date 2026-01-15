@@ -10,6 +10,8 @@ interface SearchableDropdownProps<T> {
     valueKey: keyof T;
     onSelect: (item: T) => void;
     placeholder?: string;
+
+    value: string | number | null; // controlled selected value
 }
 
 function SearchableDropdown<T>({
@@ -19,29 +21,35 @@ function SearchableDropdown<T>({
                                    valueKey,
                                    onSelect,
                                    placeholder = "Search...",
+                                   value,
                                }: SearchableDropdownProps<T>) {
     const [query, setQuery] = useState<string>("");
-    const [selectedLabel, setSelectedLabel] = useState<string | null>(null);
     const [show, setShow] = useState<boolean>(false);
     const searchRef = useRef<HTMLInputElement>(null);
+
+    const selectedItem = useMemo(() => {
+        if (value === null || value === undefined) {
+            return null;
+        }
+
+        return items.find((item) => String(item[valueKey]) === String(value)) ?? null;
+    }, [items, value, valueKey]);
+
+    const selectedText = selectedItem ? String(selectedItem[displayKey]) : null;
 
     const filteredItems = useMemo(() => {
         const q = query.toLowerCase();
         return q
-            ? items.filter((item) =>
-                String(item[displayKey]).toLowerCase().includes(q)
-            )
+            ? items.filter((item) => String(item[displayKey]).toLowerCase().includes(q))
             : items;
     }, [items, query, displayKey]);
 
     const handleSelect = (item: T) => {
-        setSelectedLabel(String(item[displayKey]));
-        setQuery(""); // 🧹 clear the search
+        setQuery("");
         setShow(false);
         onSelect(item);
     };
 
-    // Focus search when the dropdown opens
     useEffect(() => {
         if (show && searchRef.current) {
             searchRef.current.focus();
@@ -55,23 +63,21 @@ function SearchableDropdown<T>({
             className={s.dropdown}
         >
             <Dropdown.Toggle variant="outline-secondary" className={s.toggle}>
-                {selectedLabel || label}
+                {selectedText || label}
             </Dropdown.Toggle>
 
             <Dropdown.Menu className={s.menu}>
-                {/* Search Input */}
                 <div className={s.searchContainer}>
                     <SearchBar
                         ref={searchRef}
                         placeholder={placeholder}
                         onSearch={setQuery}
                         delay={200}
-                        value={query} // pass controlled value
+                        value={query}
                         clearOnChange={false}
                     />
                 </div>
 
-                {/* Filtered results */}
                 <div className={s.results}>
                     {filteredItems.length > 0 ? (
                         filteredItems.map((item) => (

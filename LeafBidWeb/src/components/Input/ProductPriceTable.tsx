@@ -40,19 +40,19 @@ const ProductPriceTable: React.FC<ProductPriceTableProps> = ({
         const parsed = parseFloat(value);
         let price = isNaN(parsed) || parsed < 0 ? 0 : parseFloat(parsed.toFixed(2));
 
-        // Ensure price is not below minPrice
+        // Ensure the price is not below minPrice
         if (registeredProduct.minPrice !== undefined && price < registeredProduct.minPrice) {
             price = registeredProduct.minPrice;
         }
 
-        // Update parent only when user finishes editing
+        // Update parent only when the user finishes editing
         const updated = registeredProducts.map((rp) =>
             rp.id === registeredProductId ? {...rp, maxPrice: price} : rp
         );
 
         onChange(updated);
 
-        // Clear local state for this field
+        // Clear the local state for this field
         setLocalPrices(prev => {
             const next = {...prev};
             delete next[registeredProductId];
@@ -72,6 +72,7 @@ const ProductPriceTable: React.FC<ProductPriceTableProps> = ({
                 <tbody>
                 {registeredProducts.length > 0 ? (
                     registeredProducts.map((registeredProduct) => (
+                        registeredProduct.maxPrice = registeredProduct.minPrice + 0.01,
                         <tr key={registeredProduct.id}>
                             <td className={s.productName}>
                                 {registeredProduct.product!.name}
@@ -80,7 +81,7 @@ const ProductPriceTable: React.FC<ProductPriceTableProps> = ({
                                 <Form.Control
                                     type="number"
                                     step="0.01"
-                                    min={registeredProduct.minPrice}
+                                    min={registeredProduct.minPrice + 0.01}
                                     value={localPrices[registeredProduct.id] ?? registeredProduct.maxPrice?.toString() ?? ""}
                                     placeholder="0.00"
                                     onChange={(e) => handleInputChange(registeredProduct.id, e.target.value)}

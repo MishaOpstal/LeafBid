@@ -118,7 +118,6 @@ public class AuctionService(
 
         // Set the StartDate to 10 seconds from now
         auction.StartDate = TimeHelper.GetAmsterdamTime().AddSeconds(10);
-        
         await context.SaveChangesAsync();
 
         return auction;

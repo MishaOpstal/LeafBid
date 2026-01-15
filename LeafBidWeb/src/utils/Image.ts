@@ -7,5 +7,5 @@
         return picture;
     }
 
-    return `http://localhost:5001/uploads/${picture}`;
+    return `http://localhost:5001/${picture}`;
 }

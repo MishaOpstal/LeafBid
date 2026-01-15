@@ -37,7 +37,7 @@ export function useAuth() {
     }, [router]);
 
     const checkAuth = useCallback(async () => {
-        if (localStorage.getItem("loggedIn") === "false") {
+        if (localStorage.getItem("loggedIn") === "false" || localStorage.getItem("loggedIn") === null) {
             setLoggedIn(false);
             setUser(null);
             setIsLoading(false);

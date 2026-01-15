@@ -72,13 +72,15 @@ export default function History(HistoryProps: HistoryProps) {
         }
     };
 
+    const randomId = Math.random().toString(36).substring(2, 9);
+
     return (
         <>
-            <Button variant="primary" onClick={fetchData} popoverTarget={`history-${HistoryProps.registeredProductID}`}>
+            <Button variant="primary" onClick={fetchData} popoverTarget={`history-${HistoryProps.registeredProductID}-${randomId}`}>
                 {loading ? "Loading..." : "Show History Data"}
             </Button>
 
-            <div id={`history-${HistoryProps.registeredProductID}`} className={s.popover} popover={"auto"}>
+            <div id={`history-${HistoryProps.registeredProductID}-${randomId}`} className={s.popover} popover={"auto"}>
                 <div className={s.productInfo}>
                     <Image src={HistoryProps.picture} alt={HistoryProps.name} width={50} height={50}/>
                     <h3>{HistoryProps.name}</h3>

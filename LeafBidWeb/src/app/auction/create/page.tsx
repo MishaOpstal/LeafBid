@@ -25,15 +25,15 @@ if (!isUserInRole(parseRole(Roles.Auctioneer))) {
 }
 
 const locaties: Location[] = [
-    {locatieId: 1, locatieNaam: "Aalsmeer"},
-    {locatieId: 2, locatieNaam: "Rijnsburg"},
-    {locatieId: 3, locatieNaam: "Naaldwijk"},
-    {locatieId: 4, locatieNaam: "Eelde"},
+    {locatieId: 0, locatieNaam: "Aalsmeer"},
+    {locatieId: 1, locatieNaam: "Rijnsburg"},
+    {locatieId: 2, locatieNaam: "Naaldwijk"},
+    {locatieId: 3, locatieNaam: "Eelde"},
 ];
 
 const createEmptyAuction = (): Auction => ({
     startDate: "",
-    clockLocationEnum: 0,
+    clockLocationEnum: -1,
     registeredProducts: [] as RegisteredProduct[]
 });
 
@@ -77,11 +77,17 @@ export default function Home() {
     const validate = (): boolean => {
         const newErrors: Record<string, string> = {};
 
-        if (!auctionData.startDate) newErrors.startDate = "Startdatum en tijd is verplicht.";
-        if (!auctionData.clockLocationEnum || auctionData.clockLocationEnum === 0)
+        if (!auctionData.startDate) {
+            newErrors.startDate = "Startdatum en tijd is verplicht.";
+        }
+
+        if (auctionData.clockLocationEnum === -1) {
             newErrors.location = "Locatie is verplicht.";
-        if (!auctionData.registeredProducts || auctionData.registeredProducts.length === 0)
+        }
+
+        if (!auctionData.registeredProducts || auctionData.registeredProducts.length === 0) {
             newErrors.products = "Minimaal één product is verplicht.";
+        }
 
         setErrors(newErrors);
         return Object.keys(newErrors).length === 0;
@@ -172,6 +178,7 @@ export default function Home() {
                             placeholder="Selecteer startdatum"
                             onSelect={handleDateSelect}
                             useTime={true}
+                            disallowPast={true}
                             label=""
                         />
                         {errors.startDate && <div className={s.error}>{errors.startDate}</div>}
@@ -182,8 +189,11 @@ export default function Home() {
                             items={locaties}
                             displayKey="locatieNaam"
                             valueKey="locatieId"
-                            onSelect={handleLocatieSelect}
-                            placeholder="Zoek locatie..."
+                            value={auctionData.clockLocationEnum !== -1 ? auctionData.clockLocationEnum : null}
+                            onSelect={(loc) => {
+                                handleLocatieSelect(loc);
+                            }}
+                            placeholder="Selecteer locatie"
                         />
                         {errors.location && <div className={s.error}>{errors.location}</div>}
 
