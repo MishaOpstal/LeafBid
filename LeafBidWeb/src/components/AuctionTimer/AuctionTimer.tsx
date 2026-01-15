@@ -1,4 +1,4 @@
-﻿import React, { useEffect, useMemo, useRef, useState } from "react";
+﻿import React, {useEffect, useMemo, useRef, useState} from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
 import {parsePrice, RegisteredProduct} from "@/types/Product/RegisteredProducts";
 import s from "./AuctionTimer.module.css";
@@ -214,7 +214,7 @@ const AuctionTimer: React.FC<AuctionTimerProps> = ({
                 <section
                     className={`progress-bar progress-bar-animated ${s.balkAnimatie}`}
                     role="progressbar"
-                    style={{ width: `${percentage}%` }}
+                    style={{width: `${percentage}%`}}
                     aria-valuenow={Math.round(percentage * 100) / 100}
                     aria-valuemin={0}
                     aria-valuemax={100}

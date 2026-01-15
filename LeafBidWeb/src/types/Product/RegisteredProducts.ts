@@ -1,4 +1,4 @@
-import { Product } from "@/types/Product/Product";
+import {Product} from "@/types/Product/Product";
 import {Company} from "@/types/Company/Company";
 
 export interface RegisteredProduct {

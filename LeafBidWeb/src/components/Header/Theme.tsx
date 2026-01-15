@@ -1,18 +1,15 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import {useEffect, useState} from 'react';
 
 type Theme = 'dark' | 'light';
 
-function isBrowser(): boolean
-{
+function isBrowser(): boolean {
     return typeof window !== 'undefined' && typeof document !== 'undefined';
 }
 
-export function getTheme(): Theme
-{
-    if (!isBrowser())
-    {
+export function getTheme(): Theme {
+    if (!isBrowser()) {
         return 'light';
     }
 
@@ -20,10 +17,8 @@ export function getTheme(): Theme
     return stored === 'dark' ? 'dark' : 'light';
 }
 
-export function setTheme(theme: Theme): void
-{
-    if (!isBrowser())
-    {
+export function setTheme(theme: Theme): void {
+    if (!isBrowser()) {
         return;
     }
 
@@ -31,10 +26,8 @@ export function setTheme(theme: Theme): void
     window.localStorage.setItem('theme', theme);
 }
 
-export function toggleTheme(): void
-{
-    if (!isBrowser())
-    {
+export function toggleTheme(): void {
+    if (!isBrowser()) {
         return;
     }
 
@@ -43,10 +36,8 @@ export function toggleTheme(): void
     setTheme(newTheme);
 }
 
-export function initializeTheme(): void
-{
-    if (!isBrowser())
-    {
+export function initializeTheme(): void {
+    if (!isBrowser()) {
         return;
     }
 
@@ -54,19 +45,15 @@ export function initializeTheme(): void
     setTheme(theme);
 }
 
-export default function ThemeInitializer()
-{
+export default function ThemeInitializer() {
     const [mounted, setMounted] = useState(false);
 
-    useEffect(() =>
-    {
+    useEffect(() => {
         setMounted(true);
     }, []);
 
-    useEffect(() =>
-    {
-        if (!mounted)
-        {
+    useEffect(() => {
+        if (!mounted) {
             return;
         }
 

@@ -6,7 +6,7 @@ import Form from "react-bootstrap/Form";
 import TextInput from "@/components/Input/TextInput";
 import NumberInput from "@/components/Input/NumberInput";
 import Button from "@/components/Input/Button";
-import React, {useCallback, useEffect, useMemo, useState} from "react";
+import React, {useEffect, useMemo, useState} from "react";
 import SelectableButtonGroup from "@/components/Input/SelectableButtonGroup";
 import SearchableDropdown from "@/components/Input/SearchableDropdown";
 import DateSelect from "@/components/Input/DateSelect";
@@ -14,7 +14,7 @@ import {isUserInRole} from "@/utils/IsUserInRole";
 import {parseRole, Roles} from "@/enums/Roles";
 import {Product} from "@/types/Product/Product";
 
-// Constants - defined outside component to prevent recreation on every render
+// Constants - defined outside a component to prevent recreation on every render
 const MEASUREMENT_OPTIONS = ["Pot grootte", "Stem lengte"];
 
 // Check if a user has a Provider role
@@ -60,7 +60,8 @@ export default function ProductForm() {
                 credentials: "include",
             });
             if (!res.ok) {
-                throw new Error("Failed to fetch products");
+                console.error("Failed to fetch products:" + await res.text());
+                return;
             }
 
             const data: Product[] = await res.json();
@@ -135,7 +136,8 @@ export default function ProductForm() {
             });
 
             if (!response.ok) {
-                throw new Error(`Server returned ${response.status}`);
+                console.error(`Failed to fetch products: ${response.status}`);
+                return;
             }
 
             setMessage("Product succesvol toegevoegd!");
@@ -229,6 +231,7 @@ export default function ProductForm() {
                     label="Oogst Datum"
                     placeholder="Selecteer startdatum"
                     onSelect={handleDateSelect}
+                    disallowFuture={true}
                 />
                 {errors.harvestedAt && <div className={s.error}>{errors.harvestedAt}</div>}
 

@@ -1,11 +1,10 @@
-.wrapper{
+.wrapper {
     background-color: var(--background);
     border: 1px solid #5C983B;
     border-radius: 10px;
     gap: 10px;
     font-family: Inter, sans-serif;
     position: relative;
-
 }
 
 .image {

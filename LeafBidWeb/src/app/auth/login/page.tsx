@@ -13,13 +13,13 @@ import ValidationFailedException, {isValidationFailedException} from "@/exceptio
 import {Login} from "@/types/User/Login";
 import TextInput from "@/components/Input/TextInput";
 import {toggleTheme} from "@/components/Header/Theme";
-import {useAuth} from "@/utils/useAuth";
+import {UseAuth} from "@/utils/UseAuth";
 
 export default function LoginPage() {
     toggleTheme();
 
     const router = useRouter();
-    const {checkAuth} = useAuth();
+    const {checkAuth} = UseAuth();
 
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     const userNameRegex = /^[a-zA-Z0-9]+$/;

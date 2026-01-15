@@ -21,7 +21,7 @@ function formatDate(dateStr: string) {
     return `${day}-${month}-${year} | ${hours}:${minutes}`;
 }
 
-export default function ProductTable({ userRoles }: Props) {
+export default function ProductTable({userRoles}: Props) {
     const [auctionSaleProducts, setAuctionSaleProducts] = useState<AuctionSaleProduct[]>([]);
 
     useEffect(() => {
@@ -57,7 +57,7 @@ export default function ProductTable({ userRoles }: Props) {
             }
         };
 
-         void fetchProducts();
+        void fetchProducts();
     }, [userRoles]);
 
     if (userRoles == Roles.Buyer) {
@@ -98,12 +98,12 @@ export default function ProductTable({ userRoles }: Props) {
                                 <td className="align-middle">{auctionSaleProduct.price}</td>
                                 <td className="align-middle">{formatDate(auctionSaleProduct.date.toString())}</td>
                                 <td className="align-middle">
-                                <History
-                                    registeredProductID={auctionSaleProduct.registeredProduct!.id!}
-                                    name={auctionSaleProduct.product!.name!}
-                                    picture={auctionSaleProduct.product!.picture!}
-                                    companyName={auctionSaleProduct.company!.name!}
-                                />
+                                    <History
+                                        registeredProductID={auctionSaleProduct.registeredProduct!.id!}
+                                        name={auctionSaleProduct.product!.name!}
+                                        picture={auctionSaleProduct.product!.picture!}
+                                        companyName={auctionSaleProduct.company!.name!}
+                                    />
                                 </td>
                             </tr>
 

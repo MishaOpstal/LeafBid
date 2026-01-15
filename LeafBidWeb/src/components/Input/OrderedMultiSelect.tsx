@@ -51,7 +51,8 @@ const OrderedMultiSelect: React.FC<OrderedMultiSelectProps> = ({
 
                 const res = await fetch(url.toString(), {signal: controller.signal});
                 if (!res.ok) {
-                    throw new Error(`HTTP ${res.status}`);
+                    console.error(`Failed to fetch from endpoint: ${endpoint}, response: ${await res.text()}`);
+                    return;
                 }
 
                 const data = await res.json();

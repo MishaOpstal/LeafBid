@@ -56,7 +56,7 @@ export default function ProductForm() {
             return;
         }
         setErrors((prev) => {
-            const {picture, ...rest} = prev;
+            const {...rest} = prev;
             return rest;
         });
         setFormData((prev) => ({...prev, picture: file}));
@@ -102,7 +102,8 @@ export default function ProductForm() {
             });
 
             if (!response.ok) {
-                throw new Error(`Server returned ${response.status}`);
+                console.error("Failed to add product:", response.status);
+                return;
             }
 
             setMessage("Product succesvol toegevoegd!");

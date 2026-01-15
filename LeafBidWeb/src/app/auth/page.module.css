@@ -22,7 +22,7 @@
     box-shadow: 0 0 20px 10px var(--accent-soft);
 }
 
-.input{
+.input {
     display: flex;
     padding: 9px 16px;
     align-items: center;
@@ -32,9 +32,11 @@
     border: 1px solid var(--muted-text);
     background: var(--background);
 }
+
 .input::placeholder {
     color: var(--muted-text);
 }
+
 .check {
     display: flex;
     align-items: center;
@@ -47,17 +49,18 @@
     accent-color: var(--primary-hover) !important;
 }
 
-.passwordRow{
+.passwordRow {
     display: flex;
     flex-direction: row;
     width: 100%;
     gap: 10px;
 }
 
-.passwordLabel{
+.passwordLabel {
     flex: 1;
     width: 100%;
 }
+
 .button {
     display: flex;
     width: 100%;
@@ -77,7 +80,7 @@
 }
 
 @media (max-width: 768px) {
-    .passwordRow{
+    .passwordRow {
         flex-direction: column;
     }
 }

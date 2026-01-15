@@ -14,7 +14,7 @@ export const getServerOffset = () => {
     return serverOffset;
 };
 
-export function parseDate(date: Date|string): string {
+export function parseDate(date: Date | string): string {
     const options: Intl.DateTimeFormatOptions = {
         year: 'numeric',
         month: 'long',

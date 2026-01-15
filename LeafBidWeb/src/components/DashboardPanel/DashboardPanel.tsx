@@ -1,12 +1,10 @@
 'use client';
 
 import React from 'react';
-import {Card} from 'react-bootstrap';
+import {Button, Card} from 'react-bootstrap';
 import Placeholder from "react-bootstrap/Placeholder";
 import {parsePrice} from "@/types/Product/RegisteredProducts";
-import {Button } from 'react-bootstrap';
 import s from "./DashboardPanel.module.css";
-
 
 type DashboardPanelProps = {
     title?: string;
@@ -83,7 +81,7 @@ const DashboardPanel: React.FC<DashboardPanelProps> = ({
 
                     <div className="d-flex gap-2">
                         {loading ? (
-                            <Placeholder.Button variant="secondary" xs={2} />
+                            <Placeholder.Button variant="secondary" xs={2}/>
                         ) : (
                             <>
                                 {!isFinished && (

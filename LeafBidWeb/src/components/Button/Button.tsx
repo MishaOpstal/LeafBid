@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { useRouter } from 'nextjs-toploader/app';
+import {useRouter} from 'nextjs-toploader/app';
 import s from './Button.module.css';
 
 type KnopProps = {
@@ -9,7 +9,7 @@ type KnopProps = {
     to: string;
 };
 
-const Button: React.FC<KnopProps> = ({ label, to }) => {
+const Button: React.FC<KnopProps> = ({label, to}) => {
     const router = useRouter();
 
     const handleClick = () => {

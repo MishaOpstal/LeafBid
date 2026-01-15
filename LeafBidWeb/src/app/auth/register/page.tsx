@@ -15,7 +15,9 @@ import SearchableDropdown from "@/components/Input/SearchableDropdown";
 
 import RegisterFailedException, {isRegisterFailedException} from "@/exceptions/Auth/RegisterFailedException";
 import RoleFetchFailedException, {isRoleFetchFailedException} from "@/exceptions/Auth/RoleFetchFailedException";
-import CompanyFetchFailedException, {isCompanyFetchFailedException} from "@/exceptions/Company/CompanyFetchFailedException";
+import CompanyFetchFailedException, {
+    isCompanyFetchFailedException
+} from "@/exceptions/Company/CompanyFetchFailedException";
 import ValidationFailedException, {isValidationFailedException} from "@/exceptions/ValidationFailedException";
 
 import {Role} from "@/types/User/Role";

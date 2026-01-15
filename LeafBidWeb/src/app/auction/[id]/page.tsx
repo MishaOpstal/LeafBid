@@ -81,11 +81,15 @@ export default function AuctionPage() {
 
             if (!res.ok) {
                 const errorText = await res.text();
-                throw new Error(errorText || "Failed to buy product");
+                console.error("Failed to buy product:", errorText);
+                alert(errorText);
+                return;
             }
 
             const product = currentProduct.product;
-            if (!product) return;
+            if (!product) {
+                return;
+            }
 
             setToasts(prev => [
                 ...prev,
@@ -119,7 +123,7 @@ export default function AuctionPage() {
         connection.on("AuctionStarted", () => {
             // console.log("Real-time update: Auction started", data);
             setAuction(prev => {
-                if (!prev){
+                if (!prev) {
                     return null;
                 }
 

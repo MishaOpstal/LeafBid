@@ -1,56 +1,19 @@
 "use client";
 
-import styles from "@/app/auction/view/page.module.css";
+import styles from './AuctionView.module.css';
 import DashboardPanel from "@/components/DashboardPanel/DashboardPanel";
-import React, {useEffect, useMemo, useState} from "react";
+import React, {useMemo} from "react";
 import {parseClockLocation} from "@/enums/ClockLocation";
 import Link from "next/link";
-import {AuctionPageResult} from "@/types/Auction/AuctionPageResult";
-import {getServerNow, setServerTimeOffset} from "@/utils/Time";
+import {getServerNow} from "@/utils/Time";
 import Button from "@/components/Input/Button";
-import {useRouter} from "nextjs-toploader/app";
 import {resolveImageSrc} from "@/utils/Image";
+import {useAuctions} from "@/utils/AuctionHelper";
 
 
 export default function AuctionDashboard() {
-    const router = useRouter();
-    const [auctions, setAuctions] = useState<AuctionPageResult[]>([]);
-    const [loading, setLoading] = useState(true);
+    const {router, auctions, loading} = useAuctions();
 
-    // Fetch auctions from the server
-    useEffect(() => {
-        const loadAuctions = async (): Promise<void> => {
-            setLoading(true);
-
-            try {
-                const res = await fetch("http://localhost:5001/api/v2/Pages", {
-                    method: "GET",
-                    credentials: "include"
-                });
-
-                if (!res.ok) {
-                    if (res.status !== 404) {
-                        console.error("Failed to fetch auctions");
-                        return;
-                    }
-                    return;
-                }
-
-                const data: AuctionPageResult[] = await res.json();
-                setAuctions(data);
-
-                if (data.length > 0) {
-                    setServerTimeOffset(data[0].serverTime);
-                }
-            } catch (err) {
-                console.error("Failed to load auctions:", err);
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        void loadAuctions();
-    }, []);
 
     // Send a start request to /api/v2/Auction/start/{id} if the startAuction function is called
     const startAuction = (id: number) => {
@@ -98,7 +61,7 @@ export default function AuctionDashboard() {
                     <Button
                         variant="primary"
                         type="submit"
-                        label={"Veiling Aanmaken"}
+                        label={"Veiling Toevoegen"}
                         onClick={() => router.push("/auction/create")}
                     />
                     <div className={`${styles.panels} mt-4`}>

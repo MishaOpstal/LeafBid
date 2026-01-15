@@ -1,5 +1,5 @@
 import React from "react";
-import { Form } from "react-bootstrap";
+import {Form} from "react-bootstrap";
 
 interface FileInputProps {
     label: string;
@@ -7,7 +7,7 @@ interface FileInputProps {
     onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
 }
 
-const FileInput: React.FC<FileInputProps> = ({ label, name, onChange }) => {
+const FileInput: React.FC<FileInputProps> = ({label, name, onChange}) => {
     return (
         <Form.Label className="mb-3">
             {label}

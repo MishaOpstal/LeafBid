@@ -1,4 +1,4 @@
-import React, {useState, useCallback} from "react";
+import React, {useCallback, useEffect, useState} from "react";
 import {Form, Table} from "react-bootstrap";
 import s from "./ProductPriceTable.module.css";
 import {RegisteredProduct} from "@/types/Product/RegisteredProducts";
@@ -60,6 +60,13 @@ const ProductPriceTable: React.FC<ProductPriceTableProps> = ({
         });
     }, [onChange, registeredProducts]);
 
+    // For every registered product, make sure the default maxPrice is equal to the minPrice
+    useEffect(() => {
+        registeredProducts.forEach((registeredProduct) => {
+            registeredProduct.maxPrice = registeredProduct.minPrice + 0.01;
+        });
+    }, [registeredProducts]);
+
     return (
         <div className={s.wrapper} style={{maxHeight: height}}>
             <Table striped size="sm" className={s.table}>
@@ -71,32 +78,45 @@ const ProductPriceTable: React.FC<ProductPriceTableProps> = ({
                 </thead>
                 <tbody>
                 {registeredProducts.length > 0 ? (
-                    registeredProducts.map((registeredProduct) => (
-                        registeredProduct.maxPrice = registeredProduct.minPrice + 0.01,
-                        <tr key={registeredProduct.id}>
-                            <td className={s.productName}>
-                                {registeredProduct.product!.name}
-                            </td>
-                            <td className={s.priceCell}>
-                                <Form.Control
-                                    type="number"
-                                    step="0.01"
-                                    min={registeredProduct.minPrice + 0.01}
-                                    value={localPrices[registeredProduct.id] ?? registeredProduct.maxPrice?.toString() ?? ""}
-                                    placeholder="0.00"
-                                    onChange={(e) => handleInputChange(registeredProduct.id, e.target.value)}
-                                    onBlur={(e) => handleBlur(registeredProduct.id, e.target.value)}
-                                    className={s.priceInput}
-                                />
-                            </td>
-                        </tr>
-                    ))
+                    registeredProducts.map((registeredProduct) => {
+                        const minPrice = registeredProduct.minPrice ?? 0;
+                        const minAllowedPrice = minPrice + 0.01;
+
+                        const fallbackMaxPrice = registeredProduct.maxPrice ?? minAllowedPrice;
+
+                        const value =
+                            localPrices[registeredProduct.id] ??
+                            fallbackMaxPrice.toFixed(2);
+
+                        return (
+                            <tr key={registeredProduct.id}>
+                                <td className={s.productName}>
+                                    {registeredProduct.product!.name}
+                                </td>
+                                <td className={s.priceCell}>
+                                    <Form.Control
+                                        type="number"
+                                        step="0.01"
+                                        min={minAllowedPrice}
+                                        value={value}
+                                        placeholder="0.00"
+                                        onChange={(e) =>
+                                        {
+                                            handleInputChange(registeredProduct.id, e.target.value);
+                                        }}
+                                        onBlur={(e) =>
+                                        {
+                                            handleBlur(registeredProduct.id, e.target.value);
+                                        }}
+                                        className={s.priceInput}
+                                    />
+                                </td>
+                            </tr>
+                        );
+                    })
                 ) : (
                     <tr>
-                        <td
-                            colSpan={2}
-                            className="text-center text-muted py-3"
-                        >
+                        <td colSpan={2} className="text-center text-muted py-3">
                             Geen producten geselecteerd
                         </td>
                     </tr>

@@ -5,7 +5,7 @@ export interface Auction {
     startDate: string;
     nextProductStartTime?: string;
     clockLocationEnum: number | null;
-    registeredProducts: RegisteredProduct[]; // product(s) zitten hier in
+    registeredProducts: RegisteredProduct[];
     userId?: string;
     isLive?: boolean;
     isVisible?: boolean;

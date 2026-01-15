@@ -1,5 +1,5 @@
-import React, { useState, useMemo, useRef, useEffect } from "react";
-import { Dropdown } from "react-bootstrap";
+import React, {useEffect, useMemo, useRef, useState} from "react";
+import {Dropdown} from "react-bootstrap";
 import SearchBar from "./SearchBar";
 import s from "./SearchableDropdown.module.css";
 

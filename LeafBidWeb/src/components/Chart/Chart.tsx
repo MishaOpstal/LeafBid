@@ -7,6 +7,7 @@ interface SaleChartDataPoint {
     productName: string;
     price: number;
     quantity: number;
+
     [key: string]: string | number;
 }
 
@@ -35,7 +36,8 @@ export default function Chart() {
                 });
 
                 if (!res.ok) {
-                    throw new Error(`HTTP ${res.status}`);
+                    console.error("Failed to fetch chart data:", res.text());
+                    return;
                 }
 
                 const data = (await res.json()) as SaleChartResponse;
@@ -63,17 +65,20 @@ export default function Chart() {
         };
     }, []);
 
-    const currentMonthData: SaleChartDataPoint[] = chartData?.currentMonthData ?? [];
-    const allTimeData: SaleChartDataPoint[] = chartData?.allTimeData ?? [];
+    const currentMonthData: SaleChartDataPoint[] = useMemo(
+        () => chartData?.currentMonthData ?? [],
+        [chartData?.currentMonthData]
+    );
+
+    const allTimeData: SaleChartDataPoint[] = useMemo(
+        () => chartData?.allTimeData ?? [],
+        [chartData?.allTimeData]
+    );
 
     const currentMonthTotal: string = useMemo(() => {
         // Total is the sum of all sale pricePerUnit times the quantity
         const total: number = currentMonthData.reduce((acc, item) => acc + Number(item.price || 0) * Number(item.quantity || 0), 0);
         return total.toFixed(2);
-    }, [currentMonthData]);
-
-    const currentMonthPrice: number = useMemo(() => {
-        return currentMonthData.reduce((acc, item) => acc + Number(item.price || 0) * Number(item.quantity || 0), 0);
     }, [currentMonthData]);
 
     const allTimeTotal: string = useMemo(() => {
@@ -96,9 +101,9 @@ export default function Chart() {
             <h3>Inkomsten Deze Maand</h3>
 
             {isLoading && <p>Loading…</p>}
-            {error && <p style={{ color: "red" }}>Error: {error}</p>}
+            {error && <p style={{color: "red"}}>Error: {error}</p>}
 
-            <div style={{ flex: "1 1 200px", minHeight: "200px" }}>
+            <div style={{flex: "1 1 200px", minHeight: "200px"}}>
                 <ResponsiveContainer width="100%" height="100%">
                     <PieChart>
                         <Pie
@@ -120,7 +125,7 @@ export default function Chart() {
 
             <h3>All Time Inkomsten</h3>
 
-            <div style={{ flex: "1 1 200px", minHeight: "200px" }}>
+            <div style={{flex: "1 1 200px", minHeight: "200px"}}>
                 <ResponsiveContainer width="100%" height="100%">
                     <PieChart>
                         <Pie

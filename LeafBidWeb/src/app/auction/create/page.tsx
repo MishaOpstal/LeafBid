@@ -6,7 +6,7 @@ import ToevoegenLayout from "@/app/layouts/add/layout";
 import Form from "react-bootstrap/Form";
 import OrderedMultiSelect from "@/components/Input/OrderedMultiSelect";
 import {Location} from "@/types/Auction/Location";
-import React, {useEffect, useState, useCallback, useMemo} from "react";
+import React, {useCallback, useEffect, useMemo, useState} from "react";
 import DateSelect from "@/components/Input/DateSelect";
 import SearchableDropdown from "@/components/Input/SearchableDropdown";
 import Button from "@/components/Input/Button";
@@ -52,7 +52,8 @@ export default function Home() {
                     credentials: "include",
                 });
                 if (!res.ok) {
-                    throw new Error("Failed to fetch products");
+                    console.error("Failed to fetch registered products:", res.text());
+                    return;
                 }
 
                 const data: RegisteredProduct[] = await res.json();
@@ -74,7 +75,7 @@ export default function Home() {
         })();
     }, []);
 
-    const validate = (): boolean => {
+    const validate = React.useCallback((): boolean => {
         const newErrors: Record<string, string> = {};
 
         if (!auctionData.startDate) {
@@ -90,8 +91,14 @@ export default function Home() {
         }
 
         setErrors(newErrors);
+
         return Object.keys(newErrors).length === 0;
-    };
+    }, [
+        auctionData.startDate,
+        auctionData.clockLocationEnum,
+        auctionData.registeredProducts,
+        setErrors,
+    ]);
 
     // Memoize handlers to prevent unnecessary re-renders
     const handleDateSelect = useCallback((date: string | null) => {
@@ -144,7 +151,8 @@ export default function Home() {
 
             const data = await response.json().catch(() => null);
             if (!response.ok) {
-                throw new Error(data?.message ?? `Server returned ${response.status}`);
+                console.error("Failed to create auction:", data?.message ?? `Server returned ${response.status}`);
+                return;
             }
 
             setMessage("Veiling succesvol aangemaakt!");

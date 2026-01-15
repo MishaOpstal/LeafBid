@@ -3,37 +3,33 @@
 import s from "./Header.module.css";
 import Image from "next/image";
 import Link from "next/link";
-import { MoonFill, Sun } from "react-bootstrap-icons";
-import ThemeInitializer, { getTheme, toggleTheme } from "./Theme";
-import React, { useEffect, useState } from "react";
-import { useRouter } from "nextjs-toploader/app";
-import { isUserInRole } from "@/utils/IsUserInRole";
-import { parseRole, Roles } from "@/enums/Roles";
-import { useAuth } from "@/utils/useAuth";
+import {MoonFill, Sun} from "react-bootstrap-icons";
+import {getTheme, toggleTheme} from "./Theme";
+import React, {useEffect, useState} from "react";
+import {useRouter} from "nextjs-toploader/app";
+import {isUserInRole} from "@/utils/IsUserInRole";
+import {parseRole, Roles} from "@/enums/Roles";
+import {UseAuth} from "@/utils/UseAuth";
 
-interface HeaderProps
-{
+interface HeaderProps {
     returnOption?: boolean;
 }
 
 type Theme = "dark" | "light";
 
-export default function Header({ returnOption = false }: HeaderProps)
-{
-    const { user, logout } = useAuth();
+export default function Header({returnOption = false}: HeaderProps) {
+    const {user, logout} = UseAuth();
     const router = useRouter();
 
     const [mounted, setMounted] = useState(false);
     const [theme, setTheme] = useState<Theme>("light");
 
-    useEffect(() =>
-    {
+    useEffect(() => {
         setMounted(true);
         setTheme(getTheme());
     }, []);
 
-    const onToggleTheme = () =>
-    {
+    const onToggleTheme = () => {
         toggleTheme();
         setTheme(getTheme());
     };
@@ -45,7 +41,7 @@ export default function Header({ returnOption = false }: HeaderProps)
                     src="/LeafBid.svg"
                     alt="LeafBid Logo"
                     fill
-                    style={{ objectFit: "contain" }}
+                    style={{objectFit: "contain"}}
                     priority
                     onClick={() => router.push("/")}
                 />

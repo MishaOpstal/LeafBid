@@ -54,7 +54,7 @@
     text-align: right;
 }
 
-.companyName{
+.companyName {
     font-size: 0.875rem;
 }
 
@@ -68,6 +68,6 @@
     color: #000 !important;
 }
 
-.container{
+.container {
     background-color: var(--background);
 }

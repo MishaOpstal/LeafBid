@@ -1,8 +1,8 @@
-import { useState, useEffect, useCallback, useRef } from "react";
-import { useRouter } from "nextjs-toploader/app";
-import { LoggedInResponse } from "@/types/User/Auth/LoggedInResponse";
+import {useCallback, useEffect, useRef, useState} from "react";
+import {useRouter} from "nextjs-toploader/app";
+import {LoggedInResponse} from "@/types/User/Auth/LoggedInResponse";
 
-export function useAuth() {
+export function UseAuth() {
     const router = useRouter();
     const [user, setUser] = useState<LoggedInResponse["userData"] | null>(null);
     const [loggedIn, setLoggedIn] = useState<boolean | null>(null);
@@ -11,15 +11,11 @@ export function useAuth() {
 
     const logout = useCallback(async () => {
         try {
-            const res = await fetch("http://localhost:5001/api/v2/User/logout", {
+            await fetch("http://localhost:5001/api/v2/User/logout", {
                 method: "POST",
                 credentials: "include",
-                headers: { "Content-Type": "application/json" },
+                headers: {"Content-Type": "application/json"},
             });
-
-            if (!res.ok) {
-                throw new Error("Logout mislukt");
-            }
         } catch (err) {
             console.error("Logout error:", err);
         } finally {
@@ -80,7 +76,7 @@ export function useAuth() {
         } finally {
             setIsLoading(false);
         }
-    }, []); // No dependencies - stable function
+    }, [router]); // No dependencies - stable function
 
     useEffect(() => {
         if (!hasCheckedAuth.current) {
@@ -89,5 +85,5 @@ export function useAuth() {
         }
     }, [checkAuth]);
 
-    return { user, loggedIn, logout, checkAuth, isLoading };
+    return {user, loggedIn, logout, checkAuth, isLoading};
 }

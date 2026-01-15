@@ -1,6 +1,6 @@
 'use client';
 
-import { useAuth } from "@/utils/useAuth";
+import { UseAuth } from "@/utils/UseAuth";
 import Header from "@/components/Header/Header";
 import AuctionView from "@/components/Pages/AuctionView";
 import AuctionDashboard from "@/components/Pages/AuctionDashboard";
@@ -9,7 +9,7 @@ import {useRouter} from "nextjs-toploader/app";
 
 export default function HomePage() {
     const router = useRouter();
-    const { user, loggedIn } = useAuth();
+    const { user, loggedIn } = UseAuth();
 
     if (loggedIn === null) {
         return <p>Loading...</p>;

@@ -28,5 +28,5 @@ export default function ClientTopLoader(): JSX.Element {
         return (): void => observer.disconnect();
     }, []);
 
-    return <NextTopLoader color={color} />;
+    return <NextTopLoader color={color}/>;
 }

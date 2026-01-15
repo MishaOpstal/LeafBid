@@ -4,13 +4,12 @@ import ProductTable from "@/components/ProductTable/ProductTable";
 import {parseRole, Roles} from "@/enums/Roles";
 import Chart from "@/components/Chart/Chart";
 import {isUserInRole} from "@/utils/IsUserInRole";
-import {useAuth} from "@/utils/useAuth";
+import {UseAuth} from "@/utils/UseAuth";
 import React from "react";
 import {router} from "next/dist/client";
 
-
 export default function ProductDashboard() {
-    const {user} = useAuth();
+    const {user} = UseAuth();
     if (user && !isUserInRole(parseRole(Roles.Provider)) && !isUserInRole(parseRole(Roles.Buyer)) && !isUserInRole(parseRole(Roles.Admin))) {
         void router.push("/");
     }

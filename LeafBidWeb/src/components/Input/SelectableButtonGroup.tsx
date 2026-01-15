@@ -29,12 +29,12 @@ const SelectableButtonGroup: React.FC<SelectableButtonGroupProps> = ({
         if (value !== undefined && value !== selected) {
             setSelected(value);
         }
-    }, [value]); // Only depend on value, not selected
+    }, [selected, value]); // Only depend on value, not selected
 
     // Handle button click - only call onChange here, not in useEffect
     const handleSelect = (option: string) => {
         setSelected(option);
-        // Call onChange immediately when user clicks, not in useEffect
+        // Call onChange immediately when the user clicks, not in useEffect
         if (onChange) {
             onChange(name, option);
         }

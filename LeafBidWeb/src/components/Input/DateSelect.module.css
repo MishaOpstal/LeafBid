@@ -30,12 +30,13 @@
     /* Icon appearance */
     appearance: auto;
     -webkit-appearance: auto; /* Chrome / Edge */
-    -moz-appearance: auto;    /* Firefox */
+    -moz-appearance: auto; /* Firefox */
 }
 
-.dateControl{
+.dateControl {
     flex: 1;
 }
+
 .timeControl {
     width: fit-content;
 }
@@ -44,6 +45,7 @@
     .inputParents {
         flex-direction: column;
     }
+
     .timeControl {
         width: 100%;
     }

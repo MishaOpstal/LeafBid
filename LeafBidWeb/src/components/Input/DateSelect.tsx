@@ -10,6 +10,7 @@ interface DateSelectProps {
     defaultValue?: string;
     useTime?: boolean;
     disallowPast?: boolean;
+    disallowFuture?: boolean;
 }
 
 const getTodayISO = (d: Date): string => {
@@ -29,6 +30,10 @@ const getNextMinuteHHMM = (from: Date): string => {
 
 const isTimeBeforeOrEqual = (a: string, b: string): boolean => {
     return a <= b;
+};
+
+const isTimeAfterOrEqual = (a: string, b: string): boolean => {
+    return a >= b;
 };
 
 const parseLocalDateOrDateTime = (dateISO: string, timeHHMM?: string): Date => {
@@ -55,21 +60,28 @@ const DateSelect: React.FC<DateSelectProps> = ({
                                                    defaultValue = "",
                                                    useTime = false,
                                                    disallowPast = false,
+                                                   disallowFuture = false,
                                                }) => {
     const [date, setDate] = useState<string>("");
     const [time, setTime] = useState<string>("");
 
-    // This is the key: a ticking "now" so min stays fresh.
+    // A ticking "now" so min/max stays fresh.
     const [nowTick, setNowTick] = useState<number>(() => Date.now());
 
     const nowDate: Date = useMemo(() => new Date(nowTick), [nowTick]);
     const todayISO: string = useMemo(() => getTodayISO(nowDate), [nowDate]);
 
     const dateMin: string | undefined = disallowPast ? todayISO : undefined;
+    const dateMax: string | undefined = disallowFuture ? todayISO : undefined;
 
     const timeMin: string | undefined =
         disallowPast && useTime && date === todayISO
             ? getNextMinuteHHMM(nowDate)
+            : undefined;
+
+    const timeMax: string | undefined =
+        disallowFuture && useTime && date === todayISO
+            ? getHHMM(nowDate)
             : undefined;
 
     // Initialize if defaultValue (ISO string like "2025-11-11T14:30")
@@ -84,9 +96,13 @@ const DateSelect: React.FC<DateSelectProps> = ({
         }
     }, [defaultValue, useTime]);
 
-    // Keep "now" moving while we care about min time (today + disallowPast + useTime).
+    // Keep "now" moving while we care about min/max time (today + (disallowPast/future) + useTime).
     useEffect(() => {
-        if (!disallowPast || !useTime) {
+        if (!useTime) {
+            return;
+        }
+
+        if (!disallowPast && !disallowFuture) {
             return;
         }
 
@@ -97,11 +113,11 @@ const DateSelect: React.FC<DateSelectProps> = ({
         return () => {
             window.clearInterval(interval);
         };
-    }, [disallowPast, useTime]);
+    }, [disallowPast, disallowFuture, useTime]);
 
-    // Clamp time if it becomes invalid (e.g. user left the page open and min moved forward).
+    // Clamp time if it becomes invalid (e.g. user left the page open and min/max moved).
     useEffect(() => {
-        if (!disallowPast || !useTime) {
+        if (!useTime) {
             return;
         }
 
@@ -109,40 +125,54 @@ const DateSelect: React.FC<DateSelectProps> = ({
             return;
         }
 
-        if (!timeMin) {
+        if (disallowPast && timeMin && time && isTimeBeforeOrEqual(time, timeMin)) {
+            setTime(timeMin);
             return;
         }
 
-        if (time && isTimeBeforeOrEqual(time, timeMin)) {
-            setTime(timeMin);
+        if (disallowFuture && timeMax && time && isTimeAfterOrEqual(time, timeMax)) {
+            setTime(timeMax);
         }
-    }, [date, time, timeMin, todayISO, disallowPast, useTime]);
+    }, [date, time, timeMin, timeMax, todayISO, disallowPast, disallowFuture, useTime]);
 
     const handleDateChange = (newDate: string) => {
         setDate(newDate);
 
-        if (!disallowPast || !useTime) {
+        if (!useTime) {
             return;
         }
 
-        if (newDate === todayISO && timeMin) {
-            if (time && isTimeBeforeOrEqual(time, timeMin)) {
+        if (newDate === todayISO) {
+            if (disallowPast && timeMin && time && isTimeBeforeOrEqual(time, timeMin)) {
                 setTime(timeMin);
+            }
+
+            if (disallowFuture && timeMax && time && isTimeAfterOrEqual(time, timeMax)) {
+                setTime(timeMax);
             }
         }
     };
 
     const handleTimeChange = (newTime: string) => {
-        if (!disallowPast || !useTime || !date) {
+        if (!useTime || !date) {
             setTime(newTime);
             return;
         }
 
-        if (date === todayISO && timeMin) {
-            // Compare against the actual minimum allowed time (next minute), not current HH:mm.
-            if (isTimeBeforeOrEqual(newTime, timeMin)) {
-                setTime(timeMin);
-                return;
+        if (date === todayISO) {
+            if (disallowPast && timeMin) {
+                // Compare against the actual minimum allowed time (next minute), not current HH:mm.
+                if (isTimeBeforeOrEqual(newTime, timeMin)) {
+                    setTime(timeMin);
+                    return;
+                }
+            }
+
+            if (disallowFuture && timeMax) {
+                if (isTimeAfterOrEqual(newTime, timeMax)) {
+                    setTime(timeMax);
+                    return;
+                }
             }
         }
 
@@ -159,14 +189,22 @@ const DateSelect: React.FC<DateSelectProps> = ({
 
             const result: string = useTime && time ? `${date}T${time}` : date;
 
-            if (disallowPast) {
+            if (disallowPast || disallowFuture) {
                 const now: Date = new Date();
                 const selected: Date = useTime && time
                     ? parseLocalDateOrDateTime(date, time)
                     : parseLocalDateOrDateTime(date);
 
-                if (selected <= now) {
-                    return;
+                if (disallowPast) {
+                    if (selected <= now) {
+                        return;
+                    }
+                }
+
+                if (disallowFuture) {
+                    if (selected > now) {
+                        return;
+                    }
                 }
             }
 
@@ -176,7 +214,7 @@ const DateSelect: React.FC<DateSelectProps> = ({
         return () => {
             window.clearTimeout(handler);
         };
-    }, [date, time, delay, onSelect, useTime, disallowPast]);
+    }, [date, time, delay, onSelect, useTime, disallowPast, disallowFuture]);
 
     return (
         <Form.Label className="mb-3">
@@ -187,6 +225,7 @@ const DateSelect: React.FC<DateSelectProps> = ({
                     value={date}
                     placeholder={placeholder}
                     min={dateMin}
+                    max={dateMax}
                     onChange={(e) => handleDateChange(e.target.value)}
                     className={`${s.formControl} ${s.dateControl}`}
                 />
@@ -196,6 +235,7 @@ const DateSelect: React.FC<DateSelectProps> = ({
                         type="time"
                         value={time}
                         min={timeMin}
+                        max={timeMax}
                         step={60}
                         onChange={(e) => handleTimeChange(e.target.value)}
                         className={`${s.formControl} ${s.timeControl}`}

@@ -1,8 +1,8 @@
 'use client';
 
 import React from "react";
-import { Button } from "react-bootstrap";
-import { Trash, Pencil } from "react-bootstrap-icons";
+import {Button} from "react-bootstrap";
+import {Pencil, Trash} from "react-bootstrap-icons";
 import styles from "./SmallButton.module.css";
 
 type ActionButtonsProps = {
@@ -10,7 +10,7 @@ type ActionButtonsProps = {
     onUpdate?: () => void;
 };
 
-const ActionButtons: React.FC<ActionButtonsProps> = ({ onDelete, onUpdate }) => {
+const ActionButtons: React.FC<ActionButtonsProps> = ({onDelete, onUpdate}) => {
 
     return (
         <div className="d-flex gap-2">
@@ -21,7 +21,7 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({ onDelete, onUpdate }) => 
                 size="sm"
                 onClick={onDelete}
             >
-                <Trash style={{ color: "var(--primary-background)" }} />
+                <Trash style={{color: "var(--primary-background)"}}/>
             </Button>
             <Button
                 aria-label="wijzig veiling"
@@ -30,7 +30,7 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({ onDelete, onUpdate }) => 
                 size="sm"
                 onClick={onUpdate}
             >
-                <Pencil style={{ color: "var(--primary-background)" }} />
+                <Pencil style={{color: "var(--primary-background)"}}/>
             </Button>
         </div>
     );

@@ -1,16 +1,15 @@
 .textContainer {
     border: 1px solid var(--primary);
     border-radius: 10px;
-    /*Background-color: background;*/
 }
 
-.image{
+.image {
     width: 154px;
     height: 154px;
     object-fit: cover;
     border-radius: 9px 0 0 9px;
 }
 
-.omschrijving{
+.omschrijving {
     color: var(--muted-text);
 }

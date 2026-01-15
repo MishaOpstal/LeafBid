@@ -1,5 +1,5 @@
 import React from "react";
-import { Button as BsButton } from "react-bootstrap";
+import {Button as BsButton} from "react-bootstrap";
 
 interface ButtonProps {
     label: string;

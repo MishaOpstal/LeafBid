@@ -1,6 +1,5 @@
 @import "bootstrap/dist/css/bootstrap.min.css";
 
-
 .badgeContainer {
     display: grid !important;
     grid-template-columns: repeat(4, minmax(0, 1fr)); /* Exactly 4 columns */

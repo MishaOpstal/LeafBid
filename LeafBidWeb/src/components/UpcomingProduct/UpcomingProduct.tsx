@@ -3,7 +3,7 @@ import {parsePrice, RegisteredProduct} from "@/types/Product/RegisteredProducts"
 import {Image} from "react-bootstrap";
 import {resolveImageSrc} from "@/utils/Image";
 
-export default function InfoVeld({ registeredProduct }: { registeredProduct: RegisteredProduct }) {
+export default function InfoVeld({registeredProduct}: { registeredProduct: RegisteredProduct }) {
     return (
         <div className={`d-flex align-items-center gap-3 ${s.textContainer}`}>
             <Image

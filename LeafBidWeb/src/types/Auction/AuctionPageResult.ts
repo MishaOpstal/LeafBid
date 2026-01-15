@@ -1,5 +1,5 @@
-import { Auction } from "@/types/Auction/Auction";
-import { RegisteredProduct } from "@/types/Product/RegisteredProducts";
+import {Auction} from "@/types/Auction/Auction";
+import {RegisteredProduct} from "@/types/Product/RegisteredProducts";
 
 export interface AuctionPageResult {
     auction: Auction;
