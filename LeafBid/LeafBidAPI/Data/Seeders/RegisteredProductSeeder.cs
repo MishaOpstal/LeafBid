@@ -41,8 +41,8 @@ public class RegisteredProductSeeder(
             {
                 Product chosenProduct = faker.Random.ArrayElement(products);
 
-                decimal minPrice = faker.Random.Decimal(0, 100);
-                decimal maxPrice = faker.Random.Decimal(minPrice, 200);
+                decimal minPrice = faker.Random.Decimal(0.25M, 10);
+                decimal maxPrice = faker.Random.Decimal(minPrice, 50);
                 bool usePotSize = faker.Random.Bool();
                 double length = faker.Random.Double(0, 100);
 
@@ -53,7 +53,7 @@ public class RegisteredProductSeeder(
                     CompanyId = user.CompanyId.Value,
                     MinPrice = minPrice,
                     MaxPrice = maxPrice,
-                    Stock = faker.Random.Int(0, 100),
+                    Stock = faker.Random.Int(10, 1000),
                     Region = faker.Address.County(),
                     HarvestedAt = faker.Date.Recent()
                 };

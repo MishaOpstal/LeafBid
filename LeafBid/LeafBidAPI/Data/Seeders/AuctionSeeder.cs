@@ -11,7 +11,7 @@ public class AuctionSeeder(ApplicationDbContext dbContext, UserManager<User> use
     public async Task SeedAsync()
     {
         // Seed auctions
-        Auction[] auctions = new AuctionFactory(dbContext, userManager).Generate(8);
+        Auction[] auctions = new AuctionFactory(dbContext, userManager).Generate(16);
         await dbContext.AddRangeAsync(auctions);
         await dbContext.SaveChangesAsync();
 
@@ -19,7 +19,7 @@ public class AuctionSeeder(ApplicationDbContext dbContext, UserManager<User> use
         foreach (Auction auction in auctions)
         {
             // Seed auction products
-            AuctionProduct[] auctionProducts = new AuctionProductFactory(dbContext, auction).Generate(6);
+            AuctionProduct[] auctionProducts = new AuctionProductFactory(dbContext, auction).Generate(10);
             await dbContext.AddRangeAsync(auctionProducts);
             await dbContext.SaveChangesAsync();
         }

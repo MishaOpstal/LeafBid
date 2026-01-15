@@ -35,7 +35,7 @@ public abstract class Factory<TEntity>
     {
         return Faker.Generate();
     }
-
+    
     public virtual TEntity[] Generate(int number)
     {
         return Faker.Generate(number).ToArray();
