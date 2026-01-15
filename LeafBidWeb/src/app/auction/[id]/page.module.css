@@ -1,5 +1,3 @@
-﻿/* Main layout: horizontale verdeling */
-.help{}
 .main {
     display: flex;
     flex-direction: row;
