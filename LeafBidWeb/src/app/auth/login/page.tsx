@@ -12,13 +12,10 @@ import LoginFailedException, {isLoginFailedException} from "@/exceptions/Auth/Lo
 import ValidationFailedException, {isValidationFailedException} from "@/exceptions/ValidationFailedException";
 import {Login} from "@/types/User/Login";
 import TextInput from "@/components/Input/TextInput";
-import {toggleTheme} from "@/components/Header/Theme";
 import {UseAuth} from "@/utils/UseAuth";
 import config from "@/Config";
 
 export default function LoginPage() {
-    toggleTheme();
-
     const router = useRouter();
     const {checkAuth} = UseAuth();
 
