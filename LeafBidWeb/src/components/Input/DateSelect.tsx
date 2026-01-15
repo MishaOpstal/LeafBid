@@ -65,7 +65,7 @@ const DateSelect: React.FC<DateSelectProps> = ({
     const [date, setDate] = useState<string>("");
     const [time, setTime] = useState<string>("");
 
-    // A ticking "now" so min/max stays fresh.
+    // Ticking "now" so min/max stays fresh.
     const [nowTick, setNowTick] = useState<number>(() => Date.now());
 
     const nowDate: Date = useMemo(() => new Date(nowTick), [nowTick]);
@@ -115,7 +115,7 @@ const DateSelect: React.FC<DateSelectProps> = ({
         };
     }, [disallowPast, disallowFuture, useTime]);
 
-    // Clamp time if it becomes invalid (e.g. user left the page open and min/max moved).
+    // Clamp time if it becomes invalid (e.g., user left the page open and min/max moved).
     useEffect(() => {
         if (!useTime) {
             return;
