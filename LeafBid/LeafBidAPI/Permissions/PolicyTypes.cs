@@ -18,6 +18,7 @@ public static class PolicyTypes
         public const string View = "products.view.policy";
         public const string Buy = "products.buy.policy";
         public const string Manage = "products.manage.policy";
+        public const string ManageRegistered = "products.manage.registered.policy";
     }
     
     public static class Companies

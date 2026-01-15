@@ -135,7 +135,7 @@ public class ProductController(
     /// <returns>The created product.</returns>
     /// <exception cref="NotFoundException">Thrown when the main product cannot be found.</exception>
     [HttpPost("registeredCreate/{ProductId:int}")]
-    [Authorize(Policy = PolicyTypes.Products.Manage)]
+    [Authorize(Policy = PolicyTypes.Products.ManageRegistered)]
     [ProducesResponseType(typeof(RegisteredProductResponse), StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]

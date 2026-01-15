@@ -65,10 +65,8 @@ public class Program
             options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
         builder.Services.AddAuthorizationBuilder()
-            .AddPolicy(PolicyTypes.Auctions.View, policy =>
-            {
-                policy.RequireClaim(ApplicationClaimType.Permission, AuctionPermissions.View);
-            })
+            .AddPolicy(PolicyTypes.Auctions.View,
+                policy => { policy.RequireClaim(ApplicationClaimType.Permission, AuctionPermissions.View); })
             .AddPolicy(PolicyTypes.Auctions.Manage, policy =>
             {
                 policy.RequireClaim(ApplicationClaimType.Permission, AuctionPermissions.View);
@@ -77,14 +75,10 @@ public class Program
                 policy.RequireClaim(ApplicationClaimType.Permission, AuctionPermissions.Start);
                 policy.RequireClaim(ApplicationClaimType.Permission, AuctionPermissions.Stop);
             })
-            .AddPolicy(PolicyTypes.AuctionSales.View, policy =>
-            {
-                policy.RequireClaim(ApplicationClaimType.Permission, AuctionSalePermissions.View);
-            })
-            .AddPolicy(PolicyTypes.Products.View, policy =>
-            {
-                policy.RequireClaim(ApplicationClaimType.Permission, ProductPermissions.View);
-            })
+            .AddPolicy(PolicyTypes.AuctionSales.View,
+                policy => { policy.RequireClaim(ApplicationClaimType.Permission, AuctionSalePermissions.View); })
+            .AddPolicy(PolicyTypes.Products.View,
+                policy => { policy.RequireClaim(ApplicationClaimType.Permission, ProductPermissions.View); })
             .AddPolicy(PolicyTypes.Products.Buy, policy =>
             {
                 policy.RequireClaim(ApplicationClaimType.Permission, ProductPermissions.View);
@@ -94,33 +88,31 @@ public class Program
             {
                 policy.RequireClaim(ApplicationClaimType.Permission, ProductPermissions.View);
                 policy.RequireClaim(ApplicationClaimType.Permission, ProductPermissions.Create);
-                policy.RequireClaim(ApplicationClaimType.Permission, ProductPermissions.Register);
                 policy.RequireClaim(ApplicationClaimType.Permission, ProductPermissions.Update);
                 policy.RequireClaim(ApplicationClaimType.Permission, ProductPermissions.Delete);
             })
-            .AddPolicy(PolicyTypes.Companies.View, policy =>
+            .AddPolicy(PolicyTypes.Products.ManageRegistered, policy =>
             {
-                policy.RequireClaim(ApplicationClaimType.Permission, CompanyPermissions.View);
+                policy.RequireClaim(ApplicationClaimType.Permission, ProductPermissions.View);
+                policy.RequireClaim(ApplicationClaimType.Permission, ProductPermissions.Register);
             })
+            .AddPolicy(PolicyTypes.Companies.View,
+                policy => { policy.RequireClaim(ApplicationClaimType.Permission, CompanyPermissions.View); })
             .AddPolicy(PolicyTypes.Companies.Manage, policy =>
             {
                 policy.RequireClaim(ApplicationClaimType.Permission, CompanyPermissions.View);
                 policy.RequireClaim(ApplicationClaimType.Permission, CompanyPermissions.Create);
                 policy.RequireClaim(ApplicationClaimType.Permission, CompanyPermissions.Update);
             })
-            .AddPolicy(PolicyTypes.Roles.ViewOthers, policy =>
-            {
-                policy.RequireClaim(ApplicationClaimType.Permission, RolePermissions.ViewOthers);
-            })
+            .AddPolicy(PolicyTypes.Roles.ViewOthers,
+                policy => { policy.RequireClaim(ApplicationClaimType.Permission, RolePermissions.ViewOthers); })
             .AddPolicy(PolicyTypes.Roles.Manage, policy =>
             {
                 policy.RequireClaim(ApplicationClaimType.Permission, RolePermissions.ViewOthers);
                 policy.RequireClaim(ApplicationClaimType.Permission, RolePermissions.Manage);
             })
-            .AddPolicy(PolicyTypes.Users.ViewOthers, policy =>
-            {
-                policy.RequireClaim(ApplicationClaimType.Permission, UserPermissions.ViewOthers);
-            })
+            .AddPolicy(PolicyTypes.Users.ViewOthers,
+                policy => { policy.RequireClaim(ApplicationClaimType.Permission, UserPermissions.ViewOthers); })
             .AddPolicy(PolicyTypes.Users.Manage, policy =>
             {
                 policy.RequireClaim(ApplicationClaimType.Permission, UserPermissions.ViewOthers);
@@ -239,10 +231,7 @@ public class Program
         if (app.Environment.IsDevelopment())
         {
             app.UseSwagger();
-            app.UseSwaggerUI(c =>
-            {
-                c.SwaggerEndpoint("/swagger/v2/swagger.json", "LeafBidAPI V2");
-            });
+            app.UseSwaggerUI(c => { c.SwaggerEndpoint("/swagger/v2/swagger.json", "LeafBidAPI V2"); });
         }
 
         // Role + role-claim seeding (FIXED)
@@ -322,7 +311,6 @@ public class Program
                         await AddPermissionAsync(AuctionPermissions.View);
                         await AddPermissionAsync(ProductPermissions.View);
                         await AddPermissionAsync(ProductPermissions.Create);
-                        await AddPermissionAsync(ProductPermissions.Register);
                         await AddPermissionAsync(ProductPermissions.Update);
                         await AddPermissionAsync(ProductPermissions.Delete);
 
@@ -338,6 +326,7 @@ public class Program
 
                         await AddPermissionAsync(AuctionSalePermissions.View);
                         await AddPermissionAsync(ProductPermissions.View);
+                        await AddPermissionAsync(ProductPermissions.Register);
 
                         await AddPermissionAsync(RolePermissions.ViewOthers);
                         break;
