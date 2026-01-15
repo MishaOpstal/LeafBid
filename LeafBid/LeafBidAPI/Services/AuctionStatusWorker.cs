@@ -88,6 +88,8 @@ public class AuctionStatusWorker(
                 {
                     auctionId = auction.Id
                 });
+                
+                continue;
             }
 
             auction.StartDate = TimeHelper.GetAmsterdamTime().AddMinutes(30);
