@@ -165,7 +165,7 @@ export default function Home() {
         } finally {
             setIsSubmitting(false);
         }
-    }, [auctionData, validate]); // Note: validate function needs to be stable or memoized too
+    }, [auctionData, validate]); // Note: a validate function needs to be stable or memoized too
 
     // Memoize sorted products to avoid re-sorting on every render
     const sortedRegisteredProducts = useMemo(() => {
