@@ -62,10 +62,22 @@ const ProductPriceTable: React.FC<ProductPriceTableProps> = ({
 
     // For every registered product, make sure the default maxPrice is equal to the minPrice
     useEffect(() => {
-        registeredProducts.forEach((registeredProduct) => {
-            registeredProduct.maxPrice = registeredProduct.minPrice + 0.01;
+        if (!onChange) {
+            return;
+        }
+
+        const needsInit = registeredProducts.some((rp) => rp.maxPrice == null);
+        if (!needsInit) return;
+
+        const updated = registeredProducts.map((rp) => {
+            const min = rp.minPrice ?? 0;
+            const defaultMax = min + 0.01;
+
+            return rp.maxPrice == null ? { ...rp, maxPrice: defaultMax } : rp;
         });
-    }, [registeredProducts]);
+
+        onChange(updated);
+    }, [registeredProducts, onChange]);
 
     return (
         <div className={s.wrapper} style={{maxHeight: height}}>
