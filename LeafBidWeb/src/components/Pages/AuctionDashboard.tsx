@@ -9,6 +9,7 @@ import {getServerNow} from "@/utils/Time";
 import Button from "@/components/Input/Button";
 import {resolveImageSrc} from "@/utils/Image";
 import {useAuctions} from "@/utils/AuctionHelper";
+import config from "@/Config";
 
 
 export default function AuctionDashboard() {
@@ -17,7 +18,7 @@ export default function AuctionDashboard() {
 
     // Send a start request to /api/v2/Auction/start/{id} if the startAuction function is called
     const startAuction = (id: number) => {
-        void fetch(`http://localhost:5001/api/v2/Auction/start/${id}`, {
+        void fetch(`${config.apiUrl}/Auction/start/${id}`, {
             method: "PUT",
             credentials: "include"
         });
@@ -27,7 +28,7 @@ export default function AuctionDashboard() {
 
     // Send a stop request to /api/v2/Auction/stop/{id} if the stopAuction function is called
     const stopAuction = (id: number) => {
-        void fetch(`http://localhost:5001/api/v2/Auction/stop/${id}`, {
+        void fetch(`${config.apiUrl}/Auction/stop/${id}`, {
             method: "DELETE",
             credentials: "include"
         });

@@ -1,12 +1,16 @@
 import type { NextConfig } from "next";
 
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5001";
+const apiUrlParsed = new URL(apiBaseUrl);
+
 const nextConfig: NextConfig = {
+    output: 'standalone',
     images: {
         remotePatterns: [
             {
-                protocol: 'http',
-                hostname: 'localhost',
-                port: '5001',
+                protocol: apiUrlParsed.protocol.replace(':', '') as 'http' | 'https',
+                hostname: apiUrlParsed.hostname,
+                port: apiUrlParsed.port,
                 pathname: '/**',
             },
             {

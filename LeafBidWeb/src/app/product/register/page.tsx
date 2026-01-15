@@ -13,6 +13,7 @@ import DateSelect from "@/components/Input/DateSelect";
 import {isUserInRole} from "@/utils/IsUserInRole";
 import {parseRole, Roles} from "@/enums/Roles";
 import {Product} from "@/types/Product/Product";
+import config from "@/Config";
 
 // Constants - defined outside a component to prevent recreation on every render
 const MEASUREMENT_OPTIONS = ["Pot grootte", "Stem lengte"];
@@ -55,7 +56,7 @@ export default function ProductForm() {
 
     const fetchAvailableProducts = async () => {
         try {
-            const res = await fetch("http://localhost:5001/api/v2/Product/available", {
+            const res = await fetch(`${config.apiUrl}/Product/available`, {
                 method: "GET",
                 credentials: "include",
             });
@@ -128,7 +129,7 @@ export default function ProductForm() {
             };
 
 
-            const response = await fetch(`http://localhost:5001/api/v2/Product/registeredCreate/${ProductId}`, {
+            const response = await fetch(`${config.apiUrl}/Product/registeredCreate/${ProductId}`, {
                 method: "POST",
                 headers: {"Content-Type": "application/json"},
                 credentials: "include",

@@ -2,6 +2,7 @@
 import {useEffect, useState} from "react";
 import {AuctionPageResult} from "@/types/Auction/AuctionPageResult";
 import {setServerTimeOffset} from "@/utils/Time";
+import config from "@/Config";
 
 export const useAuctions = () => {
     const router = useRouter();
@@ -14,7 +15,7 @@ export const useAuctions = () => {
             setLoading(true);
 
             try {
-                const res = await fetch("http://localhost:5001/api/v2/Pages", {
+                const res = await fetch(`${config.apiUrl}/Pages`, {
                     method: "GET",
                     credentials: "include"
                 });

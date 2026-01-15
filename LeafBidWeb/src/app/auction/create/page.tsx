@@ -15,6 +15,7 @@ import {Auction} from "@/types/Auction/Auction";
 import {RegisteredProduct, RegisteredProductForAuction} from "@/types/Product/RegisteredProducts";
 import {isUserInRole} from "@/utils/IsUserInRole";
 import {parseRole, Roles} from "@/enums/Roles";
+import config from "@/Config";
 
 // Check if a user has an Auctioneer role
 if (!isUserInRole(parseRole(Roles.Auctioneer))) {
@@ -47,7 +48,7 @@ export default function Home() {
     useEffect(() => {
         (async () => {
             try {
-                const res = await fetch("http://localhost:5001/api/v2/Product/available/registered", {
+                const res = await fetch(`${config.apiUrl}/Product/available/registered`, {
                     method: "GET",
                     credentials: "include",
                 });
@@ -142,7 +143,7 @@ export default function Home() {
             };
 
             // Submit auctionData directly
-            const response = await fetch("http://localhost:5001/api/v2/Auction", {
+            const response = await fetch(`${config.apiUrl}/Auction`, {
                 method: "POST",
                 headers: {"Content-Type": "application/json"},
                 body: JSON.stringify(submissionData),

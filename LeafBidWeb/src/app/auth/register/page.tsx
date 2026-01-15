@@ -23,6 +23,7 @@ import ValidationFailedException, {isValidationFailedException} from "@/exceptio
 import {Role} from "@/types/User/Role";
 import {Company} from "@/types/Company/Company";
 import {Register} from "@/types/User/Register";
+import config from "@/Config";
 
 export default function RegisterPage() {
     const router = useRouter();
@@ -49,7 +50,7 @@ export default function RegisterPage() {
 
     useEffect(() => {
         const fetchRoles = async () => {
-            const response = await fetch("http://localhost:5001/api/v2/Role", {
+            const response = await fetch(`${config.apiUrl}/Role`, {
                 method: "GET",
                 headers: {"Content-Type": "application/json"},
             });
@@ -63,7 +64,7 @@ export default function RegisterPage() {
         };
 
         const fetchCompanies = async () => {
-            const response = await fetch("http://localhost:5001/api/v2/Company", {
+            const response = await fetch(`${config.apiUrl}/Company`, {
                 method: "GET",
                 headers: {"Content-Type": "application/json"},
             });
@@ -136,7 +137,7 @@ export default function RegisterPage() {
         setIsSubmitting(true);
 
         try {
-            const response = await fetch("http://localhost:5001/api/v2/User/register", {
+            const response = await fetch(`${config.apiUrl}/User/register`, {
                 method: "POST",
                 headers: {"Content-Type": "application/json"},
                 body: JSON.stringify(registerData),

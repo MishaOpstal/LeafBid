@@ -10,6 +10,7 @@ import Button from "@/components/Input/Button";
 import React, {useEffect, useState} from "react";
 import {isUserInRole} from "@/utils/IsUserInRole";
 import {parseRole, Roles} from "@/enums/Roles";
+import config from "@/Config";
 
 export default function ProductForm() {
     const [formData, setFormData] = useState({
@@ -94,7 +95,7 @@ export default function ProductForm() {
                 picture: pictureBase64, // Base64 string or null
             };
 
-            const response = await fetch("http://localhost:5001/api/v2/Product", {
+            const response = await fetch(`${config.apiUrl}/Product`, {
                 method: "POST",
                 headers: {"Content-Type": "application/json"},
                 credentials: "include",

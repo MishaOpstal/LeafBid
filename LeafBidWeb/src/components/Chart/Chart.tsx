@@ -2,6 +2,7 @@
 
 import {useEffect, useMemo, useState} from "react";
 import {Pie, PieChart, ResponsiveContainer, Tooltip} from "recharts";
+import config from "@/Config";
 
 interface SaleChartDataPoint {
     productName: string;
@@ -29,7 +30,7 @@ export default function Chart() {
                 setIsLoading(true);
                 setError(null);
 
-                const res = await fetch("http://localhost:5001/api/v2/AuctionSaleProduct/chart", {
+                const res = await fetch(`${config.apiUrl}/AuctionSaleProduct/chart`, {
                     method: "GET",
                     credentials: "include",
                     cache: "no-store",

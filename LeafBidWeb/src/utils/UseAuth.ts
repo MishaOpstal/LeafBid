@@ -1,6 +1,7 @@
 import {useCallback, useEffect, useRef, useState} from "react";
 import {useRouter} from "nextjs-toploader/app";
 import {LoggedInResponse} from "@/types/User/Auth/LoggedInResponse";
+import config from "@/Config";
 
 export function UseAuth() {
     const router = useRouter();
@@ -11,7 +12,7 @@ export function UseAuth() {
 
     const logout = useCallback(async () => {
         try {
-            await fetch("http://localhost:5001/api/v2/User/logout", {
+            await fetch(`${config.apiUrl}/User/logout`, {
                 method: "POST",
                 credentials: "include",
                 headers: {"Content-Type": "application/json"},
@@ -40,7 +41,7 @@ export function UseAuth() {
         }
 
         try {
-            const res = await fetch("http://localhost:5001/api/v2/User/me", {
+            const res = await fetch(`${config.apiUrl}/User/me`, {
                 method: "GET",
                 credentials: "include",
             });

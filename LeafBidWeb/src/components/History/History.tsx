@@ -6,6 +6,7 @@ import {Table} from "react-bootstrap";
 import s from "./History.module.css";
 import Image from "next/image";
 import {resolveImageSrc} from "@/utils/Image";
+import config from "@/Config";
 
 type HistoryProps = {
     registeredProductID: number;
@@ -51,14 +52,14 @@ export default function History(HistoryProps: HistoryProps) {
 
         try {
             const resCompany = await fetch(
-                `http://localhost:5001/api/v2/AuctionSaleProduct/history/${HistoryProps.registeredProductID}/company`,
+                `${config.apiUrl}/AuctionSaleProduct/history/${HistoryProps.registeredProductID}/company`,
                 {method: "GET", credentials: "include"}
             );
             const company = await resCompany.json();
             setCompanyData(company);
 
             const resNotCompany = await fetch(
-                `http://localhost:5001/api/v2/AuctionSaleProduct/history/${HistoryProps.registeredProductID}/not-company`,
+                `${config.apiUrl}/AuctionSaleProduct/history/${HistoryProps.registeredProductID}/not-company`,
                 {method: "GET", credentials: "include"}
             );
             const notCompany = await resNotCompany.json();

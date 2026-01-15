@@ -14,6 +14,7 @@ import {Login} from "@/types/User/Login";
 import TextInput from "@/components/Input/TextInput";
 import {toggleTheme} from "@/components/Header/Theme";
 import {UseAuth} from "@/utils/UseAuth";
+import config from "@/Config";
 
 export default function LoginPage() {
     toggleTheme();
@@ -49,7 +50,7 @@ export default function LoginPage() {
         setIsSubmitting(true);
 
         try {
-            const response = await fetch("http://localhost:5001/api/v2/User/login", {
+            const response = await fetch(`${config.apiUrl}/User/login`, {
                 method: "POST",
                 headers: {"Content-Type": "application/json"},
                 credentials: "include",

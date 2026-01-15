@@ -1,4 +1,6 @@
-﻿export function resolveImageSrc(picture?: string): string | undefined {
+﻿import config from "@/Config";
+
+export function resolveImageSrc(picture?: string): string | undefined {
     if (!picture) {
         return undefined;
     }
@@ -7,5 +9,5 @@
         return picture;
     }
 
-    return `http://localhost:5001/${picture}`;
+    return `${config.baseUrl}/${picture}`;
 }

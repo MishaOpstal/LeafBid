@@ -6,6 +6,7 @@ import {Roles} from "@/enums/Roles";
 import History from "@/components/History/History";
 import {AuctionSaleProduct} from "@/types/Product/AuctionSaleProduct";
 import {resolveImageSrc} from "@/utils/Image";
+import config from "@/Config";
 
 type Props = {
     userRoles: Roles;
@@ -30,9 +31,9 @@ export default function ProductTable({userRoles}: Props) {
                 let url = "";
 
                 if (userRoles === Roles.Buyer) {
-                    url = "http://localhost:5001/api/v2/AuctionSaleProduct/me";
+                    url = `${config.apiUrl}/AuctionSaleProduct/me`;
                 } else if (userRoles === Roles.Provider) {
-                    url = "http://localhost:5001/api/v2/AuctionSaleProduct/company";
+                    url = `${config.apiUrl}/AuctionSaleProduct/company`;
                 } else {
                     console.error("Invalid user role");
                     return;
