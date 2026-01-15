@@ -41,7 +41,9 @@ public class Program
             options.AddPolicy(name: allowedOrigins,
                 policy =>
                 {
-                    policy.WithOrigins("http://localhost:3000")
+                    policy
+                        .WithOrigins("http://localhost:3000")
+                        .WithOrigins("https://leafbid.onthelink.nl")
                         .AllowAnyHeader()
                         .AllowAnyMethod()
                         .AllowCredentials();
