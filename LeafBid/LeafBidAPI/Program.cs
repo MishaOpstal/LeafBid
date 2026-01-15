@@ -310,9 +310,7 @@ public class Program
                     case "Provider":
                         await AddPermissionAsync(AuctionPermissions.View);
                         await AddPermissionAsync(ProductPermissions.View);
-                        await AddPermissionAsync(ProductPermissions.Create);
-                        await AddPermissionAsync(ProductPermissions.Update);
-                        await AddPermissionAsync(ProductPermissions.Delete);
+                        await AddPermissionAsync(ProductPermissions.Register);
 
                         await AddPermissionAsync(RolePermissions.ViewOthers);
                         break;
@@ -326,7 +324,9 @@ public class Program
 
                         await AddPermissionAsync(AuctionSalePermissions.View);
                         await AddPermissionAsync(ProductPermissions.View);
-                        await AddPermissionAsync(ProductPermissions.Register);
+                        await AddPermissionAsync(ProductPermissions.Create);
+                        await AddPermissionAsync(ProductPermissions.Update);
+                        await AddPermissionAsync(ProductPermissions.Delete);
 
                         await AddPermissionAsync(RolePermissions.ViewOthers);
                         break;
