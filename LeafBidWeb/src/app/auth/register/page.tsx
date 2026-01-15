@@ -28,6 +28,7 @@ import config from "@/Config";
 export default function RegisterPage() {
     const router = useRouter();
     const emailRegex = useMemo(() => /^[^\s@]+@[^\s@]+\.[^\s@]+$/, []);
+    const passwordRegex = useMemo(() => /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/, []);
 
     const [roles, setRoles] = useState<Role[]>([]);
     const [companies, setCompanies] = useState<Company[]>([]);
@@ -109,6 +110,8 @@ export default function RegisterPage() {
 
         if (!registerData.password) {
             newErrors.password = "Wachtwoord is verplicht.";
+        } else if (!passwordRegex.test(registerData.password)) {
+            newErrors.password = "Wachtwoord moet minimaal 8 tekens lang zijn en moet bestaan uit een hoofdletter, een kleine letter, een cijfer en een speciaal teken.";
         }
 
         if (registerData.password !== registerData.passwordConfirmation) {
