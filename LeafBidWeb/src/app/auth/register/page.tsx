@@ -126,6 +126,10 @@ export default function RegisterPage() {
             newErrors.roles = "Rol is verplicht.";
         }
 
+        if (!registerData.companyId && !registerData.roles!.includes("Auctioneer")) {
+            newErrors.companyId = "Bedrijf is verplicht.";
+        }
+
         setErrors(newErrors);
         return Object.keys(newErrors).length === 0;
     };
@@ -221,7 +225,6 @@ export default function RegisterPage() {
                             onChange={(e) => setRegisterData({...registerData, password: e.target.value})}
                             secret={true}
                         />
-                        {errors.password && <div className={s.error}>{errors.password}</div>}
 
                         <TextInput
                             name={"passwordConfirmation"}
@@ -231,8 +234,9 @@ export default function RegisterPage() {
                             onChange={(e) => setRegisterData({...registerData, passwordConfirmation: e.target.value})}
                             secret={true}
                         />
-                        {errors.passwordConfirmation && <div className={s.error}>{errors.passwordConfirmation}</div>}
                     </div>
+                    {errors.password && <div className={s.error}>{errors.password}</div>}
+                    {errors.passwordConfirmation && <div className={s.error}>{errors.passwordConfirmation}</div>}
 
                     <SearchableDropdown
                         label="Selecteer rol"
@@ -251,21 +255,27 @@ export default function RegisterPage() {
                     />
                     {errors.roles && <div className={s.error}>{errors.roles}</div>}
 
-                    <SearchableDropdown
-                        label="Selecteer een bedrijf"
-                        placeholder="Zoek naar bedrijf..."
-                        items={companies}
-                        displayKey="name"
-                        valueKey="id"
-                        value={selectedCompanyId}
-                        onSelect={(company) => {
-                            setSelectedCompanyId(company.id as string | number);
-                            setRegisterData({
-                                ...registerData,
-                                companyId: company.id,
-                            });
-                        }}
-                    />
+                    {/* Company dropdown is only shown if the selected role is not "Auctioneer" */}
+                    {(registerData.roles?.length ?? 0) > 0 && !registerData.roles!.includes("Auctioneer") && (
+                        errors.companyId && <div className={s.error}>{errors.companyId}</div>
+                    )}
+                    {(registerData.roles?.length ?? 0) > 0 && !registerData.roles!.includes("Auctioneer") && (
+                        <SearchableDropdown
+                            label="Selecteer een bedrijf"
+                            placeholder="Zoek naar bedrijf..."
+                            items={companies}
+                            displayKey="name"
+                            valueKey="id"
+                            value={selectedCompanyId}
+                            onSelect={(company) => {
+                                setSelectedCompanyId(company.id as string | number);
+                                setRegisterData({
+                                    ...registerData,
+                                    companyId: company.id,
+                                });
+                            }}
+                        />
+                    )}
 
                     <Button
                         variant="primary"

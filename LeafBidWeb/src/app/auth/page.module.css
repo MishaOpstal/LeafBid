@@ -49,11 +49,22 @@
     accent-color: var(--primary-hover) !important;
 }
 
+.error {
+    color: var(--bs-danger);
+    font-size: 0.8rem;
+    text-align: center;
+}
+
 .passwordRow {
     display: flex;
     flex-direction: row;
     width: 100%;
     gap: 10px;
+}
+
+.passwordRow div {
+    flex: 1;
+    width: 100%;
 }
 
 .passwordLabel {
