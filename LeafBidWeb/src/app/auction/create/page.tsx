@@ -16,6 +16,7 @@ import {RegisteredProduct, RegisteredProductForAuction} from "@/types/Product/Re
 import {isUserInRole} from "@/utils/IsUserInRole";
 import {parseRole, Roles} from "@/enums/Roles";
 import config from "@/Config";
+import {ClockLocation, parseClockLocation} from "@/enums/ClockLocation";
 
 // Check if a user has an Auctioneer role
 if (!isUserInRole(parseRole(Roles.Auctioneer))) {
@@ -26,10 +27,10 @@ if (!isUserInRole(parseRole(Roles.Auctioneer))) {
 }
 
 const locaties: Location[] = [
-    {locatieId: 0, locatieNaam: "Aalsmeer"},
-    {locatieId: 1, locatieNaam: "Eelde"},
-    {locatieId: 2, locatieNaam: "Naaldwijk"},
-    {locatieId: 3, locatieNaam: "Rijnsburg"},
+    { locatieId: ClockLocation.Aalsmeer, locatieNaam: parseClockLocation(ClockLocation.Aalsmeer) },
+    { locatieId: ClockLocation.Eelde, locatieNaam: parseClockLocation(ClockLocation.Eelde) },
+    { locatieId: ClockLocation.Naaldwijk, locatieNaam: parseClockLocation(ClockLocation.Naaldwijk) },
+    { locatieId: ClockLocation.Rijnsburg, locatieNaam: parseClockLocation(ClockLocation.Rijnsburg) },
 ];
 
 const createEmptyAuction = (): Auction => ({
