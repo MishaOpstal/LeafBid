@@ -10,4 +10,5 @@ public class SaleChartDataPoint
 {
     public required string ProductName { get; set; }
     public required decimal Price { get; set; }
+    public required decimal Quantity { get; set; }
 }

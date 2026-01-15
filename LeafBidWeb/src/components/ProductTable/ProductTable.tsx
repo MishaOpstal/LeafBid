@@ -5,6 +5,7 @@ import {useEffect, useState} from "react";
 import {Roles} from "@/enums/Roles";
 import History from "@/components/History/History";
 import {AuctionSaleProduct} from "@/types/Product/AuctionSaleProduct";
+import {resolveImageSrc} from "@/utils/Image";
 
 type Props = {
     userRoles: Roles;
@@ -85,7 +86,7 @@ export default function ProductTable({ userRoles }: Props) {
                                 <td className="align-middle">{index + 1}</td>
                                 <td className="align-middle">
                                     <Image
-                                        src={auctionSaleProduct.product!.picture!}
+                                        src={resolveImageSrc(auctionSaleProduct.product!.picture!)!}
                                         alt={auctionSaleProduct.product!.name!}
                                         width={40}
                                         height={40}
@@ -138,7 +139,7 @@ export default function ProductTable({ userRoles }: Props) {
                                 <td className="align-middle">{index + 1}</td>
                                 <td className="align-middle">
                                     <Image
-                                        src={auctionSaleProduct.product!.picture!}
+                                        src={resolveImageSrc(auctionSaleProduct.product!.picture!)!}
                                         alt={auctionSaleProduct.product!.name!}
                                         width={40}
                                         height={40}

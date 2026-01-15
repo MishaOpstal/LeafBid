@@ -26,9 +26,9 @@ if (!isUserInRole(parseRole(Roles.Auctioneer))) {
 
 const locaties: Location[] = [
     {locatieId: 0, locatieNaam: "Aalsmeer"},
-    {locatieId: 1, locatieNaam: "Rijnsburg"},
+    {locatieId: 1, locatieNaam: "Eelde"},
     {locatieId: 2, locatieNaam: "Naaldwijk"},
-    {locatieId: 3, locatieNaam: "Eelde"},
+    {locatieId: 3, locatieNaam: "Rijnsburg"},
 ];
 
 const createEmptyAuction = (): Auction => ({

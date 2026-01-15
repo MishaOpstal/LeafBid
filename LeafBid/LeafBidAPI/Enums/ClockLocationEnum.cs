@@ -2,8 +2,8 @@
 
 public enum ClockLocationEnum
 {
-    Naaldwijk,
     Aalsmeer,
-    Rijnsburg,
-    Eelde
+    Eelde,
+    Naaldwijk,
+    Rijnsburg
 }

@@ -5,6 +5,7 @@ import Button from "react-bootstrap/Button";
 import {Table} from "react-bootstrap";
 import s from "./History.module.css";
 import Image from "next/image";
+import {resolveImageSrc} from "@/utils/Image";
 
 type HistoryProps = {
     registeredProductID: number;
@@ -82,7 +83,7 @@ export default function History(HistoryProps: HistoryProps) {
 
             <div id={`history-${HistoryProps.registeredProductID}-${randomId}`} className={s.popover} popover={"auto"}>
                 <div className={s.productInfo}>
-                    <Image src={HistoryProps.picture} alt={HistoryProps.name} width={50} height={50}/>
+                    <Image src={resolveImageSrc(HistoryProps.picture!)!} alt={HistoryProps.name} width={50} height={50}/>
                     <h3>{HistoryProps.name}</h3>
 
                 </div>
@@ -92,7 +93,7 @@ export default function History(HistoryProps: HistoryProps) {
                         <Table striped className={s.historyTable}>
                             <thead>
                             <tr>
-                                <th>Aanbieder: {HistoryProps.name}</th>
+                                <th>Aanbieder: {HistoryProps.companyName}</th>
                             </tr>
                             </thead>
                             <tbody>

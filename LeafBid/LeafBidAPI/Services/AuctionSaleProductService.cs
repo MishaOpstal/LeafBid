@@ -203,7 +203,8 @@ public class AuctionSaleProductService(ApplicationDbContext context)
             .Select(g => new SaleChartDataPoint
             {
                 ProductName = g.Key.Name,
-                Price = g.Sum(x => x.Price)
+                Price = g.Sum(x => x.Price),
+                Quantity = g.Sum(x => x.Quantity)
             })
             .ToList();
 
@@ -216,10 +217,10 @@ public class AuctionSaleProductService(ApplicationDbContext context)
             .Select(g => new SaleChartDataPoint
             {
                 ProductName = g.Key.Name,
-                Price = g.Sum(x => x.Price)
+                Price = g.Sum(x => x.Price),
+                Quantity = g.Sum(x => x.Quantity)
             })
             .ToList();
-
 
         return new SaleChartResponse
         {
