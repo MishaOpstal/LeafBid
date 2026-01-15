@@ -11,10 +11,8 @@ import {resolveImageSrc} from "@/utils/Image";
 import {useAuctions} from "@/utils/AuctionHelper";
 import config from "@/Config";
 
-
 export default function AuctionDashboard() {
     const {router, auctions, loading} = useAuctions();
-
 
     // Send a start request to /api/v2/Auction/start/{id} if the startAuction function is called
     const startAuction = (id: number) => {

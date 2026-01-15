@@ -149,7 +149,7 @@ const DashboardPanel: React.FC<DashboardPanelProps> = ({
                                 <Card.Text>
                                     <span>Huidig product: {title}</span><br/>
                                     <span>Huidige prijs: {parsePrice(huidigePrijs ?? 0)}</span><br/>
-                                    <span>Status: {auctionStatus}</span><br/>
+                                    <span>{auctionStatus}</span><br/>
                                 </Card.Text>
 
                             </>

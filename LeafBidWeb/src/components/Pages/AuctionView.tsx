@@ -76,7 +76,7 @@ export default function AuctionView() {
         <>
             <main className={styles.main}>
                 <div className={styles.page}>
-                    <h1 className={styles.huidigeVeilingen}>Veilingen Dashboard</h1>
+                    <h1 className={styles.huidigeVeilingen}>Huidige veilingen</h1>
 
                     <div className={styles.panels}>
                         {loading ? (
@@ -99,6 +99,8 @@ export default function AuctionView() {
                                 const auctionStatus = isLive
                                     ? "Live"
                                     : `Start: ${startTime.toLocaleTimeString([], {
+                                        day: 'numeric',
+                                        month: 'short',
                                         hour: '2-digit',
                                         minute: '2-digit'
                                     })}`;

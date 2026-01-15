@@ -14,8 +14,18 @@ import {useParams} from "next/navigation";
 import {useCallback, useEffect, useRef, useState} from "react";
 import * as signalR from "@microsoft/signalr";
 import {Toast, ToastContainer} from "react-bootstrap";
+import {isUserInRole} from "@/utils/IsUserInRole";
+import { parseRole, Roles } from "@/enums/Roles";
 
 export default function AuctionPage() {
+    // Check if a user has a Buyer role
+    if (!isUserInRole(parseRole(Roles.Buyer)) && !isUserInRole(parseRole(Roles.Auctioneer))) {
+        // Redirect to dashboard
+        if (typeof window !== 'undefined') {
+            window.location.href = "/";
+        }
+    }
+
     const params = useParams();
     const id = Number(params.id);
 
